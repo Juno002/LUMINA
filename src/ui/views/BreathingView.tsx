@@ -5,8 +5,9 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Wind, Play, Square, RotateCcw, Volume2, VolumeX } from 'lucide-react';
-import { cn } from '../../shared/lib/utils';
+import { AnimationSpeeds, EasingCurves } from '../../domain/constants/Theme';
+import { Wind, Play, Square, Volume2, VolumeX } from 'lucide-react';
+import { cn } from '../../shared/utils/TailwindMerge';
 
 type ExerciseType = 'box' | '478' | 'calm';
 
@@ -133,7 +134,7 @@ export default function BreathingView() {
               <motion.div
                 key={phaseIndex}
                 initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
+                animate={{ opacity: 1, scale: 1 }} transition={{ duration: AnimationSpeeds.fluid, ease: EasingCurves.editorial }}
                 className="absolute flex flex-col items-center gap-1"
               >
                 <span className="font-mono text-3xl font-light text-paper mix-blend-difference">{timeLeft}</span>

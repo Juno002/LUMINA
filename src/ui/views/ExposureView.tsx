@@ -5,13 +5,16 @@
 
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { Plus, Shield, ShieldAlert, History } from 'lucide-react';
-import { FearItem, ExposureLog } from '../../domain/entities';
-import { cn, todayISO, triggerHaptic } from '../../shared/lib/utils';
+import { AnimationSpeeds, EasingCurves } from '../../domain/constants/Theme';
+import { Plus, ShieldAlert, History } from 'lucide-react';
+import { FearItem, ExposureLog, ExposureData } from '../../domain/entities';
+import { cn } from '../../shared/utils/TailwindMerge';
+import { todayISO } from '../../shared/utils/DateFormatter';
+import { triggerHaptic } from '../../shared/utils/Haptics';
 import HierarchyItem from '../components/domain/exposure/HierarchyItem';
 import LogItem from '../components/domain/exposure/LogItem';
 
-export default function ExposureView({ data, onUpdate }: { data: { hierarchy: FearItem[], logs: ExposureLog[] }, onUpdate: (d: any) => void }) {
+export default function ExposureView({ data, onUpdate }: { data: ExposureData, onUpdate: (d: ExposureData) => void }) {
   const [activeTab, setActiveTab] = useState<'hierarchy' | 'logs'>('hierarchy');
   const [isAdding, setIsAdding] = useState(false);
   const [newAnchor, setNewAnchor] = useState({ text: '', sud: 50 });
@@ -61,7 +64,7 @@ export default function ExposureView({ data, onUpdate }: { data: { hierarchy: Fe
       {activeSession && (
         <motion.div 
           initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
+          animate={{ opacity: 1, scale: 1 }} transition={{ duration: AnimationSpeeds.fluid, ease: EasingCurves.editorial }}
           className="fixed inset-0 z-[100] bg-paper/80 backdrop-blur-md flex items-center justify-center p-6"
         >
           <div className="w-full max-w-xl bg-paper border border-ink/10 rounded-[3rem] p-10 shadow-2xl flex flex-col gap-10">
@@ -144,7 +147,7 @@ export default function ExposureView({ data, onUpdate }: { data: { hierarchy: Fe
             {isAdding ? (
               <motion.div 
                 initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
+                animate={{ opacity: 1, y: 0 }} transition={{ duration: AnimationSpeeds.fluid, ease: EasingCurves.editorial }}
                 className="p-6 border border-ink/10 rounded-2xl flex flex-col gap-4"
               >
                 <input 

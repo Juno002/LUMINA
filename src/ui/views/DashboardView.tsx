@@ -4,12 +4,17 @@
  */
 
 import { motion } from "motion/react";
+import { AnimationSpeeds, EasingCurves } from '../../domain/constants/Theme';
 import { Flame } from "lucide-react";
-import { cn, todayISO, triggerHaptic } from "../../shared/lib/utils";
+import { cn } from '../../shared/utils/TailwindMerge';
+import { todayISO } from '../../shared/utils/DateFormatter';
+import { triggerHaptic } from '../../shared/utils/Haptics';
+
+import { Vault, ActivationActivity, Goal } from '../../domain/entities';
 
 interface DashboardViewProps {
-  vault: any;
-  onUpdate: (v: any) => void;
+  vault: Vault;
+  onUpdate: (v: Vault) => void;
 }
 
 /**
@@ -17,8 +22,8 @@ interface DashboardViewProps {
  * Dynamic summary of the user's current state and pending actions.
  */
 export default function DashboardView({ vault, onUpdate }: DashboardViewProps) {
-  const momentum = (vault.activations?.filter((a: any) => a.completed && a.plannedDate === todayISO()).length || 0) * 20;
-  const pendingActions = vault.activations?.filter((a: any) => !a.completed).length || 0;
+  const momentum = (vault.activations?.filter((a: ActivationActivity) => a.completed && a.plannedDate === todayISO()).length || 0) * 20;
+  const pendingActions = vault.activations?.filter((a: ActivationActivity) => !a.completed).length || 0;
   
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -67,7 +72,7 @@ export default function DashboardView({ vault, onUpdate }: DashboardViewProps) {
             <div className="h-[1px] w-full bg-ink/5 overflow-hidden mt-2">
                <motion.div 
                 initial={{ width: 0 }}
-                animate={{ width: "68%" }}
+                animate={{ width: "68%" }} transition={{ duration: AnimationSpeeds.fluid, ease: EasingCurves.editorial }}
                 className="h-full bg-ink/40"
               />
             </div>
@@ -95,7 +100,7 @@ export default function DashboardView({ vault, onUpdate }: DashboardViewProps) {
             <button onClick={handleAddGrace} className="text-[9px] uppercase tracking-widest font-mono text-accent hover:text-ink">+ New Grace</button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {(vault.wellness?.gratitudeEntries || []).slice(0, 3).map((entry: any) => (
+            {(vault.wellness?.gratitudeEntries || []).slice(0, 3).map((entry: { id: string; text: string; date: string }) => (
               <div key={entry.id} className="flex flex-col gap-2 transition-all hover:-translate-y-1">
                 <div className="h-[1px] w-10 bg-ink/20"></div>
                 <p className="text-sm italic leading-relaxed text-accent">{entry.text}</p>
@@ -113,7 +118,7 @@ export default function DashboardView({ vault, onUpdate }: DashboardViewProps) {
           <div className="flex flex-col gap-6">
             <div className="editorial-meta">Strategic Progress</div>
             <div className="flex flex-col gap-4">
-              {(vault.goals || []).slice(0, 3).map((goal: any) => (
+              {(vault.goals || []).slice(0, 3).map((goal: Goal) => (
                 <div key={goal.id} className="flex items-center gap-4 py-3 border-b border-ink/5">
                   <div className={cn("w-2 h-2 rounded-full", goal.completed ? "bg-ink" : "border border-ink/20")}></div>
                   <span className={cn("font-serif italic", goal.completed && "opacity-30 line-through")}>{goal.title}</span>

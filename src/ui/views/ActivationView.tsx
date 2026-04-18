@@ -4,10 +4,12 @@
  */
 
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { CheckCircle2, Circle, Flame, Sparkles, Plus, Trash2 } from 'lucide-react';
+import { motion } from 'motion/react';
+import { AnimationSpeeds, EasingCurves } from '../../domain/constants/Theme';
+import { CheckCircle2, Flame, Sparkles, Plus } from 'lucide-react';
 import { ActivationActivity } from '../../domain/entities';
-import { cn, todayISO, triggerHaptic } from '../../shared/lib/utils';
+import { todayISO } from '../../shared/utils/DateFormatter';
+import { triggerHaptic } from '../../shared/utils/Haptics';
 import ActivityItem from '../components/domain/activation/ActivityItem';
 
 export default function ActivationView({ activations, onUpdate }: { activations: ActivationActivity[], onUpdate: (a: ActivationActivity[]) => void }) {
@@ -77,7 +79,7 @@ export default function ActivationView({ activations, onUpdate }: { activations:
            {isAdding && (
              <motion.div 
                initial={{ opacity: 0, scale: 0.95 }}
-               animate={{ opacity: 1, scale: 1 }}
+               animate={{ opacity: 1, scale: 1 }} transition={{ duration: AnimationSpeeds.fluid, ease: EasingCurves.editorial }}
                className="p-8 border border-ink/10 rounded-3xl bg-ink/[0.02] flex flex-col gap-6"
              >
                <input 

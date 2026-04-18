@@ -4,10 +4,12 @@
  */
 
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { Plus, Search, Calendar, ChevronRight, BookOpen, X } from 'lucide-react';
-import { ThoughtEntry, CognitiveDistortion } from '../../domain/entities';
-import { cn, todayISO, formatDate, triggerHaptic } from '../../shared/lib/utils';
+import { motion } from 'motion/react';
+import { AnimationSpeeds, EasingCurves } from '../../domain/constants/Theme';
+import { Plus, Search } from 'lucide-react';
+import { ThoughtEntry } from '../../domain/entities';
+import { todayISO } from '../../shared/utils/DateFormatter';
+import { triggerHaptic } from '../../shared/utils/Haptics';
 import EntryCard from '../components/domain/journal/EntryCard';
 
 export default function JournalView({ entries, onUpdate }: { entries: ThoughtEntry[], onUpdate: (e: ThoughtEntry[]) => void }) {
@@ -116,7 +118,7 @@ function JournalForm({ initialData, onCancel, onSave }: { initialData?: ThoughtE
   return (
     <motion.div 
       initial={{ opacity: 0, scale: 0.98 }}
-      animate={{ opacity: 1, scale: 1 }}
+      animate={{ opacity: 1, scale: 1 }} transition={{ duration: AnimationSpeeds.fluid, ease: EasingCurves.editorial }}
       className="p-10 border border-ink/10 rounded-3xl bg-paper shadow-2xl shadow-ink/5"
     >
       <form onSubmit={handleSubmit} className="flex flex-col gap-8">

@@ -5,6 +5,7 @@
 
 import { useState, lazy, Suspense } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { AnimationSpeeds, EasingCurves } from './domain/constants/Theme';
 import { 
   Settings, 
   Menu,
@@ -19,7 +20,9 @@ import {
   Heart,
   Wind
 } from "lucide-react";
-import { cn, todayISO, triggerHaptic } from "./shared/lib/utils";
+import { cn } from './shared/utils/TailwindMerge';
+import { todayISO } from './shared/utils/DateFormatter';
+import { triggerHaptic } from './shared/utils/Haptics';
 import { useVault } from "./application/hooks/useVault";
 
 // Lazy loaded Views
@@ -95,13 +98,13 @@ export default function App() {
     <div className="flex h-screen w-screen bg-paper text-ink overflow-hidden font-sans flex-col md:flex-row">
       {/* Desktop Navigation Sidebar */}
       <aside className={cn(
-        "hidden md:flex relative flex-col border-r border-ink/5 transition-all duration-500 ease-in-out z-50 bg-paper",
+        "hidden md:flex relative flex-col border-r border-ink/5 transition-all duration-200 ease-in-out z-50 bg-paper",
         isSidebarOpen ? "w-[240px]" : "w-[80px]"
       )}>
         <div className="p-8 flex items-center justify-between">
           <motion.div 
             initial={false}
-            animate={{ opacity: isSidebarOpen ? 1 : 0 }}
+            animate={{ opacity: isSidebarOpen ? 1 : 0 }} transition={{ duration: AnimationSpeeds.fluid, ease: EasingCurves.editorial }}
             className="font-serif text-2xl tracking-tighter"
           >
             Lumina
@@ -120,7 +123,7 @@ export default function App() {
               key={item.id}
               onClick={() => handleTabChange(item.id as Tab)}
               className={cn(
-                "w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-300 group text-left",
+                "w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 group text-left",
                 activeTab === item.id ? "bg-ink text-paper" : "hover:bg-ink/[0.03]"
               )}
             >
@@ -171,8 +174,8 @@ export default function App() {
             </div>
             <motion.h1 
               key={activeTab}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }} transition={{ duration: AnimationSpeeds.fluid, ease: EasingCurves.editorial }}
               className="editorial-title"
             >
               {activeTab === 'dashboard' ? `Welcome back, ${vault.profile.name}.` : `${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}.`}
@@ -182,22 +185,22 @@ export default function App() {
           <AnimatePresence mode="wait">
             <motion.section
               key={activeTab}
-              initial={{ opacity: 0, y: 15, filter: 'blur(10px)' }}
+              initial={{ opacity: 0, y: 10, filter: 'blur(10px)' }}
               animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
               exit={{ opacity: 0, y: -15, filter: 'blur(10px)' }}
-              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: AnimationSpeeds.fluid, ease: EasingCurves.editorial }}
               className="flex-grow pb-32 md:pb-20"
             >
               <Suspense fallback={<div className="h-full w-full flex items-center justify-center text-accent font-mono text-[10px] uppercase tracking-widest">Loading Component...</div>}>
                 {activeTab === 'dashboard' && <DashboardView vault={vault} onUpdate={updateVault} />}
-                {activeTab === 'journal' && <JournalView entries={vault.journal || []} onUpdate={(entries: any) => updateVault({ ...vault, journal: entries })} />}
-                {activeTab === 'mood' && <MoodView entries={vault.wellness.moodEntries || []} onUpdate={(m: any) => updateVault({ ...vault, wellness: { ...vault.wellness, moodEntries: m } })} />}
-                {activeTab === 'exposure' && <ExposureView data={vault.exposure || { hierarchy: [], logs: [] }} onUpdate={(data: any) => updateVault({ ...vault, exposure: data })} />}
-                {activeTab === 'activation' && <ActivationView activations={vault.activations || []} onUpdate={(acts: any) => updateVault({ ...vault, activations: acts })} />}
+                {activeTab === 'journal' && <JournalView entries={vault.journal || []} onUpdate={(entries: ThoughtEntry[]) => updateVault({ ...vault, journal: entries })} />}
+                {activeTab === 'mood' && <MoodView entries={vault.wellness.moodEntries || []} onUpdate={(m: MoodEntry[]) => updateVault({ ...vault, wellness: { ...vault.wellness, moodEntries: m } })} />}
+                {activeTab === 'exposure' && <ExposureView data={vault.exposure || { hierarchy: [], logs: [] }} onUpdate={(data: ExposureData) => updateVault({ ...vault, exposure: data })} />}
+                {activeTab === 'activation' && <ActivationView activations={vault.activations || []} onUpdate={(acts: ActivationActivity[]) => updateVault({ ...vault, activations: acts })} />}
                 {activeTab === 'breathing' && <BreathingView />}
                 {activeTab === 'analysis' && <AnalysisView vault={vault} />}
-                {activeTab === 'goals' && <GoalsView goals={vault.goals || []} onUpdate={(goals: any) => updateVault({ ...vault, goals })} />}
-                {activeTab === 'sleep' && <SleepView entries={vault.sleep || []} onUpdate={(entries: any) => updateVault({ ...vault, sleep: entries })} />}
+                {activeTab === 'goals' && <GoalsView goals={vault.goals || []} onUpdate={(goals: Goal[]) => updateVault({ ...vault, goals })} />}
+                {activeTab === 'sleep' && <SleepView entries={vault.sleep || []} onUpdate={(entries: ThoughtEntry[]) => updateVault({ ...vault, sleep: entries })} />}
                 {activeTab === 'settings' && <SettingsView onWipe={wipeAllData} />}
               </Suspense>
             </motion.section>
@@ -226,12 +229,12 @@ export default function App() {
             key={item.id}
             onClick={() => handleTabChange(item.id as Tab)}
             className={cn(
-              "flex flex-col items-center gap-2 transition-all duration-500",
+              "flex flex-col items-center gap-2 transition-all duration-200",
               activeTab === item.id ? "text-ink translate-y-[-4px]" : "text-accent opacity-60"
             )}
           >
             <item.icon size={22} strokeWidth={activeTab === item.id ? 2 : 1.5} />
-            <span className="text-[7px] uppercase tracking-[0.2em] font-bold">{item.label}</span>
+            <span className="text-[7px] uppercase tracking-[0.2em] font-bold hidden sm:block">{item.label}</span>
           </button>
         ))}
       </nav>

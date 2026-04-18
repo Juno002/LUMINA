@@ -6,7 +6,7 @@
 import React from 'react';
 import { ChevronRight } from 'lucide-react';
 import { ThoughtEntry } from '../../../../domain/entities';
-import { formatDate } from '../../../../shared/lib/utils';
+import { formatDate } from '../../../../shared/utils/DateFormatter';
 
 interface EntryCardProps {
   entry: ThoughtEntry;
@@ -41,7 +41,7 @@ const EntryCard: React.FC<EntryCardProps> = ({ entry, onDelete, onEdit }) => {
             </button>
           </div>
         </div>
-        <h3 className="font-serif text-xl md:text-2xl italic leading-tight group-hover:translate-x-2 transition-transform duration-500">
+        <h3 className="font-serif text-xl md:text-2xl italic leading-tight group-hover:translate-x-2 transition-transform duration-200">
           {entry.automaticThought}
         </h3>
         <p className="text-accent text-sm leading-relaxed line-clamp-2 italic">

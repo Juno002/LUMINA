@@ -5,8 +5,9 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Moon, Sun, Wind, Clock, Star } from 'lucide-react';
-import { cn, todayISO } from '../../shared/lib/utils';
+import { AnimationSpeeds, EasingCurves } from '../../domain/constants/Theme';
+import { Moon, Sun, Wind } from 'lucide-react';
+import { todayISO } from '../../shared/utils/DateFormatter';
 import { SleepEntry } from '../../domain/entities';
 import SleepLogItem from '../components/domain/sleep/SleepLogItem';
 
@@ -55,7 +56,7 @@ export default function SleepView({ entries, onUpdate }: { entries: SleepEntry[]
             {isAdding && (
               <motion.div 
                 initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
+                animate={{ opacity: 1, scale: 1 }} transition={{ duration: AnimationSpeeds.fluid, ease: EasingCurves.editorial }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 className="p-10 border border-ink/10 rounded-[2.5rem] bg-paper flex flex-col gap-8 shadow-2xl"
               >

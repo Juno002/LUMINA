@@ -5,9 +5,10 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Target, Flag, CheckCircle2, Circle, ArrowUpRight, Zap } from 'lucide-react';
-import { Goal } from '../../domain/entities';
-import { cn, todayISO } from '../../shared/lib/utils';
+import { AnimationSpeeds, EasingCurves } from '../../domain/constants/Theme';
+import { Target, Zap } from 'lucide-react';
+import { Goal, RecurrencePattern } from '../../domain/entities';
+import { todayISO } from '../../shared/utils/DateFormatter';
 import GoalItem from '../components/domain/goals/GoalItem';
 
 export default function GoalsView({ goals, onUpdate }: { goals: Goal[], onUpdate: (g: Goal[]) => void }) {
@@ -68,7 +69,7 @@ export default function GoalsView({ goals, onUpdate }: { goals: Goal[], onUpdate
             {isAdding && (
               <motion.div 
                 initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
+                animate={{ opacity: 1, height: 'auto' }} transition={{ duration: AnimationSpeeds.fluid, ease: EasingCurves.editorial }}
                 exit={{ opacity: 0, height: 0 }}
                 className="overflow-hidden"
               >
@@ -101,7 +102,7 @@ export default function GoalsView({ goals, onUpdate }: { goals: Goal[], onUpdate
                        <select 
                          className="bg-transparent border-b border-ink/10 focus:border-ink outline-none py-2 italic text-sm"
                          value={newGoal.recurrence}
-                         onChange={(e) => setNewGoal({...newGoal, recurrence: e.target.value as any})}
+                         onChange={(e) => setNewGoal({...newGoal, recurrence: e.target.value as RecurrencePattern})}
                        >
                          <option value="none" className="text-paper bg-ink">None</option>
                          <option value="daily" className="text-paper bg-ink">Daily</option>
@@ -133,7 +134,7 @@ export default function GoalsView({ goals, onUpdate }: { goals: Goal[], onUpdate
                  <span>72%</span>
                </div>
                <div className="h-[1px] w-full bg-paper/20">
-                 <motion.div initial={{ width: 0 }} animate={{ width: "72%" }} className="h-full bg-paper" />
+                 <motion.div initial={{ width: 0 }} animate={{ width: "72%" }} transition={{ duration: AnimationSpeeds.fluid, ease: EasingCurves.editorial }} className="h-full bg-paper" />
                </div>
             </div>
           </div>

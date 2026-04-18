@@ -6,7 +6,7 @@
 import React from 'react';
 import { CheckCircle2, Circle, ArrowUpRight, RefreshCcw } from "lucide-react";
 import { Goal } from "../../../../domain/entities";
-import { cn } from "../../../../shared/lib/utils";
+import { cn } from '../../../../shared/utils/TailwindMerge';
 
 interface GoalItemProps {
   goal: Goal;

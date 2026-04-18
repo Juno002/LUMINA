@@ -5,6 +5,7 @@
 
 import React from 'react';
 import { motion } from "motion/react";
+import { AnimationSpeeds, EasingCurves } from '../../../../domain/constants/Theme';
 import { SleepEntry } from "../../../../domain/entities";
 
 interface SleepLogItemProps {
@@ -31,6 +32,7 @@ const SleepLogItem: React.FC<SleepLogItemProps> = ({ entry }) => {
           <motion.div 
             initial={{ height: 0 }}
             animate={{ height: `${entry.quality}%` }}
+ transition={{ duration: AnimationSpeeds.fluid, ease: EasingCurves.editorial }}
             className="w-full bg-ink"
           />
         </div>

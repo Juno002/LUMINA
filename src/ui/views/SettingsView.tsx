@@ -4,8 +4,7 @@
  */
 
 import React, { useMemo } from 'react';
-import { motion } from 'motion/react';
-import { Shield, Key, Database, RefreshCcw, Trash2, Globe, Palette } from 'lucide-react';
+import { Shield, Trash2, Palette } from 'lucide-react';
 
 export default function SettingsView({ onWipe }: { onWipe: () => void }) {
   const hardwareId = useMemo(() => {

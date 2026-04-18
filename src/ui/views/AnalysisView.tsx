@@ -5,37 +5,35 @@
 
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { 
-  LineChart, 
-  Line, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  Cell
+import { AnimationSpeeds, EasingCurves } from '../../domain/constants/Theme';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer
 } from 'recharts';
-import { BarChart3, TrendingUp, Activity, Brain } from 'lucide-react';
-import { cn } from '../../shared/lib/utils';
+import { Activity, Brain } from 'lucide-react';
+import { cn } from '../../shared/utils/TailwindMerge';
+import { Vault, ThoughtEntry, ActivationActivity } from '../../domain/entities';
 
-export default function AnalysisView({ vault }: { vault: any }) {
+export default function AnalysisView({ vault }: { vault: Vault }) {
   const [activeMetric, setActiveMetric] = useState<'mood' | 'activation'>('mood');
 
   const journalEntries = vault.journal || [];
-  const sleepEntries = vault.sleep || [];
   const activations = vault.activations || [];
 
   // Data processing
-  const trendData = [...journalEntries].reverse().slice(0, 7).map((e: any) => ({
+  const trendData = [...journalEntries].reverse().slice(0, 7).map((e: ThoughtEntry) => ({
     name: e.date.split('-').slice(1).join('/'),
     intensity: e.intensity,
-    activity: activations.filter((a: any) => a.plannedDate === e.date && a.completed).length * 20
+    activity: activations.filter((a: ActivationActivity) => a.plannedDate === e.date && a.completed).length * 20
   }));
 
   const distortionCounts: Record<string, number> = {};
-  journalEntries.forEach((e: any) => {
+  journalEntries.forEach((e: ThoughtEntry) => {
     (e.distortions || []).forEach((d: string) => {
       distortionCounts[d] = (distortionCounts[d] || 0) + 1;
     });
@@ -44,7 +42,7 @@ export default function AnalysisView({ vault }: { vault: any }) {
   const distortionData = Object.entries(distortionCounts).map(([name, count]) => ({
     name: name.replace(/_/g, ' '),
     count
-  })).sort((a,b) => b.count - a.count).slice(0, 5);
+  })).sort((a, b) => b.count - a.count).slice(0, 5);
 
   return (
     <div className="flex flex-col gap-12">
@@ -54,13 +52,13 @@ export default function AnalysisView({ vault }: { vault: any }) {
           <h2 className="font-serif text-3xl md:text-4xl">Statistical Resilience.</h2>
         </div>
         <div className="flex gap-6 w-full md:w-auto border-b md:border-none border-ink/5 pt-2">
-          <button 
+          <button
             onClick={() => setActiveMetric('mood')}
             className={cn("editorial-meta pb-4 md:pb-2 border-b-2 transition-all flex-grow md:flex-grow-0 text-center", activeMetric === 'mood' ? "border-ink text-ink" : "border-transparent text-accent")}
           >
             Emotional Flux
           </button>
-          <button 
+          <button
             onClick={() => setActiveMetric('activation')}
             className={cn("editorial-meta pb-4 md:pb-2 border-b-2 transition-all flex-grow md:flex-grow-0 text-center", activeMetric === 'activation' ? "border-ink text-ink" : "border-transparent text-accent")}
           >
@@ -79,7 +77,7 @@ export default function AnalysisView({ vault }: { vault: any }) {
               </div>
               <Activity className="text-accent" size={20} />
             </div>
-            
+
             <div className="h-[350px] w-full">
               {trendData.length === 0 ? (
                 <div className="h-full flex items-center justify-center editorial-meta opacity-20 italic">No historical data in current orbit.</div>
@@ -87,30 +85,30 @@ export default function AnalysisView({ vault }: { vault: any }) {
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={trendData}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#1a1a1a10" />
-                    <XAxis 
-                      dataKey="name" 
-                      axisLine={false} 
-                      tickLine={false} 
+                    <XAxis
+                      dataKey="name"
+                      axisLine={false}
+                      tickLine={false}
                       tick={{ fill: '#999999', fontSize: 10, fontFamily: 'monospace' }}
                     />
-                    <YAxis 
-                      hide 
+                    <YAxis
+                      hide
                       domain={[0, 100]}
                     />
-                    <Tooltip 
-                      contentStyle={{ 
-                        borderRadius: '16px', 
+                    <Tooltip
+                      contentStyle={{
+                        borderRadius: '16px',
                         border: '1px solid #1a1a1a10',
                         boxShadow: '0 10px 30px rgba(0,0,0,0.05)',
                         fontFamily: 'serif'
                       }}
                     />
-                    <Line 
-                      type="monotone" 
-                      dataKey={activeMetric === 'mood' ? "intensity" : "activity"} 
-                      stroke="#1a1a1a" 
-                      strokeWidth={3} 
-                      dot={{ r: 4, fill: '#1a1a1a' }} 
+                    <Line
+                      type="monotone"
+                      dataKey={activeMetric === 'mood' ? "intensity" : "activity"}
+                      stroke="#1a1a1a"
+                      strokeWidth={3}
+                      dot={{ r: 4, fill: '#1a1a1a' }}
                       activeDot={{ r: 6, fill: '#1a1a1a' }}
                     />
                   </LineChart>
@@ -134,10 +132,10 @@ export default function AnalysisView({ vault }: { vault: any }) {
                       <span className="font-mono text-[10px] opacity-50">{d.count} x</span>
                     </div>
                     <div className="h-[1px] w-full bg-ink/5 overflow-hidden">
-                      <motion.div 
+                      <motion.div
                         initial={{ width: 0 }}
                         animate={{ width: `${Math.min((d.count / 10) * 100, 100)}%` }}
-                        transition={{ delay: i * 0.1 }}
+                        transition={{ delay: i * 0.1, duration: AnimationSpeeds.fluid, ease: EasingCurves.editorial }}
                         className="h-full bg-ink/40"
                       />
                     </div>
@@ -166,7 +164,7 @@ export default function AnalysisView({ vault }: { vault: any }) {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
         {[
           { label: 'Weekly Intensity', value: (journalEntries[0]?.intensity || 0) + '%', sub: 'Last Record' },
-          { label: 'Momentum Store', value: activations.filter((a: any) => a.completed).length, sub: 'Total Wins' },
+          { label: 'Momentum Store', value: activations.filter((a: ActivationActivity) => a.completed).length, sub: 'Total Wins' },
           { label: 'Continuity', value: journalEntries.length + ' Days', sub: 'Obs. Logged' },
         ].map((stat) => (
           <div key={stat.label} className="flex flex-col gap-2">

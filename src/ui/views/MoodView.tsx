@@ -5,9 +5,12 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Heart, Plus, Trash2, Calendar, Smile, Meh, Frown, Sparkles } from 'lucide-react';
+import { AnimationSpeeds, EasingCurves } from '../../domain/constants/Theme';
+import { Heart, Plus, Trash2, Smile, Meh, Frown, Sparkles } from 'lucide-react';
 import { MoodEntry } from '../../domain/entities';
-import { cn, todayISO, formatDate, triggerHaptic } from '../../shared/lib/utils';
+import { cn } from '../../shared/utils/TailwindMerge';
+import { todayISO, formatDate } from '../../shared/utils/DateFormatter';
+import { triggerHaptic } from '../../shared/utils/Haptics';
 
 interface MoodViewProps {
   entries: MoodEntry[];
@@ -69,9 +72,9 @@ export default function MoodView({ entries, onUpdate }: MoodViewProps) {
       <AnimatePresence>
         {isAdding && (
           <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }} transition={{ duration: AnimationSpeeds.fluid, ease: EasingCurves.editorial }}
+            exit={{ opacity: 0, y: 10 }}
             className="p-10 border border-ink/10 rounded-[3rem] bg-paper shadow-2xl flex flex-col gap-8"
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
@@ -169,6 +172,7 @@ export default function MoodView({ entries, onUpdate }: MoodViewProps) {
                  <motion.div 
                   initial={{ width: 0 }}
                   animate={{ width: `${entry.intensity}%` }}
+ transition={{ duration: AnimationSpeeds.fluid, ease: EasingCurves.editorial }}
                   className="h-full bg-ink/20"
                  />
               </div>
