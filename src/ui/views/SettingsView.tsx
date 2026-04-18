@@ -3,10 +3,20 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'motion/react';
 import { Shield, Key, Database, RefreshCcw, Trash2, Globe, Palette } from 'lucide-react';
+
 export default function SettingsView({ onWipe }: { onWipe: () => void }) {
+  const hardwareId = useMemo(() => {
+    let id = localStorage.getItem('lumina_hwid');
+    if (!id) {
+      id = crypto.randomUUID().split('-')[0].toUpperCase();
+      localStorage.setItem('lumina_hwid', id);
+    }
+    return id;
+  }, []);
+
   const handleWipe = async () => {
     if (confirm("Are you certain? This will permanently erase your local vault and all recorded observations.")) {
       onWipe();
@@ -36,16 +46,7 @@ export default function SettingsView({ onWipe }: { onWipe: () => void }) {
                   No metrics, observations, or identifiers ever leave your hardware environment.
                 </p>
               </div>
-              <div className="flex flex-col gap-6 justify-center">
-                <button className="flex items-center justify-between w-full py-4 border-b border-ink/10 group">
-                   <span className="font-mono text-[11px] uppercase tracking-widest">Review AES-256 Logs</span>
-                   <RefreshCcw size={14} className="group-hover:rotate-180 transition-transform duration-500" />
-                </button>
-                <button className="flex items-center justify-between w-full py-4 border-b border-ink/10 group">
-                   <span className="font-mono text-[11px] uppercase tracking-widest">Export Vault Identity</span>
-                   <Database size={14} />
-                </button>
-              </div>
+
             </div>
           </section>
         </div>
@@ -76,7 +77,7 @@ export default function SettingsView({ onWipe }: { onWipe: () => void }) {
             <div className="p-8 border border-red-500/10 rounded-3xl bg-red-500/[0.02] flex flex-col gap-4">
                <h4 className="font-serif text-xl italic text-red-500/80">Wipe Local Vault</h4>
                <p className="text-xs text-red-500/60 leading-relaxed italic">
-                 This action is irreversible. It will dismantle the encryption keys and delete 
+                 This action is irreversible. It will permanently delete 
                  all stored objects from the Lumina engine.
                </p>
                <button 
@@ -91,7 +92,7 @@ export default function SettingsView({ onWipe }: { onWipe: () => void }) {
       </div>
       
       <footer className="pt-10 flex border-t border-ink/5 justify-between items-center opacity-30">
-        <div className="editorial-meta">Hardware ID: {crypto.randomUUID().split('-')[0].toUpperCase()}</div>
+        <div className="editorial-meta">Hardware ID: {hardwareId}</div>
         <div className="editorial-meta">Lumina Core / 0.8.2-R</div>
       </footer>
     </div>

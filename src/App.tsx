@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState } from "react";
+import { useState, lazy, Suspense } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   Settings, 
@@ -22,18 +22,18 @@ import {
 import { cn, todayISO, triggerHaptic } from "./shared/lib/utils";
 import { useVault } from "./application/hooks/useVault";
 
-// Views
-import WelcomeView from "./ui/views/WelcomeView";
-import DashboardView from "./ui/views/DashboardView";
-import JournalView from "./ui/views/JournalView";
-import ExposureView from "./ui/views/ExposureView";
-import ActivationView from "./ui/views/ActivationView";
-import AnalysisView from "./ui/views/AnalysisView";
-import GoalsView from "./ui/views/GoalsView";
-import SleepView from "./ui/views/SleepView";
-import SettingsView from "./ui/views/SettingsView";
-import MoodView from "./ui/views/MoodView";
-import BreathingView from "./ui/views/BreathingView";
+// Lazy loaded Views
+const WelcomeView = lazy(() => import('./ui/views/WelcomeView'));
+const DashboardView = lazy(() => import('./ui/views/DashboardView'));
+const JournalView = lazy(() => import('./ui/views/JournalView'));
+const ExposureView = lazy(() => import('./ui/views/ExposureView'));
+const ActivationView = lazy(() => import('./ui/views/ActivationView'));
+const AnalysisView = lazy(() => import('./ui/views/AnalysisView'));
+const GoalsView = lazy(() => import('./ui/views/GoalsView'));
+const SleepView = lazy(() => import('./ui/views/SleepView'));
+const SettingsView = lazy(() => import('./ui/views/SettingsView'));
+const MoodView = lazy(() => import('./ui/views/MoodView'));
+const BreathingView = lazy(() => import('./ui/views/BreathingView'));
 
 type Tab = 'dashboard' | 'journal' | 'mood' | 'exposure' | 'activation' | 'breathing' | 'analysis' | 'goals' | 'sleep' | 'settings';
 
@@ -71,7 +71,11 @@ export default function App() {
   if (!isReady || !vault) return null;
 
   if (!vault.profile.initialized) {
-    return <WelcomeView onComplete={initializeUser} />;
+    return (
+      <Suspense fallback={<div className="flex h-screen w-screen bg-paper" />}>
+        <WelcomeView onComplete={initializeUser} />
+      </Suspense>
+    );
   }
 
   const navItems = [
@@ -184,24 +188,25 @@ export default function App() {
               transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
               className="flex-grow pb-32 md:pb-20"
             >
-              {activeTab === 'dashboard' && <DashboardView vault={vault} onUpdate={updateVault} />}
-              {activeTab === 'journal' && <JournalView entries={vault.journal || []} onUpdate={(entries: any) => updateVault({ ...vault, journal: entries })} />}
-              {activeTab === 'mood' && <MoodView entries={vault.wellness.moodEntries || []} onUpdate={(m: any) => updateVault({ ...vault, wellness: { ...vault.wellness, moodEntries: m } })} />}
-              {activeTab === 'exposure' && <ExposureView data={vault.exposure || { hierarchy: [], logs: [] }} onUpdate={(data: any) => updateVault({ ...vault, exposure: data })} />}
-              {activeTab === 'activation' && <ActivationView activations={vault.activations || []} onUpdate={(acts: any) => updateVault({ ...vault, activations: acts })} />}
-              {activeTab === 'breathing' && <BreathingView />}
-              {activeTab === 'analysis' && <AnalysisView vault={vault} />}
-              {activeTab === 'goals' && <GoalsView goals={vault.goals || []} onUpdate={(goals: any) => updateVault({ ...vault, goals })} />}
-              {activeTab === 'sleep' && <SleepView entries={vault.sleep || []} onUpdate={(entries: any) => updateVault({ ...vault, sleep: entries })} />}
-              {activeTab === 'settings' && <SettingsView onWipe={wipeAllData} />}
+              <Suspense fallback={<div className="h-full w-full flex items-center justify-center text-accent font-mono text-[10px] uppercase tracking-widest">Loading Component...</div>}>
+                {activeTab === 'dashboard' && <DashboardView vault={vault} onUpdate={updateVault} />}
+                {activeTab === 'journal' && <JournalView entries={vault.journal || []} onUpdate={(entries: any) => updateVault({ ...vault, journal: entries })} />}
+                {activeTab === 'mood' && <MoodView entries={vault.wellness.moodEntries || []} onUpdate={(m: any) => updateVault({ ...vault, wellness: { ...vault.wellness, moodEntries: m } })} />}
+                {activeTab === 'exposure' && <ExposureView data={vault.exposure || { hierarchy: [], logs: [] }} onUpdate={(data: any) => updateVault({ ...vault, exposure: data })} />}
+                {activeTab === 'activation' && <ActivationView activations={vault.activations || []} onUpdate={(acts: any) => updateVault({ ...vault, activations: acts })} />}
+                {activeTab === 'breathing' && <BreathingView />}
+                {activeTab === 'analysis' && <AnalysisView vault={vault} />}
+                {activeTab === 'goals' && <GoalsView goals={vault.goals || []} onUpdate={(goals: any) => updateVault({ ...vault, goals })} />}
+                {activeTab === 'sleep' && <SleepView entries={vault.sleep || []} onUpdate={(entries: any) => updateVault({ ...vault, sleep: entries })} />}
+                {activeTab === 'settings' && <SettingsView onWipe={wipeAllData} />}
+              </Suspense>
             </motion.section>
           </AnimatePresence>
         </motion.div>
 
-        {/* Global Footer (Desktop) */}
         <footer className="mt-auto hidden md:flex px-[5vw] py-10 border-t border-ink/5 justify-between editorial-meta">
           <div className="max-w-[1200px] mx-auto w-full flex justify-between">
-            <div>AES. {vault.profile.name.toUpperCase()} / SESSION ACTIVE</div>
+            <div>{vault.profile.name.toUpperCase()} / SESSION ACTIVE</div>
             <div>{new Date().getFullYear()} © LUMINA SYSTEM</div>
           </div>
         </footer>
