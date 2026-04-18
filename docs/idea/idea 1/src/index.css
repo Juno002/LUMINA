@@ -1,0 +1,54 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Geist Sans', ui-sans-serif, system-ui, sans-serif;
+
+  /* Iterum Palette - Light Mode (Default) */
+  --color-bg-primary: #f5efe6;
+  --color-bg-secondary: #ebe3d8;
+  --color-text-primary: #2c1f14;
+  --color-text-muted: #5c4a3a;
+  --color-accent: #c9935a;
+  --color-accent-secondary: #a0522d;
+  --color-border-subtle: #d9c7b5;
+
+  /* Iterum Palette - Dark Mode */
+  --dark-bg-primary: #1a1612;
+  --dark-bg-secondary: #221c16;
+  --dark-text-primary: #ede0d0;
+  --dark-text-muted: #bfae9a;
+  --dark-accent: #c9935a;
+  --dark-accent-secondary: #a0522d;
+  --dark-border-subtle: #3a2e24;
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  body {
+    @apply bg-bg-primary text-text-primary font-sans transition-colors duration-300;
+  }
+  .dark body {
+    @apply bg-[--dark-bg-primary] text-[--dark-text-primary];
+  }
+}
+
+@layer components {
+  .iterum-card {
+    @apply bg-bg-secondary border-border-subtle rounded-[20px] border p-6 transition-all duration-300;
+  }
+  .dark .iterum-card {
+    @apply border-[--dark-border-subtle] bg-[--dark-bg-secondary];
+  }
+
+  .iterum-button-primary {
+    @apply bg-accent text-bg-primary rounded-[16px] px-6 py-3 font-semibold transition-all hover:opacity-90 active:scale-95;
+  }
+
+  .iterum-input {
+    @apply bg-bg-primary border-border-subtle focus:ring-accent/20 focus:border-accent rounded-[12px] border px-4 py-2 transition-all focus:ring-2 focus:outline-none;
+  }
+  .dark .iterum-input {
+    @apply border-[--dark-border-subtle] bg-[--dark-bg-primary] text-[--dark-text-primary];
+  }
+}
