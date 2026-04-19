@@ -4,37 +4,48 @@
  */
 
 import React from 'react';
-import { motion } from "motion/react";
-import { AnimationSpeeds, EasingCurves } from '../../../../domain/constants/Theme';
 import { SleepEntry } from "../../../../domain/entities";
+import { Star } from 'lucide-react';
 
 interface SleepLogItemProps {
   entry: SleepEntry;
 }
 
-/**
- * SleepLogItem Component:
- * Representación de un ciclo de sueño registrado.
- */
 const SleepLogItem: React.FC<SleepLogItemProps> = ({ entry }) => {
+  const getEfficiencyColor = (eff: number) => {
+    if (eff >= 85) return 'text-green-500';
+    if (eff >= 75) return 'text-yellow-500';
+    return 'text-red-500';
+  };
+
   return (
-    <div className="group py-6 border-b border-ink/5 flex justify-between items-center hover:bg-ink/[0.01] transition-all px-4">
+    <div className="p-6 border border-ink/5 rounded-[2rem] flex flex-col md:flex-row justify-between md:items-center gap-4 hover:bg-ink/[0.01] transition-all">
       <div className="flex flex-col gap-1">
-        <div className="editorial-meta text-[9px]">{entry.date}</div>
-        <div className="font-serif text-xl italic">{entry.quality}% Quality</div>
-      </div>
-      <div className="flex items-center gap-10">
-        <div className="hidden sm:flex flex-col items-end">
-          <div className="editorial-meta text-[9px] uppercase">Rhythm</div>
-          <div className="font-mono text-[10px]">{entry.bedTime} — {entry.wakeTime}</div>
+        <div className="flex items-center gap-3">
+           <span className="editorial-meta text-[9px] opacity-40 uppercase tracking-tighter">{entry.date}</span>
+           <div className="flex gap-0.5">
+             {[1,2,3,4,5].map(s => (
+               <Star key={s} size={8} fill={entry.quality >= s ? "currentColor" : "none"} className={entry.quality >= s ? "text-ink" : "text-ink/10"} />
+             ))}
+           </div>
         </div>
-        <div className="h-10 w-1 bg-ink/5 rounded-full overflow-hidden">
-          <motion.div 
-            initial={{ height: 0 }}
-            animate={{ height: `${entry.quality}%` }}
- transition={{ duration: AnimationSpeeds.fluid, ease: EasingCurves.editorial }}
-            className="w-full bg-ink"
-          />
+        <div className="flex items-baseline gap-2">
+           <span className="font-serif text-xl italic">{entry.bedTime}</span>
+           <span className="editorial-meta opacity-20 text-xs">to</span>
+           <span className="font-serif text-xl italic">{entry.wakeTime}</span>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-8 md:gap-12">
+        <div className="flex flex-col">
+           <span className="text-[8px] editorial-meta uppercase opacity-30">Duration</span>
+           <span className="font-mono text-xs">{Math.floor(entry.timeAsleepMin / 60)}h {entry.timeAsleepMin % 60}m</span>
+        </div>
+        <div className="flex flex-col items-end">
+           <span className="text-[8px] editorial-meta uppercase opacity-30">Efficiency</span>
+           <span className={`font-mono text-xl font-light ${getEfficiencyColor(entry.sleepEfficiencyPct)}`}>
+             {entry.sleepEfficiencyPct}%
+           </span>
         </div>
       </div>
     </div>

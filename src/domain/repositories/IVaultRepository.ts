@@ -6,7 +6,8 @@
 import { Vault } from '../entities';
 
 export interface IVaultRepository {
-  save(data: Vault): Promise<boolean>;
-  load(): Promise<Vault>;
+  save(data: Vault, password: string): Promise<boolean>;
+  load(password: string): Promise<Vault | null>;
+  exists(): Promise<boolean>;
   wipe(): Promise<boolean>;
 }

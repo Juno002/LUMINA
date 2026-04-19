@@ -5,6 +5,7 @@
 
 import React from 'react';
 import { FearItem } from "../../../../domain/entities";
+import { Trash2, Play } from 'lucide-react';
 
 interface HierarchyItemProps {
   item: FearItem;
@@ -12,29 +13,31 @@ interface HierarchyItemProps {
   onStartExposure: () => void;
 }
 
-/**
- * HierarchyItem Component:
- * Representación de un 'Fear Anchor' en la jerarquía de exposición.
- */
 const HierarchyItem: React.FC<HierarchyItemProps> = ({ item, onDelete, onStartExposure }) => {
   return (
-    <div className="p-6 border border-ink/5 rounded-2xl flex justify-between items-center group hover:border-ink/20 transition-all">
+    <div className="p-6 border border-ink/5 rounded-2xl flex justify-between items-center group hover:border-ink/20 hover:bg-ink/[0.01] transition-all">
       <div className="flex flex-col gap-1">
-        <span className="font-serif text-xl">{item.text}</span>
-        <button 
-          onClick={onDelete} 
-          className="editorial-meta text-[10px] md:text-[8px] text-red-500/50 md:text-red-500/0 md:group-hover:text-red-500/50 transition-all text-left uppercase"
-        >
-          Remove item
-        </button>
+        <h4 className="font-serif text-xl italic text-ink/80">{item.text}</h4>
+        <div className="flex gap-4">
+           <span className="editorial-meta text-[8px] uppercase tracking-widest opacity-30">Anchor</span>
+           <button 
+             onClick={onDelete} 
+             className="editorial-meta text-[8px] text-red-500/0 md:group-hover:text-red-500/30 hover:!text-red-500 transition-all uppercase flex items-center gap-1"
+           >
+             <Trash2 size={10} /> Delete
+           </button>
+        </div>
       </div>
-      <div className="flex items-center gap-4">
-        <span className="editorial-meta text-lg font-bold w-10 text-center">{item.sud}</span>
+      <div className="flex items-center gap-6">
+        <div className="flex flex-col items-end">
+           <span className="font-mono text-xl font-light">{item.sud}</span>
+           <span className="text-[7px] editorial-meta uppercase opacity-30">SUDs</span>
+        </div>
         <button 
           onClick={onStartExposure}
-          className="md:opacity-0 md:group-hover:opacity-100 transition-opacity bg-ink text-paper px-4 py-2 rounded-full text-[10px] uppercase tracking-widest font-mono"
+          className="bg-ink text-paper w-10 h-10 rounded-full flex items-center justify-center hover:scale-110 active:scale-95 transition-all shadow-lg shadow-ink/10"
         >
-          Cycle
+          <Play size={14} fill="currentColor" />
         </button>
       </div>
     </div>

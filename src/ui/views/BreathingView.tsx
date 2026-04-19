@@ -8,6 +8,9 @@ import { motion, AnimatePresence } from 'motion/react';
 import { AnimationSpeeds, EasingCurves } from '../../domain/constants/Theme';
 import { Wind, Play, Square, Volume2, VolumeX } from 'lucide-react';
 import { cn } from '../../shared/utils/TailwindMerge';
+import { 
+  EditorialButton 
+} from '../components/shared';
 
 type ExerciseType = 'box' | '478' | 'calm';
 
@@ -145,19 +148,20 @@ export default function BreathingView() {
 
           <div className="mt-12 flex flex-col items-center gap-4">
              {!isRunning ? (
-               <button 
+               <EditorialButton 
                 onClick={handleStart}
-                className="bg-ink text-paper px-12 py-4 rounded-full font-mono text-[10px] uppercase tracking-widest flex items-center gap-2 hover:opacity-80 transition-all"
+                icon={<Play size={14} fill="currentColor" />}
                >
-                 <Play size={14} fill="currentColor" /> Initiate Cycle
-               </button>
+                 Initiate Cycle
+               </EditorialButton>
              ) : (
-               <button 
+               <EditorialButton 
                 onClick={handleStop}
-                className="border border-ink text-ink px-12 py-4 rounded-full font-mono text-[10px] uppercase tracking-widest flex items-center gap-2 hover:bg-ink hover:text-paper transition-all"
+                variant="outline"
+                icon={<Square size={14} fill="currentColor" />}
                >
-                 <Square size={14} fill="currentColor" /> Cease Cycle
-               </button>
+                 Cease Cycle
+               </EditorialButton>
              )}
              
              <button 

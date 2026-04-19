@@ -10,9 +10,27 @@
   --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 
-  --color-ink: #0a0a0a;
-  --color-accent: #666666;
-  --color-paper: #fcfcfc;
+  --color-ink: var(--ink);
+  --color-accent: var(--accent);
+  --color-paper: var(--paper);
+}
+
+:root {
+  --ink: #0a0a0a;
+  --accent: #666666;
+  --paper: #fcfcfc;
+}
+
+[data-theme='night'] {
+  --ink: #fcfcfc;
+  --accent: #a3a3a3;
+  --paper: #0a0a0a;
+}
+
+[data-theme='ink-deep'] {
+  --ink: #f8fafc;
+  --accent: #94a3b8;
+  --paper: #0f172a;
 }
 
 @layer base {

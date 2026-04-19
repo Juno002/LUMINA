@@ -3,161 +3,177 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
-import { motion } from 'motion/react';
+import React, { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { AnimationSpeeds, EasingCurves } from '../../domain/constants/Theme';
-import { CheckCircle2, Flame, Sparkles, Plus } from 'lucide-react';
+import { CheckCircle2, Flame, Sparkles, Plus, Check } from 'lucide-react';
 import { ActivationActivity } from '../../domain/entities';
 import { todayISO } from '../../shared/utils/DateFormatter';
 import { triggerHaptic } from '../../shared/utils/Haptics';
 import ActivityItem from '../components/domain/activation/ActivityItem';
+import { 
+  EditorialButton, 
+  EditorialModal, 
+  EditorialInput 
+} from '../components/shared';
 
-export default function ActivationView({ activations, onUpdate }: { activations: ActivationActivity[], onUpdate: (a: ActivationActivity[]) => void }) {
+interface ActivationViewProps {
+  activities: ActivationActivity[];
+  onUpdate: (activities: ActivationActivity[]) => void;
+}
+
+export default function ActivationView({ activities, onUpdate }: ActivationViewProps) {
   const [isAdding, setIsAdding] = useState(false);
   const [newActivity, setNewActivity] = useState({ title: '', value: 5, difficulty: 5 });
 
-  const momentum = activations.filter(a => a.completed && a.plannedDate === todayISO()).length * 20;
+  const activeActivities = useMemo(() => 
+    activities.filter(a => !a.completed).sort((a,b) => b.value - a.value), 
+    [activities]
+  );
+
+  const completedToday = useMemo(() => 
+    activities.filter(a => a.completed && a.completedDate === todayISO()),
+    [activities]
+  );
 
   const handleAdd = () => {
     if (!newActivity.title) return;
     triggerHaptic('success');
-    const item: ActivationActivity = {
+    const activity: ActivationActivity = {
       id: crypto.randomUUID(),
       title: newActivity.title,
       value: newActivity.value,
       difficulty: newActivity.difficulty,
       completed: false,
-      plannedDate: todayISO(),
-      subtasks: []
+      plannedDate: todayISO()
     };
-    onUpdate([item, ...activations]);
+    onUpdate([activity, ...activities]);
     setNewActivity({ title: '', value: 5, difficulty: 5 });
     setIsAdding(false);
   };
 
-  const toggleComplete = (id: string) => {
-    triggerHaptic('light');
-    onUpdate(activations.map(a => a.id === id ? { ...a, completed: !a.completed } : a));
+  const handleToggle = (id: string) => {
+    triggerHaptic('medium');
+    onUpdate(activities.map(a => 
+      a.id === id ? { ...a, completed: !a.completed, completedDate: !a.completed ? todayISO() : undefined } : a
+    ));
   };
 
   const handleDelete = (id: string) => {
     triggerHaptic('heavy');
-    onUpdate(activations.filter(a => a.id !== id));
+    onUpdate(activities.filter(a => a.id !== id));
   };
 
-  const activeActivities = activations.filter(a => !a.completed);
-  const completedActivities = activations.filter(a => a.completed && a.plannedDate === todayISO());
-
   return (
-    <div className="flex flex-col gap-10">
+    <div className="flex flex-col gap-10 pb-20">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div className="flex flex-col gap-2">
-          <div className="editorial-meta">Behavioral / Flow</div>
-          <h2 className="font-serif text-3xl md:text-4xl">Momentum & Drive.</h2>
+          <div className="editorial-meta">Momentum / Flow</div>
+          <h2 className="font-serif text-3xl md:text-4xl italic">Strategic Action.</h2>
         </div>
-        <div className="flex items-center justify-between md:justify-end gap-8 w-full md:w-auto border-t md:border-none border-ink/5 pt-6 md:pt-0">
-          <div className="flex flex-col items-start md:items-end">
-            <span className="editorial-meta text-[9px]">Daily Momentum</span>
-            <span className="font-serif text-2xl italic text-accent">{momentum}%</span>
-          </div>
-          <button 
-            onClick={() => setIsAdding(true)}
-            className="flex-grow md:flex-grow-0 flex items-center justify-center gap-2 bg-ink text-paper px-8 py-4 md:py-3 rounded-full hover:opacity-80 transition-all font-mono text-[10px] uppercase tracking-widest"
-          >
-            <Plus size={14} /> Schedule
-          </button>
-        </div>
+        <EditorialButton 
+          onClick={() => setIsAdding(true)}
+          icon={<Plus size={14} />}
+        >
+          Schedule
+        </EditorialButton>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
-        <div className="flex flex-col gap-8">
-           <div className="flex items-center gap-4">
-               <Flame className="text-accent" size={20} />
-               <div className="editorial-meta uppercase tracking-widest">Active Intentions</div>
-           </div>
-
-           {isAdding && (
-             <motion.div 
-               initial={{ opacity: 0, scale: 0.95 }}
-               animate={{ opacity: 1, scale: 1 }} transition={{ duration: AnimationSpeeds.fluid, ease: EasingCurves.editorial }}
-               className="p-8 border border-ink/10 rounded-3xl bg-ink/[0.02] flex flex-col gap-6"
-             >
-               <input 
-                 autoFocus
-                 className="bg-transparent border-b border-ink/20 focus:border-ink outline-none py-2 italic font-serif text-xl"
-                 placeholder="Activity name..."
-                 value={newActivity.title}
-                 onChange={(e) => setNewActivity({...newActivity, title: e.target.value})}
-               />
-               <div className="grid grid-cols-2 gap-8">
-                  <div className="flex flex-col gap-2">
-                    <label className="editorial-meta text-[9px]">Anticipated Joy ({newActivity.value}/10)</label>
-                    <input type="range" min="1" max="10" className="accent-ink" value={newActivity.value} onChange={(e) => setNewActivity({...newActivity, value: parseInt(e.target.value)})} />
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <label className="editorial-meta text-[9px]">Mastery Effort ({newActivity.difficulty}/10)</label>
-                    <input type="range" min="1" max="10" className="accent-ink" value={newActivity.difficulty} onChange={(e) => setNewActivity({...newActivity, difficulty: parseInt(e.target.value)})} />
-                  </div>
-               </div>
-               <div className="flex justify-end gap-4">
-                  <button onClick={() => setIsAdding(false)} className="editorial-meta">Cancel</button>
-                  <button onClick={handleAdd} className="bg-ink text-paper px-8 py-3 rounded-full font-mono text-[9px] uppercase tracking-widest">
-                    Commit
-                  </button>
-               </div>
-             </motion.div>
-           )}
-
-           <div className="flex flex-col gap-4">
-             {activeActivities.length === 0 && !isAdding ? (
-               <p className="editorial-meta text-accent italic py-10">All intentions manifested or none set.</p>
-             ) : (
-               activeActivities.map(activity => (
-                 <ActivityItem key={activity.id} activity={activity} onToggle={() => toggleComplete(activity.id)} onDelete={() => handleDelete(activity.id)} />
-               ))
-             )}
-           </div>
-        </div>
-
-        <div className="flex flex-col gap-8">
-           <div className="flex items-center gap-4 opacity-50">
-               <CheckCircle2 size={20} />
-               <div className="editorial-meta uppercase tracking-widest">Manifested Today</div>
-           </div>
-           
-           <div className="flex flex-col gap-1">
-             {completedActivities.length === 0 ? (
-               <p className="editorial-meta text-accent italic opacity-40 py-10">Awaiting action.</p>
-             ) : (
-               completedActivities.map(activity => (
-                 <div key={activity.id} className="py-4 border-b border-ink/5 flex items-center justify-between group">
-                    <span className="font-serif text-lg italic opacity-50 line-through decoration-accent">{activity.title}</span>
-                    <div className="flex items-center gap-4">
-                       <span className="editorial-meta text-[9px] opacity-40">J:{activity.value} E:{activity.difficulty}</span>
-                       <button onClick={() => toggleComplete(activity.id)} className="text-accent hover:text-ink"><CheckCircle2 size={16} /></button>
-                    </div>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+         {/* Main List */}
+         <div className="lg:col-span-7 flex flex-col gap-8">
+             <div className="editorial-meta opacity-40">Active Intentions</div>
+             
+             <div className="flex flex-col gap-4">
+               {activeActivities.length === 0 ? (
+                 <div className="py-20 text-center border border-dashed border-ink/5 rounded-3xl flex flex-col items-center gap-4">
+                    <Sparkles className="text-accent opacity-20" size={32} />
+                    <p className="editorial-meta opacity-30 italic">No active intentions scheduled.</p>
                  </div>
-               ))
-             )}
-           </div>
-        </div>
+               ) : (
+                 activeActivities.map(activity => (
+                   <ActivityItem 
+                     key={activity.id} 
+                     activity={activity} 
+                     onToggle={() => handleToggle(activity.id)}
+                     onDelete={() => handleDelete(activity.id)}
+                   />
+                 ))
+               )}
+             </div>
+         </div>
+
+         {/* Stats & History */}
+         <div className="lg:col-span-5 flex flex-col gap-10">
+            <div className="p-10 border border-ink/5 rounded-[3rem] bg-paper shadow-sm flex flex-col gap-8">
+               <div className="flex items-center gap-3">
+                  <Flame className="text-amber-500" size={20} />
+                  <span className="editorial-meta uppercase tracking-widest text-[10px]">Daily Velocity</span>
+               </div>
+               <div className="flex items-baseline gap-3">
+                  <span className="font-serif text-6xl">{completedToday.length}</span>
+                  <span className="editorial-meta opacity-30 italic lowercase">activities manifested</span>
+               </div>
+               <div className="h-[2px] w-full bg-ink/5 rounded-full overflow-hidden">
+                  <motion.div 
+                    initial={{ width: 0 }}
+                    animate={{ width: `${Math.min(100, (completedToday.length / 5) * 100)}%` }}
+                    className="h-full bg-ink"
+                  />
+               </div>
+               <p className="text-[10px] editorial-meta opacity-40 italic">
+                 Aim for 3-5 mastery or pleasure activities daily to maintain behavioral activation.
+               </p>
+            </div>
+
+            <div className="flex flex-col gap-6">
+              <div className="flex items-center gap-3 editorial-meta opacity-40">
+                <CheckCircle2 size={12} /> Recent Success
+              </div>
+              <div className="flex flex-col gap-3">
+                {completedToday.slice(0, 3).map(a => (
+                  <div key={a.id} className="p-4 border border-ink/5 rounded-2xl flex items-center justify-between opacity-50 grayscale hover:grayscale-0 hover:opacity-100 transition-all">
+                    <span className="font-serif italic text-sm">{a.title}</span>
+                    <span className="font-mono text-[8px] uppercase">{a.value}v / {a.difficulty}d</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+         </div>
       </div>
 
-      <div className="mt-10 p-10 border border-ink/5 rounded-[3rem] bg-ink/5 flex flex-col md:flex-row gap-10 items-center">
-          <div className="flex-grow flex flex-col gap-2">
-              <div className="flex items-center gap-3">
-                  <Sparkles className="text-accent" size={16} />
-                  <span className="editorial-meta uppercase tracking-widest">Philosophy of Action</span>
+      <EditorialModal
+        isOpen={isAdding}
+        onClose={() => setIsAdding(false)}
+        title="Schedule Intention."
+        subtitle="Behavioral / Flow"
+      >
+        <div className="flex flex-col gap-8">
+          <EditorialInput 
+            autoFocus
+            label="Activity Description"
+            placeholder="What will you manifest?"
+            value={newActivity.title}
+            onChange={(e) => setNewActivity({...newActivity, title: e.target.value})}
+          />
+          <div className="flex flex-col gap-6">
+              <div className="flex flex-col gap-3">
+                <label className="editorial-meta text-[9px]">Anticipated Joy ({newActivity.value}/10)</label>
+                <input type="range" min="1" max="10" className="accent-ink h-10" value={newActivity.value} onChange={(e) => setNewActivity({...newActivity, value: parseInt(e.target.value)})} />
               </div>
-              <p className="text-xl font-serif italic max-w-2xl">
-                "Small, consistent movements in the direction of mastery often dissolve the greatest weights of the spirit."
-              </p>
+              <div className="flex flex-col gap-3">
+                <label className="editorial-meta text-[9px]">Mastery Effort ({newActivity.difficulty}/10)</label>
+                <input type="range" min="1" max="10" className="accent-ink h-10" value={newActivity.difficulty} onChange={(e) => setNewActivity({...newActivity, difficulty: parseInt(e.target.value)})} />
+              </div>
           </div>
-          <div className="shrink-0 flex gap-4 opacity-50">
-               <div className="w-10 h-10 rounded-full border border-ink/10 flex items-center justify-center italic text-xs">J</div>
-               <div className="w-10 h-10 rounded-full border border-ink/10 flex items-center justify-center italic text-xs">E</div>
+          <div className="flex justify-between items-center pt-4">
+              <button onClick={() => setIsAdding(false)} className="editorial-meta">Discard</button>
+              <EditorialButton onClick={handleAdd} icon={<Check size={14} />}>
+                Commit
+              </EditorialButton>
           </div>
-      </div>
+        </div>
+      </EditorialModal>
     </div>
   );
 }

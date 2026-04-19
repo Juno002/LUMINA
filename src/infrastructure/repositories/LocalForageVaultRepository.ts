@@ -1,23 +1,36 @@
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
+ *
+ * Encrypted Vault Repository.
+ * Acts as a "pasamanos": receives data → passes through CryptoService → stores noise.
+ * The rest of the app has no idea data is encrypted.
  */
 
 import localforage from 'localforage';
 import { Vault, RecurrencePattern } from '../../domain/entities';
 import { IVaultRepository } from '../../domain/repositories/IVaultRepository';
+import { cryptoService } from '../services/CryptoService';
 
-// In a real clean architecture, the default state might live in the entity layer or a factory
-// but for simplicity we keep it here as a detail of the storage implementation.
 const DEFAULT_VAULT: Vault = {
-  profile: { name: '', initialized: false },
+  profile: { name: '', initialized: false, soundEnabled: true },
   createdAt: new Date().toISOString(),
   journal: [],
   exposure: { hierarchy: [], logs: [] },
   activations: [],
   goals: [],
   sleep: [],
-  wellness: { gratitudeEntries: [], moodEntries: [] }
+  wellness: { gratitudeEntries: [], moodEntries: [] },
+  habits: [],
+  habitLogs: [],
+  stats: {
+    discipline: { exp: 0, level: 1 },
+    consistency: { exp: 0, level: 1 },
+    totalExp: 0,
+    level: 1,
+    currentStreak: 0,
+    longestStreak: 0
+  }
 };
 
 const VAULT_KEY = 'encrypted_vault_data';
@@ -28,9 +41,11 @@ localforage.config({
 });
 
 export class LocalForageVaultRepository implements IVaultRepository {
-  async save(data: Vault): Promise<boolean> {
+  async save(data: Vault, password: string): Promise<boolean> {
     try {
-      await localforage.setItem(VAULT_KEY, data);
+      const json = JSON.stringify(data);
+      const encrypted = await cryptoService.encrypt(json, password);
+      await localforage.setItem(VAULT_KEY, encrypted);
       return true;
     } catch (error) {
       console.error('Failed to save vault:', error);
@@ -38,13 +53,18 @@ export class LocalForageVaultRepository implements IVaultRepository {
     }
   }
 
-  async load(): Promise<Vault> {
+  async load(password: string): Promise<Vault | null> {
     try {
-      const data = await localforage.getItem<Vault>(VAULT_KEY);
-      if (!data) return DEFAULT_VAULT;
+      const encrypted = await localforage.getItem<ArrayBuffer>(VAULT_KEY);
+      if (!encrypted) return null;
 
-      // Simple Migration / Field Patching
-      const migrated = {
+      const json = await cryptoService.decrypt(encrypted, password);
+      if (json === null) return null; // Wrong password
+
+      const data = JSON.parse(json) as Partial<Vault>;
+
+      // Migration / Field Patching — ensure all fields exist
+      const migrated: Vault = {
         ...DEFAULT_VAULT,
         ...data,
         wellness: {
@@ -54,13 +74,28 @@ export class LocalForageVaultRepository implements IVaultRepository {
         goals: (data.goals || []).map(g => ({
           recurrence: 'none' as RecurrencePattern,
           ...g
+        })),
+        journal: (data.journal || []).map(entry => ({
+          ...entry,
+          level: entry.level || 1,
+          intensity: entry.intensity > 10 ? Math.round(entry.intensity / 10) : entry.intensity,
+          outcomeIntensity: (entry.outcomeIntensity || 0) > 10 ? Math.round(entry.outcomeIntensity / 10) : (entry.outcomeIntensity || 0)
         }))
       };
 
       return migrated;
     } catch (error) {
       console.error('Failed to load vault:', error);
-      return DEFAULT_VAULT;
+      return null;
+    }
+  }
+
+  async exists(): Promise<boolean> {
+    try {
+      const data = await localforage.getItem(VAULT_KEY);
+      return data !== null;
+    } catch {
+      return false;
     }
   }
 
