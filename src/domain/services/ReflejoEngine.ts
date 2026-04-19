@@ -25,8 +25,19 @@ export function getReflejoState(params: {
   isRumination: boolean;           // Same distortion 3+ times in recent entries
   totalEntries: number;
   todayEntries: number;
+  daysSinceLastEntry: number;      // Protocolo de Ausencia (Ghost)
 }): ReflejoState {
   
+  // Priority 0: GHOST PROTOCOL (Long absence)
+  if (params.daysSinceLastEntry >= 4) {
+    return {
+      mode: 'observer',
+      messageKey: 'lambda.ghost_nudge',
+      color: 'text-slate-400',
+      animation: 'neutral'
+    };
+  }
+
   // Priority 1: ANCHOR (crisis, high intensity, low ICC, rumination)
   if (params.isCrisis || (params.currentIntensity && params.currentIntensity >= 80)) {
     return {

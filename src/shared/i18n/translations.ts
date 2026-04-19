@@ -29,7 +29,8 @@ export const translations = {
       observer_default: 'Equilibrium maintained. Observation is your greatest strength.',
       mentor_high_icc: 'Cognitive fluidity detected. Your resilience is manifesting.',
       mentor_consistency: 'Discipline is the architecture of the soul. Continue.',
-      observer_moderate: 'Effort required. Manifest momentum or chronicled reflection.'
+      observer_moderate: 'Effort required. Manifest momentum or chronicled reflection.',
+      ghost_nudge: 'Silence is also information. When you are ready, your Vault is here, without pressure.'
     },
     dashboard: {
       morning: {
@@ -331,7 +332,8 @@ export const translations = {
       observer_default: 'Equilibrio mantenido. La observación es tu mayor fuerza.',
       mentor_high_icc: 'Fluidez cognitiva detectada. Tu resiliencia se está manifestando.',
       mentor_consistency: 'La disciplina es la arquitectura del alma. Continúa.',
-      observer_moderate: 'Esfuerzo necesario. Manifiesta momentum o reflexión crónica.'
+      observer_moderate: 'Esfuerzo necesario. Manifiesta momentum o reflexión crónica.',
+      ghost_nudge: 'El silencio también es información. Cuando estés listo, tu Bóveda está aquí, sin presiones.'
     },
     dashboard: {
       morning: {

@@ -20,6 +20,10 @@ import {
   EditorialTextArea 
 } from '../components/shared';
 import { useTranslation } from '../../application/contexts/LanguageContext';
+import { cn } from '../../shared/utils/TailwindMerge';
+import LambdaAvatar from '../components/shared/LambdaAvatar';
+import { computeReflejoState } from '../../application/usecases/GetReflejoStateUseCase';
+import { Vault } from '../../domain/entities';
 
 interface JournalViewProps {
   entries: ThoughtEntry[];
@@ -91,6 +95,7 @@ export default function JournalView({ entries, onUpdate, clinicalProfile }: Jour
             initialData={editingEntry || undefined}
             onCancel={() => { setIsFormOpen(false); setEditingEntry(null); }} 
             onSave={handleSave} 
+            vault={{ habits: [], habitLogs: [], journal: entries, profile: { clinicalProfile } } as any}
           />
         ) : (
           <motion.div 
@@ -127,9 +132,10 @@ interface FormProps {
   onCancel: () => void;
   onSave: (e: ThoughtEntry) => void;
   clinicalProfile?: ClinicalProfile;
+  vault?: Vault;
 }
 
-function JournalForm({ initialData, onCancel, onSave, clinicalProfile }: FormProps) {
+function JournalForm({ initialData, onCancel, onSave, clinicalProfile, vault }: FormProps) {
   const { t, language } = useTranslation();
   const [level, setLevel] = useState<1 | 2 | 3>(initialData?.level || 1);
   const [currentStep, setCurrentStep] = useState(1);
@@ -140,6 +146,8 @@ function JournalForm({ initialData, onCancel, onSave, clinicalProfile }: FormPro
     distortions: [],
     tags: []
   });
+
+  const reflejoState = useMemo(() => vault ? computeReflejoState(vault) : null, [vault]);
 
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
@@ -347,12 +355,43 @@ function JournalForm({ initialData, onCancel, onSave, clinicalProfile }: FormPro
             >
               {!isMobile && <div className="h-px bg-ink/5 w-full" />}
               <div className="flex flex-col gap-8">
-                <EditorialTextArea 
-                  label={language === 'es' ? 'Técnica del Amigo' : "The Friend Technique"}
-                  placeholder={language === 'es' ? 'Si un buen amigo te dijera esto, ¿qué le dirías?' : "If a dear friend told you this, what would you say to them?"}
-                  value={formData.friendResponse || ''}
-                  onChange={(e) => setFormData({...formData, friendResponse: e.target.value})}
-                />
+                <div className="flex flex-col gap-10">
+                  {/* The "Borrowed" Thought Display */}
+                  <div className="flex flex-col gap-4">
+                    <span className="editorial-meta text-[8px] opacity-40 uppercase tracking-widest">
+                      {language === 'es' ? 'Imagina que un amigo te escribe esto:' : 'Imagine a friend writes this to you:'}
+                    </span>
+                    <div className="flex flex-col gap-6 max-w-xl">
+                      <motion.p 
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="font-serif italic text-2xl md:text-3xl text-accent/60 leading-tight pl-4 border-l border-ink/10"
+                      >
+                        « {formData.automaticThought || '...'} »
+                      </motion.p>
+                      
+                      {/* Reflejo as Mediator */}
+                      {reflejoState && (
+                        <div className="flex justify-center py-2">
+                          <div className="scale-75 opacity-50">
+                            <LambdaAvatar state={reflejoState} onLongPress={() => {}} />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col md:items-end w-full">
+                    <div className="w-full md:max-w-xl">
+                      <EditorialTextArea 
+                        label={language === 'es' ? 'Tu Respuesta Compasiva' : "Your Compassionate Response"}
+                        placeholder={language === 'es' ? 'Si un buen amigo te dijera esto, ¿qué le dirías?' : "If a dear friend told you this, what would you say to them?"}
+                        value={formData.friendResponse || ''}
+                        onChange={(e) => setFormData({...formData, friendResponse: e.target.value})}
+                      />
+                    </div>
+                  </div>
+                </div>
                 
                 {/* Nudge L3 */}
                 {level === 2 && formData.friendResponse && formData.friendResponse.length > 15 && !isMobile && (

@@ -35,6 +35,15 @@ export function computeReflejoState(vault: Vault): ReflejoState {
   // Daily activity metrics
   const todayEntries = journal.filter(e => e.date === today).length;
   
+  // Ghost Protocol: Days since last entry
+  let daysSinceLastEntry = 0;
+  if (journal.length > 0) {
+    const lastDate = new Date(journal[0].date + 'T12:00:00');
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - lastDate.getTime());
+    daysSinceLastEntry = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  }
+  
   // Immediate state: intensity of the most recent session
   const lastEntry = journal[0];
   const currentIntensity = lastEntry?.intensity ?? null;
@@ -42,9 +51,10 @@ export function computeReflejoState(vault: Vault): ReflejoState {
   return getReflejoState({
     avgICC,
     currentIntensity,
-    isCrisis: false, // In this version, crisis is manually indicated or detected via keyword (optional)
+    isCrisis: false, 
     isRumination,
     totalEntries: journal.length,
-    todayEntries
+    todayEntries,
+    daysSinceLastEntry
   });
 }

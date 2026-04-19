@@ -64,6 +64,33 @@ export default function AnalysisView({ vault }: { vault: Vault }) {
     return sum / l3Entries.length;
   }, [journalEntries]);
 
+  // Core Beliefs Inference (Clinical Logic)
+  const inferredBeliefs = useMemo(() => {
+    if (journalEntries.length < 5) return null;
+    
+    const themes = [];
+    if (distortionCounts['all_or_nothing'] > 3 || distortionCounts['overgeneralization'] > 3) {
+      themes.push({ 
+        title: language === 'es' ? 'Perfeccionismo Rígido' : 'Rigid Perfectionism', 
+        desc: language === 'es' ? 'Tendencia a evaluar tu valor en términos de todo o nada.' : 'Tendency to evaluate your worth in all-or-nothing terms.'
+      });
+    }
+    if (distortionCounts['fortune_telling'] > 3 || distortionCounts['catastrophizing'] > 3) {
+      themes.push({ 
+        title: language === 'es' ? 'Desesperanza Anticipatoria' : 'Anticipatory Hopelessness', 
+        desc: language === 'es' ? 'Foco excesivo en resultados futuros negativos como si fueran hechos.' : 'Excessive focus on negative future outcomes as if they were facts.'
+      });
+    }
+    if (distortionCounts['mind_reading'] > 3 || distortionCounts['personalization'] > 3) {
+      themes.push({ 
+        title: language === 'es' ? 'Hipersensibilidad Interpersonal' : 'Interpersonal Hypersensitivity', 
+        desc: language === 'es' ? 'Asunción de juicios externos negativos sin evidencia directa.' : 'Assumption of negative external judgments without direct evidence.'
+      });
+    }
+
+    return themes.length > 0 ? themes : null;
+  }, [distortionCounts, journalEntries.length, language]);
+
   return (
     <div className="flex flex-col gap-12">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
@@ -175,7 +202,37 @@ export default function AnalysisView({ vault }: { vault: Vault }) {
             </p>
           </div>
         </div>
+        </div>
       </div>
+
+      {inferredBeliefs && (
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col gap-10 p-10 border border-ink/5 rounded-[3rem] bg-paper shadow-sm"
+        >
+          <div className="flex flex-col gap-2">
+            <div className="editorial-meta opacity-40 uppercase tracking-widest">{language === 'es' ? 'Análisis de Creencias Centrales' : 'Core Beliefs Analysis'}</div>
+            <h3 className="font-serif text-3xl italic">{language === 'es' ? 'Temas Recurrentes' : 'Recurrent Themes'}.</h3>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+            {inferredBeliefs.map((theme, i) => (
+              <div key={i} className="flex flex-col gap-4 group">
+                <div className="w-10 h-[1px] bg-ink/20 group-hover:w-20 transition-all duration-700"></div>
+                <div className="flex flex-col gap-2">
+                  <span className="font-serif text-xl italic group-hover:text-ink transition-colors">{theme.title}</span>
+                  <p className="text-sm text-accent opacity-60 leading-relaxed font-serif italic">"{theme.desc}"</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="editorial-meta text-[10px] opacity-30 italic max-w-xl">
+            {language === 'es' 
+              ? '* Este análisis es inferencial basado en patrones de distorsión. Úsalo como punto de partida para la reflexión.' 
+              : '* This analysis is inferential based on distortion patterns. Use it as a starting point for reflection.'}
+          </p>
+        </motion.div>
+      )}
 
       <div className="editorial-rule"></div>
 

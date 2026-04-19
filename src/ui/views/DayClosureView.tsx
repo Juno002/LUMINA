@@ -15,6 +15,8 @@ import {
   EditorialButton 
 } from '../components/shared';
 import { useTranslation } from '../../application/contexts/LanguageContext';
+import LambdaAvatar from '../components/shared/LambdaAvatar';
+import { computeReflejoState } from '../../application/usecases/GetReflejoStateUseCase';
 
 interface DayClosureViewProps {
   vault: Vault;
@@ -34,6 +36,14 @@ export default function DayClosureView({ vault, onClose, onSave }: DayClosureVie
   const journalCount = vault.journal?.filter(e => e.date === today).length || 0;
   const exposureCount = vault.exposure?.logs?.filter(l => l.date === today).length || 0;
   const sleepEntry = vault.sleep?.find(s => s.date === today);
+
+  const reflejoState = useMemo(() => computeReflejoState(vault), [vault]);
+
+  // Sleep Efficiency calculation
+  const sleepEfficiency = useMemo(() => {
+    if (!sleepEntry?.duration || !sleepEntry?.timeInBed) return null;
+    return (sleepEntry.duration / sleepEntry.timeInBed) * 100;
+  }, [sleepEntry]);
 
   const handleFinish = () => {
     const closure: DayClosure = {
@@ -137,9 +147,9 @@ export default function DayClosureView({ vault, onClose, onSave }: DayClosureVie
                 </button>
                 <EditorialButton 
                   onClick={() => setStep(3)}
-                  icon={<CheckCircle2 size={14} />}
+                  icon={<ArrowRight size={14} />}
                 >
-                  {language === 'es' ? 'Finalizar' : 'Finalize'}
+                  {language === 'es' ? 'Analizar Reposo' : 'Analyze Rest'}
                 </EditorialButton>
               </div>
             </motion.div>
@@ -150,11 +160,75 @@ export default function DayClosureView({ vault, onClose, onSave }: DayClosureVie
               key="step3"
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              className="flex flex-col gap-12"
+              exit={{ y: -20, opacity: 0 }}
+              className="flex flex-col gap-10"
             >
               <div className="flex flex-col gap-2">
+                <span className="editorial-meta text-paper/40 uppercase tracking-[0.3em]">CBT-I / Sleep Efficiency</span>
+                <h2 className="font-serif text-4xl md:text-5xl italic leading-tight">
+                  {language === 'es' ? 'Calibración del Sueño' : 'Sleep Calibration'}
+                </h2>
+              </div>
+
+              <div className="p-10 border border-paper/10 rounded-[2.5rem] bg-white/5 flex flex-col gap-8">
+                {sleepEntry ? (
+                  <div className="flex flex-col gap-6">
+                    <div className="flex justify-between items-end">
+                      <div className="flex flex-col">
+                        <span className="editorial-meta text-[10px] opacity-40 uppercase tracking-widest">{language === 'es' ? 'Eficiencia Real' : 'Real Efficiency'}</span>
+                        <span className="font-serif text-6xl italic">{sleepEfficiency?.toFixed(0)}%</span>
+                      </div>
+                      <div className="text-right">
+                        <span className="editorial-meta text-[10px] opacity-40 uppercase tracking-widest">{language === 'es' ? 'Objetivo TCC' : 'CBT Target'}</span>
+                        <p className="font-mono text-lg text-emerald-400">&gt; 85%</p>
+                      </div>
+                    </div>
+                    <p className="text-xs opacity-50 leading-relaxed italic">
+                      {language === 'es' 
+                        ? 'Tip: Para resultados exactos, considera usar un gadget (Oura, Apple Watch) o apps como Sleep Cycle. El registro manual es el primer paso hacia la conciencia.'
+                        : 'Tip: For exact results, consider using a gadget (Oura, Apple Watch) or apps like Sleep Cycle. Manual logging is the first step toward awareness.'}
+                    </p>
+                  </div>
+                ) : (
+                  <p className="editorial-meta italic opacity-40 text-center py-10">
+                    {language === 'es' ? 'No se detectó registro de sueño para hoy.' : 'No sleep log detected for today.'}
+                  </p>
+                )}
+              </div>
+
+              <div className="flex justify-between items-center mt-10">
+                <button onClick={() => setStep(2)} className="editorial-meta text-paper/30 flex items-center gap-2">
+                  <ChevronLeft size={14} /> {t('common.back')}
+                </button>
+                <EditorialButton 
+                  onClick={() => setStep(4)}
+                  icon={<CheckCircle2 size={14} />}
+                >
+                  {language === 'es' ? 'Ver Sello Final' : 'View Final Seal'}
+                </EditorialButton>
+              </div>
+            </motion.div>
+          )}
+
+          {step === 4 && (
+            <motion.div 
+              key="step4"
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              className="flex flex-col gap-12"
+            >
+              <div className="flex flex-col gap-4 items-center mb-6">
+                <div className="scale-125">
+                  <LambdaAvatar state={reflejoState} onLongPress={() => {}} />
+                </div>
+                <p className="editorial-meta text-paper/40 italic mt-6">
+                   {t(reflejoState.messageKey)}
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-2">
                 <span className="editorial-meta text-paper/40 uppercase tracking-[0.3em]">{language === 'es' ? 'Alineación' : 'Alignment'}</span>
-                <h2 className="font-serif text-4xl md:text-5xl italic leading-tight">{language === 'es' ? 'El día está asegurado.' : 'The day is secured.'}</h2>
+                <h2 className="font-serif text-4xl md:text-5xl italic leading-tight text-center">{language === 'es' ? 'El día está asegurado.' : 'The day is secured.'}</h2>
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-8 py-10 border-y border-paper/10">
