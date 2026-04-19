@@ -123,8 +123,6 @@ export default function MoodView({ entries, onUpdate }: MoodViewProps) {
                   <span>{t('mood.overwhelming')}</span>
                 </div>
               </div>
-                </div>
-              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
