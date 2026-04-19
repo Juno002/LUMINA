@@ -307,7 +307,7 @@ export default function HabitsView({ vault, onUpdate, onLevelUp }: HabitsViewPro
       {/* Value Update Modal */}
       <ValueModal 
         isOpen={!!editingValueId}
-        habit={(vault.habits || []).find(h => h.id === editingValueId)!}
+        habit={(vault.habits || []).find(h => h.id === editingValueId)}
         currentValue={(vault.habitLogs || []).find(l => l.habitId === editingValueId && l.date === today)?.value || 0}
         onCancel={() => setEditingValueId(null)}
         onSave={(val) => handleValueUpdate(editingValueId!, val)}
@@ -330,16 +330,30 @@ export default function HabitsView({ vault, onUpdate, onLevelUp }: HabitsViewPro
   );
 }
 
-function ValueModal({ isOpen, habit, currentValue, onCancel, onSave }: { isOpen: boolean; habit: Habit; currentValue: number; onCancel: () => void; onSave: (v: number) => void }) {
+function ValueModal({ isOpen, habit, currentValue, onCancel, onSave }: { isOpen: boolean; habit?: Habit; currentValue: number; onCancel: () => void; onSave: (v: number) => void }) {
   const [val, setVal] = useState(currentValue.toString());
+
+  // Keep track of the last known habit for exit animations
+  const [persistedHabit, setPersistedHabit] = useState<Habit | undefined>(habit);
+  
+  useEffect(() => {
+    if (habit) setPersistedHabit(habit);
+  }, [habit]);
+
+  useEffect(() => {
+    if (isOpen) {
+      setVal(currentValue.toString());
+    }
+  }, [isOpen, currentValue]);
+
+  const displayHabit = habit || persistedHabit;
 
   return (
     <EditorialModal 
       isOpen={isOpen} 
       onClose={onCancel}
-      title={habit.name}
-      subtitle={`Log ${habit.unit || 'value'}`}
-      key={isOpen ? 'open' : 'closed'}
+      title={displayHabit?.name || ''}
+      subtitle={`Log ${displayHabit?.unit || 'value'}`}
       maxWidth="sm"
     >
       <div className="flex flex-col gap-8">
@@ -352,7 +366,7 @@ function ValueModal({ isOpen, habit, currentValue, onCancel, onSave }: { isOpen:
             onChange={(e) => setVal(e.target.value)}
           />
           <div className="text-center editorial-meta opacity-40 uppercase tracking-widest">
-            {habit?.unit || 'Units'} / Target {habit?.targetValue}
+            {displayHabit?.unit || 'Units'} / Target {displayHabit?.targetValue}
           </div>
         </div>
         <div className="flex justify-between items-center gap-4">
