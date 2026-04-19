@@ -262,7 +262,7 @@ export default function App() {
               {vault && activeTab === 'habits' && <HabitsView vault={vault} onUpdate={updateVault} onLevelUp={setNewLevel} />}
               {vault && activeTab === 'mood' && <MoodView entries={vault.wellness.moodEntries || []} onUpdate={(m: MoodEntry[]) => updateVault({ ...vault, wellness: { ...vault.wellness, moodEntries: m } })} />}
               {vault && activeTab === 'exposure' && <ExposureView data={vault.exposure || { hierarchy: [], logs: [] }} onUpdate={(data: ExposureData) => updateVault({ ...vault, exposure: data })} />}
-              {vault && activeTab === 'activation' && <ActivationView activations={vault.activations || []} onUpdate={(acts: ActivationActivity[]) => updateVault({ ...vault, activations: acts })} />}
+              {vault && activeTab === 'activation' && <ActivationView activities={vault.activations || []} onUpdate={(acts: ActivationActivity[]) => updateVault({ ...vault, activations: acts })} />}
               {vault && activeTab === 'breathing' && <BreathingView />}
               {vault && activeTab === 'analysis' && <AnalysisView vault={vault} />}
               {vault && activeTab === 'goals' && <GoalsView goals={vault.goals || []} onUpdate={(goals: Goal[]) => updateVault({ ...vault, goals })} />}

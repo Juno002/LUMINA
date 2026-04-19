@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useMemo, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { 
   Plus, 
   Flame, 
