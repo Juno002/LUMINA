@@ -30,7 +30,7 @@ import { useVault } from "./application/hooks/useVault";
 import { ThoughtEntry, MoodEntry, ExposureData, ActivationActivity, Goal, SleepEntry, DayClosure } from './domain/entities';
 import { awardXP } from './application/usecases/GamificationEngine';
 import { audioFeedback } from './infrastructure/services/WebAudioFeedbackService';
-import { LanguageProvider } from "./application/contexts/LanguageContext";
+import { LanguageProvider, useTranslation } from "./application/contexts/LanguageContext";
 import { Language } from "./shared/i18n/translations";
 
 // Lazy loaded Views

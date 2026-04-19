@@ -282,7 +282,7 @@ function JournalForm({ initialData, onCancel, onSave, clinicalProfile }: FormPro
                     onClick={() => { setLevel(2); triggerHaptic('light'); }}
                     className="text-left text-sm text-accent hover:text-ink transition-colors font-serif italic flex items-center gap-2 mt-4"
                   >
-                    <No icon={Sparkles} size={14} />
+                    <Sparkles size={14} />
                     {language === 'es' ? 'Distorsiones detectadas. ¿Quieres ir más profundo?' : 'Distortions detected. Would you like to go deeper?'} 
                     <span className="underline underline-offset-4">Level {language === 'es' ? '2' : '2'} →</span>
                   </motion.button>
