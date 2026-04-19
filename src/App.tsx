@@ -19,8 +19,10 @@ import {
   Shield,
   Heart,
   Wind,
-  Flame
+  Flame,
+  LayoutGrid
 } from "lucide-react";
+import MobileNavHub from "./ui/components/shared/MobileNavHub";
 import { cn } from './shared/utils/TailwindMerge';
 import { triggerHaptic } from './shared/utils/Haptics';
 import { useVault } from "./application/hooks/useVault";
@@ -54,6 +56,7 @@ export default function App() {
   const [showCrisis, setShowCrisis] = useState(false);
   const [showDayClosure, setShowDayClosure] = useState(false);
   const [newLevel, setNewLevel] = useState<number | null>(null);
+  const [isNavHubOpen, setIsNavHubOpen] = useState(false);
 
   const {
     vault, isReady, isLocked, vaultExists, unlockError,
@@ -291,9 +294,8 @@ export default function App() {
         {[
           { id: 'dashboard', icon: Home },
           { id: 'journal', icon: BookOpen },
+          { id: 'activation', icon: Target },
           { id: 'habits', icon: Flame },
-          { id: 'breathing', icon: Wind },
-          { id: 'settings', icon: Settings },
         ].map((item) => (
           <button
             key={item.id}
@@ -303,7 +305,24 @@ export default function App() {
             <item.icon size={22} />
           </button>
         ))}
+        <button
+          onClick={() => {
+            triggerHaptic('medium');
+            setIsNavHubOpen(true);
+          }}
+          className="p-2 text-accent hover:text-ink transition-all"
+        >
+          <LayoutGrid size={22} />
+        </button>
       </nav>
+
+      <MobileNavHub 
+        isOpen={isNavHubOpen}
+        onClose={() => setIsNavHubOpen(false)}
+        items={menuItems}
+        activeTab={activeTab}
+        onNavigate={handleTabChange}
+      />
 
       {/* SOS Global Trigger */}
       <button 

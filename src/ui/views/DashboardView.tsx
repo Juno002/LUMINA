@@ -68,9 +68,71 @@ export default function DashboardView({ vault, onUpdate, onOpenCrisis, onOpenDay
   const isDayClosed = vault.closedDays?.some(d => d.date === todayISO());
 
   return (
-    <div className="editorial-grid pb-20">
-      {/* Left Column: Context & Momentum */}
-      <div className="col-span-12 lg:col-span-7 xl:col-span-8 flex flex-col gap-12 md:gap-16">
+    <div className="editorial-grid pb-20 max-md:flex max-md:flex-col">
+      {/* Right Column (Moved to Top on Mobile) */}
+      <div className="col-span-12 lg:col-span-5 xl:col-span-4 flex flex-col gap-10 md:order-2">
+        <div className="flex flex-col gap-10 sticky top-[6vh] max-md:relative max-md:top-0">
+          {/* Lambda Avatar Card */}
+          <div className="p-8 md:p-12 border border-ink/10 rounded-[3rem] md:rounded-[4rem] bg-paper shadow-xl shadow-ink/[0.02] flex flex-col items-center">
+            <LambdaAvatar 
+              state={reflejoState} 
+              onLongPress={() => onOpenCrisis?.()} 
+            />
+          </div>
+
+          {/* Strategic Progress */}
+          <div className="flex flex-col gap-8 px-4 max-md:hidden lg:flex">
+            <div className="editorial-meta opacity-40">Strategic Progress</div>
+            <div className="flex flex-col gap-4">
+              {(vault.goals || []).slice(0, 3).map((goal: Goal) => (
+                <div key={goal.id} className="flex items-center gap-5 py-4 border-b border-ink/5 group">
+                  <div className={cn(
+                    "w-2.5 h-2.5 rounded-full transition-all duration-500", 
+                    goal.completed ? "bg-ink" : "border border-ink/20 group-hover:border-ink/40"
+                  )}></div>
+                  <div className="flex flex-col">
+                    <span className={cn("font-serif text-lg italic leading-none", goal.completed && "opacity-20 line-through")}>{goal.title}</span>
+                    <span className="text-[8px] font-mono opacity-30 uppercase mt-1 tracking-widest">{goal.progress}% complete</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Closure Ritual Button */}
+          <button 
+            disabled={isDayClosed}
+            onClick={() => onOpenDayClosure?.()}
+            className={cn(
+              "w-full p-8 rounded-[3rem] transition-all duration-500 flex flex-col gap-4 items-center text-center group",
+              isDayClosed 
+                ? "bg-ink/5 cursor-default" 
+                : "bg-ink text-paper hover:scale-[1.02] shadow-2xl shadow-ink/10"
+            )}
+          >
+             {isDayClosed ? (
+               <>
+                 <CheckCircle2 size={32} className="text-ink/20" />
+                 <div className="flex flex-col">
+                    <span className="editorial-meta opacity-30 text-[9px] uppercase tracking-widest">Ritual Complete</span>
+                    <span className="font-serif italic text-accent/40 text-sm">The day is secured.</span>
+                 </div>
+               </>
+             ) : (
+               <>
+                 <MoonIcon size={32} className="group-hover:rotate-12 transition-transform duration-700" />
+                 <div className="flex flex-col">
+                    <span className="editorial-meta opacity-50 text-[9px] uppercase tracking-widest">Closure Ritual</span>
+                    <span className="font-serif italic text-paper/80 text-sm">Begin the final synthesis.</span>
+                 </div>
+               </>
+             )}
+          </button>
+        </div>
+      </div>
+
+      {/* Left Column: Context & Momentum (Order 1 on Desktop) */}
+      <div className="col-span-12 lg:col-span-7 xl:col-span-8 flex flex-col gap-12 md:gap-16 md:order-1">
         <div className="flex flex-col gap-4">
           <div className="editorial-meta">{context.label}</div>
           <p className="text-xl md:text-3xl leading-tight font-serif italic max-w-2xl">
@@ -132,70 +194,22 @@ export default function DashboardView({ vault, onUpdate, onOpenCrisis, onOpenDay
         </div>
       </div>
 
-      {/* Right Column: Lambda & Strategic Sidebar */}
-      <div className="col-span-12 lg:col-span-5 xl:col-span-4 flex flex-col gap-10">
-        <div className="flex flex-col gap-10 sticky top-[6vh]">
-          
-          {/* Lambda Avatar Card */}
-          <div className="p-12 border border-ink/10 rounded-[4rem] bg-paper shadow-xl shadow-ink/[0.02] flex flex-col items-center">
-            <LambdaAvatar 
-              state={reflejoState} 
-              onLongPress={() => onOpenCrisis?.()} 
-            />
-          </div>
-
-          <div className="flex flex-col gap-8 px-4">
-            <div className="editorial-meta opacity-40">Strategic Progress</div>
-            <div className="flex flex-col gap-4">
-              {(vault.goals || []).slice(0, 3).map((goal: Goal) => (
-                <div key={goal.id} className="flex items-center gap-5 py-4 border-b border-ink/5 group">
-                  <div className={cn(
-                    "w-2.5 h-2.5 rounded-full transition-all duration-500", 
-                    goal.completed ? "bg-ink" : "border border-ink/20 group-hover:border-ink/40"
-                  )}></div>
-                  <div className="flex flex-col">
-                    <span className={cn("font-serif text-lg italic leading-none", goal.completed && "opacity-20 line-through")}>{goal.title}</span>
-                    <span className="text-[8px] font-mono opacity-30 uppercase mt-1 tracking-widest">{goal.progress}% complete</span>
-                  </div>
-                </div>
-              ))}
-              {(vault.goals || []).length === 0 && (
-                 <p className="editorial-meta italic opacity-20 text-xs">No strategic objectives established.</p>
-              )}
-            </div>
-          </div>
-
-          {/* Closure Ritual Button */}
-          <button 
-            disabled={isDayClosed}
-            onClick={() => onOpenDayClosure?.()}
-            className={cn(
-              "w-full p-8 rounded-[3rem] transition-all duration-500 flex flex-col gap-4 items-center text-center group",
-              isDayClosed 
-                ? "bg-ink/5 cursor-default" 
-                : "bg-ink text-paper hover:scale-[1.02] shadow-2xl shadow-ink/10"
-            )}
-          >
-             {isDayClosed ? (
-               <>
-                 <CheckCircle2 size={32} className="text-ink/20" />
-                 <div className="flex flex-col">
-                    <span className="editorial-meta opacity-30 text-[9px] uppercase tracking-widest">Ritual Complete</span>
-                    <span className="font-serif italic text-accent/40 text-sm">The day is secured.</span>
-                 </div>
-               </>
-             ) : (
-               <>
-                 <MoonIcon size={32} className="group-hover:rotate-12 transition-transform duration-700" />
-                 <div className="flex flex-col">
-                    <span className="editorial-meta opacity-50 text-[9px] uppercase tracking-widest">Closure Ritual</span>
-                    <span className="font-serif italic text-paper/80 text-sm">Begin the final synthesis.</span>
-                 </div>
-               </>
-             )}
-          </button>
+      {/* Modal for adding grace */}
+      <EditorialModal 
+        isOpen={isAddingGrace} 
+        onClose={() => setIsAddingGrace(false)}
+        title="Register Grace"
+      >
+        <div className="flex flex-col gap-8">
+          <EditorialTextArea
+            label="What are you grateful for in this absolute present?"
+            value={graceText}
+            onChange={(e) => setGraceText(e.target.value)}
+            placeholder="A moment of silence, the coffee's warmth..."
+          />
+          <EditorialButton onClick={handleAddGrace}>Save to Vault</EditorialButton>
         </div>
-      </div>
+      </EditorialModal>
     </div>
   );
 }
