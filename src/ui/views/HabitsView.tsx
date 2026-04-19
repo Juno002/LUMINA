@@ -18,7 +18,8 @@ import {
   Settings2,
   Trophy
 } from 'lucide-react';
-import { Vault, Habit } from '../../domain/entities';
+import { Vault, Habit, Goal } from '../../domain/entities';
+import { HABIT_TEMPLATES, HabitTemplate } from '../../domain/constants/HabitTemplates';
 import { todayISO } from '../../shared/utils/DateFormatter';
 import { triggerHaptic } from '../../shared/utils/Haptics';
 import { 
@@ -84,7 +85,7 @@ export default function HabitsView({ vault, onUpdate, onLevelUp }: HabitsViewPro
     audioFeedback.playComplete();
     
     // Award XP
-    const { vault: xpVault, event } = awardXP(updatedVault, 'HABIT_COMPLETED');
+    const { vault: xpVault, event } = awardXP(updatedVault, 'HABIT_COMPLETE');
     let finalVault = xpVault;
     
     if (event.didLevelUp && onLevelUp) {
@@ -256,6 +257,11 @@ export default function HabitsView({ vault, onUpdate, onLevelUp }: HabitsViewPro
                       <h3 className={`font-serif text-2xl italic leading-none transition-all ${isCompleted ? 'opacity-30 line-through' : ''}`}>
                         {habit.name}
                       </h3>
+                      {habit.linkedGoalId && (
+                        <span className="text-[9px] font-mono uppercase tracking-widest px-2 py-0.5 bg-ink/5 text-ink/50 rounded-full w-fit mt-2">
+                          Aim: {(vault.goals || []).find(g => g.id === habit.linkedGoalId)?.title || 'Goal'}
+                        </span>
+                      )}
                     </div>
                   </div>
 
@@ -316,6 +322,7 @@ export default function HabitsView({ vault, onUpdate, onLevelUp }: HabitsViewPro
       {/* Add Habit Modal */}
       <AddHabitModal 
         isOpen={isAdding}
+        goals={vault.goals || []}
         onCancel={() => setIsAdding(false)} 
         onSave={(habit) => {
           onUpdate({
@@ -380,11 +387,32 @@ function ValueModal({ isOpen, habit, currentValue, onCancel, onSave }: { isOpen:
   );
 }
 
-function AddHabitModal({ isOpen, onCancel, onSave }: { isOpen: boolean; onCancel: () => void; onSave: (h: Habit) => void }) {
+function AddHabitModal({ isOpen, goals, onCancel, onSave }: { isOpen: boolean; goals: Goal[]; onCancel: () => void; onSave: (h: Habit) => void }) {
+  const [showTemplates, setShowTemplates] = useState(true);
   const [name, setName] = useState('');
   const [type, setType] = useState<Habit['type']>('yesno');
   const [target, setTarget] = useState('1');
   const [unit, setUnit] = useState('');
+  const [linkedGoalId, setLinkedGoalId] = useState<string>('');
+
+  useEffect(() => {
+    if (isOpen) {
+      setShowTemplates(true);
+      setName('');
+      setType('yesno');
+      setTarget('1');
+      setUnit('');
+      setLinkedGoalId('');
+    }
+  }, [isOpen]);
+
+  const selectTemplate = (tpl: HabitTemplate) => {
+    setName(tpl.name);
+    setType(tpl.type);
+    if (tpl.targetValue) setTarget(tpl.targetValue.toString());
+    if (tpl.unit) setUnit(tpl.unit);
+    setShowTemplates(false);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -397,6 +425,7 @@ function AddHabitModal({ isOpen, onCancel, onSave }: { isOpen: boolean; onCancel
       unit: type !== 'yesno' ? unit : undefined,
       frequency: 'daily',
       isActive: true,
+      linkedGoalId: linkedGoalId || undefined,
       createdAt: new Date().toISOString()
     });
   };
@@ -405,76 +434,124 @@ function AddHabitModal({ isOpen, onCancel, onSave }: { isOpen: boolean; onCancel
     <EditorialModal 
       isOpen={isOpen} 
       onClose={onCancel}
-      title="Define a Rhythm."
+      title={showTemplates ? "Inspiration." : "Define a Rhythm."}
       subtitle="Creation / Architecture"
     >
-      <form onSubmit={handleSubmit} className="flex flex-col gap-8">
-        <EditorialInput 
-          label="Habit Name"
-          required
-          placeholder="e.g., Morning Reflection"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-
-        <div className="flex flex-col gap-3">
-          <label className="editorial-meta">Measurement Type</label>
-          <div className="flex gap-4">
-            {[
-              { id: 'yesno', icon: Check, label: 'Yes/No' },
-              { id: 'numeric', icon: Hash, label: 'Value' },
-              { id: 'timer', icon: Clock, label: 'Timer' }
-            ].map(opt => (
+      {showTemplates ? (
+        <div className="flex flex-col gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {HABIT_TEMPLATES.map(tpl => (
               <button
-                key={opt.id}
+                key={tpl.id}
                 type="button"
-                onClick={() => setType(opt.id as Habit['type'])}
-                className={`flex-1 flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${
-                  type === opt.id ? 'bg-ink border-ink text-paper' : 'border-ink/5 hover:border-ink/20 text-accent'
-                }`}
+                onClick={() => selectTemplate(tpl)}
+                className="text-left p-4 rounded-2xl border border-ink/5 hover:border-ink/20 hover:bg-ink/5 transition-all flex flex-col gap-2 group"
               >
-                <opt.icon size={18} />
-                <span className="font-mono text-[9px] uppercase tracking-tighter">{opt.label}</span>
+                <div className="flex justify-between items-start">
+                  <span className="font-serif italic text-lg group-hover:text-ink">{tpl.name}</span>
+                  <span className="text-[10px] uppercase font-mono px-2 py-1 bg-ink/5 rounded-full text-ink/40">{tpl.category}</span>
+                </div>
+                <span className="text-xs opacity-50 leading-relaxed">{tpl.description}</span>
               </button>
             ))}
           </div>
+          
+          <div className="flex justify-center mt-4">
+            <button 
+              type="button"
+              onClick={() => setShowTemplates(false)}
+              className="text-xs uppercase tracking-widest font-mono text-accent hover:text-ink transition-colors border-b border-transparent hover:border-ink pb-1"
+            >
+              Or create from scratch
+            </button>
+          </div>
         </div>
+      ) : (
+        <form onSubmit={handleSubmit} className="flex flex-col gap-8">
+          <EditorialInput 
+            label="Habit Name"
+            required
+            autoFocus
+            placeholder="e.g., Morning Reflection"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
 
-        {type !== 'yesno' && (
-          <motion.div 
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            className="flex flex-col gap-6"
-          >
-            <div className="flex flex-col gap-3">
-              <label className="editorial-meta">Target Goal</label>
-              <div className="flex items-end gap-4">
-                <EditorialInput 
-                  type="number"
-                  required
-                  className="flex-1"
-                  value={target}
-                  onChange={(e) => setTarget(e.target.value)}
-                />
-                <EditorialInput 
-                  className="w-24"
-                  variant="mono"
-                  placeholder="Unit"
-                  value={unit}
-                  onChange={(e) => setUnit(e.target.value)}
-                />
-              </div>
+          <div className="flex flex-col gap-3">
+            <label className="editorial-meta">Measurement Type</label>
+            <div className="flex gap-4">
+              {[
+                { id: 'yesno', icon: Check, label: 'Yes/No' },
+                { id: 'numeric', icon: Hash, label: 'Value' },
+                { id: 'timer', icon: Clock, label: 'Timer' }
+              ].map(opt => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setType(opt.id as Habit['type'])}
+                  className={`flex-1 flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${
+                    type === opt.id ? 'bg-ink border-ink text-paper' : 'border-ink/5 hover:border-ink/20 text-accent'
+                  }`}
+                >
+                  <opt.icon size={18} />
+                  <span className="font-mono text-[9px] uppercase tracking-tighter">{opt.label}</span>
+                </button>
+              ))}
             </div>
-          </motion.div>
-        )}
+          </div>
 
-        <div className="flex justify-end gap-6 pt-6 border-t border-ink/5">
-          <button type="button" onClick={onCancel} className="editorial-meta hover:text-ink transition-colors">Discard</button>
-          <EditorialButton type="submit">
-            Establish Habit
-          </EditorialButton>
-        </div>
-      </form>
+          {type !== 'yesno' && (
+            <motion.div 
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              className="flex flex-col gap-6"
+            >
+              <div className="flex flex-col gap-3">
+                <label className="editorial-meta">Target Goal</label>
+                <div className="flex items-end gap-4">
+                  <EditorialInput 
+                    type="number"
+                    required
+                    className="flex-1"
+                    value={target}
+                    onChange={(e) => setTarget(e.target.value)}
+                  />
+                  <EditorialInput 
+                    className="w-24"
+                    variant="mono"
+                    placeholder="Unit"
+                    value={unit}
+                    onChange={(e) => setUnit(e.target.value)}
+                  />
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {goals && goals.length > 0 && (
+            <div className="flex flex-col gap-3">
+              <label className="editorial-meta">Anchor to a Goal (Optional)</label>
+              <select 
+                className="w-full bg-transparent border-b border-ink/20 focus:border-ink outline-none py-3 font-serif text-lg italic appearance-none cursor-pointer"
+                value={linkedGoalId}
+                onChange={(e) => setLinkedGoalId(e.target.value)}
+              >
+                <option value="" className="font-sans not-italic text-sm">-- No goal --</option>
+                {goals.map(g => (
+                  <option key={g.id} value={g.id} className="font-sans not-italic text-sm">{g.title}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          <div className="flex justify-between items-center pt-4 border-t border-ink/5">
+            <button type="button" onClick={() => setShowTemplates(true)} className="editorial-meta hover:text-ink transition-colors">Back</button>
+            <EditorialButton type="submit" icon={<Plus size={14} />}>
+              Establish Habit
+            </EditorialButton>
+          </div>
+        </form>
+      )}
     </EditorialModal>
   );
 }

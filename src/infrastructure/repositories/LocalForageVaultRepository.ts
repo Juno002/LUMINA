@@ -30,7 +30,8 @@ const DEFAULT_VAULT: Vault = {
     level: 1,
     currentStreak: 0,
     longestStreak: 0
-  }
+  },
+  closedDays: []
 };
 
 const VAULT_KEY = 'encrypted_vault_data';

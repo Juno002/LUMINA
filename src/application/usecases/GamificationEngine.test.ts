@@ -21,7 +21,8 @@ describe('GamificationEngine', () => {
       level: 1,
       currentStreak: 0,
       longestStreak: 0
-    }
+    },
+    closedDays: []
   };
 
   it('awards XP correctly', () => {

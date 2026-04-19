@@ -7,7 +7,7 @@ import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { AnimationSpeeds, EasingCurves } from '../../domain/constants/Theme';
 import { CheckCircle2, Flame, Sparkles, Plus, Check } from 'lucide-react';
-import { ActivationActivity } from '../../domain/entities';
+import { ActivationActivity, Habit, Goal } from '../../domain/entities';
 import { todayISO } from '../../shared/utils/DateFormatter';
 import { triggerHaptic } from '../../shared/utils/Haptics';
 import ActivityItem from '../components/domain/activation/ActivityItem';
@@ -19,12 +19,14 @@ import {
 
 interface ActivationViewProps {
   activities: ActivationActivity[];
+  habits?: Habit[];
+  goals?: Goal[];
   onUpdate: (activities: ActivationActivity[]) => void;
 }
 
-export default function ActivationView({ activities, onUpdate }: ActivationViewProps) {
+export default function ActivationView({ activities, habits = [], goals = [], onUpdate }: ActivationViewProps) {
   const [isAdding, setIsAdding] = useState(false);
-  const [newActivity, setNewActivity] = useState({ title: '', value: 5, difficulty: 5 });
+  const [newActivity, setNewActivity] = useState({ title: '', value: 5, difficulty: 5, linkedHabitId: '', linkedGoalId: '' });
 
   const activeActivities = useMemo(() => 
     activities.filter(a => !a.completed).sort((a,b) => b.value - a.value), 
@@ -45,10 +47,13 @@ export default function ActivationView({ activities, onUpdate }: ActivationViewP
       value: newActivity.value,
       difficulty: newActivity.difficulty,
       completed: false,
-      plannedDate: todayISO()
+      subtasks: [],
+      plannedDate: todayISO(),
+      linkedHabitId: newActivity.linkedHabitId || undefined,
+      linkedGoalId: newActivity.linkedGoalId || undefined
     };
     onUpdate([activity, ...activities]);
-    setNewActivity({ title: '', value: 5, difficulty: 5 });
+    setNewActivity({ title: '', value: 5, difficulty: 5, linkedHabitId: '', linkedGoalId: '' });
     setIsAdding(false);
   };
 
@@ -95,6 +100,8 @@ export default function ActivationView({ activities, onUpdate }: ActivationViewP
                    <ActivityItem 
                      key={activity.id} 
                      activity={activity} 
+                     linkedHabit={habits.find(h => h.id === activity.linkedHabitId)}
+                     linkedGoal={goals.find(g => g.id === activity.linkedGoalId)}
                      onToggle={() => handleToggle(activity.id)}
                      onDelete={() => handleDelete(activity.id)}
                    />
@@ -165,6 +172,39 @@ export default function ActivationView({ activities, onUpdate }: ActivationViewP
                 <label className="editorial-meta text-[9px]">Mastery Effort ({newActivity.difficulty}/10)</label>
                 <input type="range" min="1" max="10" className="accent-ink h-10" value={newActivity.difficulty} onChange={(e) => setNewActivity({...newActivity, difficulty: parseInt(e.target.value)})} />
               </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {habits && habits.length > 0 && (
+              <div className="flex flex-col gap-3">
+                <label className="editorial-meta">Anchor to Habit (Optional)</label>
+                <select 
+                  className="w-full bg-transparent border-b border-ink/20 focus:border-ink outline-none py-3 font-serif text-lg italic appearance-none cursor-pointer"
+                  value={newActivity.linkedHabitId}
+                  onChange={(e) => setNewActivity({...newActivity, linkedHabitId: e.target.value})}
+                >
+                  <option value="" className="font-sans not-italic text-sm">-- No habit --</option>
+                  {habits.map(h => (
+                    <option key={h.id} value={h.id} className="font-sans not-italic text-sm">{h.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+            {goals && goals.length > 0 && (
+              <div className="flex flex-col gap-3">
+                <label className="editorial-meta">Anchor to Goal (Optional)</label>
+                <select 
+                  className="w-full bg-transparent border-b border-ink/20 focus:border-ink outline-none py-3 font-serif text-lg italic appearance-none cursor-pointer"
+                  value={newActivity.linkedGoalId}
+                  onChange={(e) => setNewActivity({...newActivity, linkedGoalId: e.target.value})}
+                >
+                  <option value="" className="font-sans not-italic text-sm">-- No goal --</option>
+                  {goals.map(g => (
+                    <option key={g.id} value={g.id} className="font-sans not-italic text-sm">{g.title}</option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
           <div className="flex justify-between items-center pt-4">
               <button onClick={() => setIsAdding(false)} className="editorial-meta">Discard</button>

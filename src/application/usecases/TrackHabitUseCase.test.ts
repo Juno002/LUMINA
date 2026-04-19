@@ -30,7 +30,8 @@ describe('TrackHabitUseCase', () => {
       level: 1,
       currentStreak: 0,
       longestStreak: 0
-    }
+    },
+    closedDays: []
   };
 
   it('toggles habit log (creates new)', () => {

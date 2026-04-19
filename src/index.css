@@ -37,6 +37,15 @@
   body {
     @apply bg-paper text-ink selection:bg-ink selection:text-paper font-sans antialiased;
     text-rendering: optimizeLegibility;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+  
+  /* Mobile touch targets */
+  button, a, input, select {
+    @apply min-h-[44px]; /* Apple HIG minimum touch target */
   }
 }
 

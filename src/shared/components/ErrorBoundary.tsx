@@ -1,4 +1,4 @@
-import React, { ErrorInfo, ReactNode } from "react";
+import React, { Component, ErrorInfo, ReactNode } from "react";
 
 interface Props {
   children?: ReactNode;
@@ -9,13 +9,14 @@ interface State {
   error: Error | null;
 }
 
-export class ErrorBoundary extends React.Component<Props, State> {
+export class ErrorBoundary extends Component<Props, State> {
+  state: State = {
+    hasError: false,
+    error: null
+  };
+
   public constructor(props: Props) {
     super(props);
-    this.state = {
-      hasError: false,
-      error: null
-    };
   }
 
   public static getDerivedStateFromError(error: Error): State {
@@ -27,7 +28,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
   }
 
   public render() {
-    if (this.state.hasError) {
+    if ((this.state as any).hasError) {
       return (
         <div className="flex flex-col items-center justify-center h-screen w-screen bg-paper text-ink p-8 font-sans">
           <div className="max-w-lg w-full border border-ink/10 rounded-3xl p-10 shadow-2xl shadow-ink/5">
@@ -36,7 +37,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
               Lumina encountered an unexpected error.
             </p>
             <div className="bg-ink/5 p-4 rounded-xl mb-8 overflow-auto text-xs font-mono max-h-48 text-ink/70">
-              {this.state.error?.message}
+              {(this.state as any).error?.message}
             </div>
             <button
               onClick={() => window.location.reload()}
@@ -49,6 +50,6 @@ export class ErrorBoundary extends React.Component<Props, State> {
       );
     }
 
-    return this.props.children;
+    return (this as any).props.children;
   }
 }

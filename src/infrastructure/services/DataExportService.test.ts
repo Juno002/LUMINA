@@ -16,6 +16,7 @@ describe('DataExportService', () => {
         id: '1',
         date: '2026-04-18',
         level: 3,
+        situation: 'Work meeting',
         primaryEmotion: 'Anxiety',
         intensity: 8,
         automaticThought: 'I will fail',

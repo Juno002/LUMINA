@@ -6,10 +6,12 @@
 import React from 'react';
 import { motion } from "motion/react";
 import { Circle, CheckCircle2 } from "lucide-react";
-import { ActivationActivity } from "../../../../domain/entities";
+import { ActivationActivity, Habit, Goal } from "../../../../domain/entities";
 
 interface ActivityItemProps {
   activity: ActivationActivity;
+  linkedHabit?: Habit;
+  linkedGoal?: Goal;
   onToggle: () => void;
   onDelete: () => void;
 }
@@ -18,7 +20,7 @@ interface ActivityItemProps {
  * ActivityItem Component:
  * Un ítem de activación conductual. Mantiene el contrato de la tarea.
  */
-const ActivityItem: React.FC<ActivityItemProps> = ({ activity, onToggle, onDelete }) => {
+const ActivityItem: React.FC<ActivityItemProps> = ({ activity, linkedHabit, linkedGoal, onToggle, onDelete }) => {
   return (
     <motion.div 
       layout
@@ -28,9 +30,11 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity, onToggle, onDelet
         <h4 className={`font-serif text-xl ${activity.completed ? 'opacity-30 line-through' : ''}`}>
           {activity.title}
         </h4>
-        <div className="flex gap-4">
-           <span className="editorial-meta text-[8px] uppercase text-accent">Joy: {activity.value}/10</span>
-           <span className="editorial-meta text-[8px] uppercase text-accent">Effort: {activity.difficulty}/10</span>
+        <div className="flex flex-wrap items-center gap-2 mt-1">
+           <span className="editorial-meta text-[8px] uppercase text-accent border border-ink/5 rounded px-1.5 py-0.5">Joy: {activity.value}/10</span>
+           <span className="editorial-meta text-[8px] uppercase text-accent border border-ink/5 rounded px-1.5 py-0.5">Effort: {activity.difficulty}/10</span>
+           {linkedHabit && <span className="editorial-meta text-[8px] uppercase text-ink bg-ink/5 rounded px-1.5 py-0.5">Habit: {linkedHabit.name}</span>}
+           {linkedGoal && <span className="editorial-meta text-[8px] uppercase text-ink bg-ink/5 rounded px-1.5 py-0.5">Aim: {linkedGoal.title}</span>}
         </div>
         {!activity.completed && (
           <button 

@@ -72,6 +72,10 @@ export interface ActivationActivity {
   plannedDate: string;
   completed: boolean;
   subtasks: string[];
+  linkedHabitId?: string;
+  linkedGoalId?: string;
+  completedAt?: string; // ISO timestamp
+  completedDate?: string; // YYYY-MM-DD for daily filtering
 }
 
 export type RecurrencePattern = 'none' | 'daily' | 'weekly' | 'monthly';
@@ -170,6 +174,7 @@ export interface Habit {
   isActive: boolean;
   createdAt: string;
   archivedAt?: string;
+  linkedGoalId?: string;
 }
 
 export interface HabitLog {
