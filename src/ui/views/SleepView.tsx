@@ -247,9 +247,28 @@ export default function SleepView({ entries, onUpdate }: { entries: SleepEntry[]
                  <p className="text-xs italic opacity-50 font-serif">
                    {language === 'es'
                      ? "Busca 10-20 minutos de luz solar intensa dentro de los 30 minutos posteriores al despertar para anclar tu reloj biológico."
-                     : "Seek 10-20 minutes of bright sunlight within 30 minutes of waking to anchor your clock."}
+                     : "Seek 10-20 minutes of bright sunlight within 30 minutes of waking to anchor your biological clock."}
                  </p>
                </div>
+            </div>
+            <div className="p-8 border border-ink/5 rounded-[2rem] bg-paper flex flex-col gap-6">
+               <Moon size={20} className="text-accent" />
+               <div className="flex flex-col gap-2">
+                 <div className="editorial-meta">{language === 'es' ? 'Protocolo Nocturno' : 'Nighttime Protocol'}</div>
+                 <p className="text-xs italic opacity-50 font-serif">
+                   {language === 'es'
+                     ? "Evita la luz azul y el ejercicio intenso 2 horas antes de dormir. La cama es solo para dormir y el ritual de descanso."
+                     : "Avoid blue light and intense exercise 2 hours before bed. The bed is only for sleep and restorative rituals."}
+                 </p>
+               </div>
+            </div>
+            <div className="p-8 border border-ink/5 rounded-[2rem] bg-ink/[0.02] flex flex-col gap-4 border-dashed">
+               <div className="editorial-meta text-[10px] opacity-40 uppercase tracking-widest">{language === 'es' ? 'Recomendación Técnica' : 'Technical Recommendation'}</div>
+               <p className="text-[10px] italic leading-relaxed font-serif opacity-50">
+                 {language === 'es' 
+                   ? "Para una mayor precisión en las métricas de eficiencia y latencia, recomendamos el uso de dispositivos como Oura, Whoop o Apple Watch para sincronizar tus datos manualmente."
+                   : "For higher precision in efficiency and latency metrics, we recommend using devices like Oura, Whoop, or Apple Watch to sync your data manually."}
+               </p>
             </div>
           </div>
         </div>

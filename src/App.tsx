@@ -60,6 +60,7 @@ export default function App() {
   const [showDayClosure, setShowDayClosure] = useState(false);
   const [newLevel, setNewLevel] = useState<number | null>(null);
   const [isNavHubOpen, setIsNavHubOpen] = useState(false);
+  const [tempLanguage, setTempLanguage] = useState<Language>('en');
 
   const {
     vault, isReady, isLocked, vaultExists, unlockError,
@@ -156,14 +157,16 @@ export default function App() {
     );
   }
 
-  const currentLanguage = (vault?.profile.language || 'en') as Language;
-
+  const currentLanguage = (vault?.profile.language || tempLanguage) as Language;
+  
   const handleLanguageChange = (lang: Language) => {
     if (vault) {
       updateVault({
         ...vault,
         profile: { ...vault.profile, language: lang }
       });
+    } else {
+      setTempLanguage(lang);
     }
   };
 

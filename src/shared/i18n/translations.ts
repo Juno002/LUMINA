@@ -60,6 +60,13 @@ export const translations = {
       closure_ritual: 'Closure Ritual',
       begin_synthesis: 'Begin the final synthesis.'
     },
+    clinical_insights: {
+      anxiety: 'Worry is just a shadow of the future. Come back to the present moment.',
+      depression: 'Momentum is built in small steps. Completing one task is a significant victory.',
+      ocd: 'Uncertainty is uncomfortable, but not dangerous. Let the thought exist without reaction.',
+      sleep: 'The quality of your tomorrow is built tonight. Honor your restorative ritual.',
+      general: 'Emotional sovereignty begins with non-judgmental observation.'
+    },
     journal: {
       title: 'Cognitive Chronicle',
       new_entry: 'New Observation',
@@ -242,6 +249,9 @@ export const translations = {
     welcome: {
       title: 'Lumina.',
       subtitle: 'An editorial space for cognitive clarity and emotional sovereignty.',
+      disclaimer_title: 'Clinical Disclaimer',
+      disclaimer_body: 'Lumina is an editorial and clinical tool designed to complement therapy, not to replace it. If you are in a mental health crisis, please contact emergency services immediately.',
+      disclaimer_button: 'I Understand',
       begin: 'Begin Initialization',
       step_identity: 'Step 01 / Identity',
       ask_name: 'How should we address you?',
@@ -250,9 +260,15 @@ export const translations = {
       define_focus: 'Define your primary focus.',
       calibrate_lambda: "This calibrates Lambda's distortion detection engine.",
       focus_anxiety: 'Anxiety & Worry',
+      focus_anxiety_desc: 'Focus on cognitive distortions, panic, and worry patterns.',
       focus_mood: 'Mood & Energy',
-      focus_anger: 'Irritability & Anger',
+      focus_mood_desc: 'Track energy levels, anhedonia, and behavioral activation.',
+      focus_ocd: 'OCD & ERP Protocol',
+      focus_ocd_desc: 'Exposure tracking for obsessions and compulsions.',
+      focus_sleep: 'Sleep & CBT-I',
+      focus_sleep_desc: 'CBT-I protocol for chronic insomnia and sleep hygiene.',
       focus_general: 'General Exploration',
+      focus_general_desc: 'Balanced tracking of emotions and behavioral habits.',
       step_sovereignty: 'Step 03 / Sovereignty',
       secure_vault: 'Secure your local vault.',
       zero_knowledge_warning: 'Lumina uses zero-knowledge encryption. If you lose this passphrase, your data is unrecoverable.',
@@ -320,6 +336,13 @@ export const translations = {
       day_secured: 'El día está asegurado.',
       closure_ritual: 'Ritual de Cierre',
       begin_synthesis: 'Comenzar la síntesis final.'
+    },
+    clinical_insights: {
+      anxiety: 'La preocupación es solo una sombra del futuro. Regresa al momento presente.',
+      depression: 'El momentum se construye en pasos pequeños. Completar una tarea es una victoria significativa.',
+      ocd: 'La incertidumbre es incómoda, pero no peligrosa. Deja que el pensamiento exista sin reaccionar.',
+      sleep: 'La calidad de tu mañana se construye esta noche. Honra tu ritual de restauración.',
+      general: 'La soberanía emocional comienza con la observación sin juicio.'
     },
     journal: {
       title: 'Crónica Cognitiva',
@@ -503,6 +526,9 @@ export const translations = {
     welcome: {
       title: 'Lumina.',
       subtitle: 'Un espacio editorial para la claridad cognitiva y la soberanía emocional.',
+      disclaimer_title: 'Aviso Clínico',
+      disclaimer_body: 'Lumina es una herramienta editorial y clínica diseñada para complementar la terapia, no para reemplazarla. Si te encuentras en una crisis de salud mental, por favor contacta a los servicios de emergencia de inmediato.',
+      disclaimer_button: 'Entendido',
       begin: 'Iniciar Inicialización',
       step_identity: 'Paso 01 / Identidad',
       ask_name: '¿Cómo deberíamos llamarte?',
@@ -511,9 +537,15 @@ export const translations = {
       define_focus: 'Define tu enfoque principal.',
       calibrate_lambda: 'Esto calibra el motor de detección de distorsiones de Lambda.',
       focus_anxiety: 'Ansiedad y Preocupación',
+      focus_anxiety_desc: 'Enfoque en distorsiones cognitivas, pánico y patrones de preocupación.',
       focus_mood: 'Estado de Ánimo y Energía',
-      focus_anger: 'Irritabilidad e Ira',
+      focus_mood_desc: 'Seguimiento de niveles de energía, anhedonia y activación conductual.',
+      focus_ocd: 'TOC y Protocolo ERP',
+      focus_ocd_desc: 'Seguimiento de exposición para obsesiones y compulsiones.',
+      focus_sleep: 'Sueño y CBT-I',
+      focus_sleep_desc: 'Protocolo CBT-I para insomnio crónico e higiene del sueño.',
       focus_general: 'Exploración General',
+      focus_general_desc: 'Seguimiento equilibrado de emociones y hábitos conductuales.',
       step_sovereignty: 'Paso 03 / Soberanía',
       secure_vault: 'Asegura tu bóveda local.',
       zero_knowledge_warning: 'Lumina utiliza cifrado de conocimiento cero. Si pierdes esta contraseña, tus datos serán irrecuperables.',

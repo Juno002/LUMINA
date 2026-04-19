@@ -85,9 +85,9 @@ export function useVault() {
     return true;
   };
 
-  const createVault = async (name: string, password: string, clinicalProfile: ClinicalProfile = 'unspecified'): Promise<boolean> => {
+  const createVault = async (name: string, password: string, clinicalProfile: ClinicalProfile = 'unspecified', language: string = 'en'): Promise<boolean> => {
     const newVault: Vault = {
-      profile: { name, initialized: true, clinicalProfile, soundEnabled: true },
+      profile: { name, initialized: true, clinicalProfile, soundEnabled: true, language },
       createdAt: new Date().toISOString(),
       journal: [],
       exposure: { hierarchy: [], logs: [] },

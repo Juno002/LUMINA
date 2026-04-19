@@ -5,20 +5,20 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowRight, Shield, User, Heart, Lock, Globe } from 'lucide-react';
+import { ArrowRight, Shield, User, Heart, Lock, Globe, ShieldAlert, Zap, Moon, CloudRain } from 'lucide-react';
 import { ClinicalProfile } from '../../domain/entities';
 import { useTranslation } from '../../application/contexts/LanguageContext';
 import { cn } from '../../shared/utils/TailwindMerge';
 
 interface WelcomeViewProps {
-  onCreateVault: (name: string, password: string, clinicalProfile: ClinicalProfile) => void;
+  onCreateVault: (name: string, password: string, clinicalProfile: ClinicalProfile, language: string) => void;
 }
 
-type SetupStep = 'intro' | 'name' | 'profile' | 'security';
+type SetupStep = 'disclaimer' | 'intro' | 'name' | 'profile' | 'security';
 
 export default function WelcomeView({ onCreateVault }: WelcomeViewProps) {
   const { t, language, setLanguage } = useTranslation();
-  const [step, setStep] = useState<SetupStep>('intro');
+  const [step, setStep] = useState<SetupStep>('disclaimer');
   const [name, setName] = useState('');
   const [profile, setProfile] = useState<ClinicalProfile>('unspecified');
   const [password, setPassword] = useState('');
@@ -31,7 +31,7 @@ export default function WelcomeView({ onCreateVault }: WelcomeViewProps) {
       // Give UI a frame to show loading state
       await new Promise(r => setTimeout(r, 100));
       try {
-        await onCreateVault(name.trim(), password, profile);
+        await onCreateVault(name.trim(), password, profile, language);
       } catch (e) {
         console.error("Initialization failed", e);
         setIsInitializing(false);
@@ -48,6 +48,34 @@ export default function WelcomeView({ onCreateVault }: WelcomeViewProps) {
   return (
     <div className="flex flex-col items-center justify-center min-h-[90vh] w-full p-6 bg-paper selection:bg-ink selection:text-paper">
       <AnimatePresence mode="wait">
+        {step === 'disclaimer' && (
+          <motion.div 
+            key="disclaimer"
+            variants={containerVariants}
+            initial="initial" animate="animate" exit="exit"
+            className="max-w-xl w-full flex flex-col gap-10 text-center"
+          >
+            <div className="flex flex-col gap-8 items-center">
+              <div className="w-16 h-16 rounded-full bg-ink/5 flex items-center justify-center text-ink">
+                <ShieldAlert size={32} />
+              </div>
+              <div className="flex flex-col gap-4">
+                <h1 className="font-serif text-4xl md:text-5xl">{t('welcome.disclaimer_title')}</h1>
+                <p className="font-serif italic text-lg text-accent leading-relaxed">
+                  {t('welcome.disclaimer_body')}
+                </p>
+              </div>
+            </div>
+
+            <button 
+              onClick={() => setStep('intro')}
+              className="mx-auto flex items-center gap-4 bg-ink text-paper px-10 py-5 rounded-full font-mono text-[10px] uppercase tracking-[0.3em] hover:opacity-80 transition-all"
+            >
+              {t('welcome.disclaimer_button')} <ArrowRight size={14} />
+            </button>
+          </motion.div>
+        )}
+
         {step === 'intro' && (
           <motion.div 
             key="intro"
@@ -137,22 +165,32 @@ export default function WelcomeView({ onCreateVault }: WelcomeViewProps) {
               <p className="text-sm text-accent italic">{t('welcome.calibrate_lambda')}</p>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               {[
-                { id: 'anxiety', label: t('welcome.focus_anxiety'), icon: Heart },
-                { id: 'depression', label: t('welcome.focus_mood'), icon: Heart },
-                { id: 'anger', label: t('welcome.focus_anger'), icon: Heart },
-                { id: 'unspecified', label: t('welcome.focus_general'), icon: User }
+                { id: 'anxiety', label: t('welcome.focus_anxiety'), desc: t('welcome.focus_anxiety_desc'), icon: Shield },
+                { id: 'depression', label: t('welcome.focus_mood'), desc: t('welcome.focus_mood_desc'), icon: Heart },
+                { id: 'ocd', label: t('welcome.focus_ocd'), desc: t('welcome.focus_ocd_desc'), icon: Zap },
+                { id: 'sleep', label: t('welcome.focus_sleep'), desc: t('welcome.focus_sleep_desc'), icon: Moon },
+                { id: 'unspecified', label: t('welcome.focus_general'), desc: t('welcome.focus_general_desc'), icon: Globe }
               ].map((opt) => (
                 <button
                   key={opt.id}
                   onClick={() => setProfile(opt.id as ClinicalProfile)}
-                  className={`p-6 rounded-3xl border transition-all text-left flex flex-col gap-4 ${
+                  className={`p-6 rounded-3xl border transition-all text-left flex items-start gap-6 group ${
                     profile === opt.id ? 'bg-ink border-ink text-paper' : 'border-ink/10 hover:border-ink/30 text-accent'
                   }`}
                 >
-                  <opt.icon size={20} className={profile === opt.id ? 'text-paper' : 'text-accent'} />
-                  <span className="font-serif text-xl">{opt.label}</span>
+                  <div className={`p-4 rounded-2xl transition-colors ${
+                    profile === opt.id ? 'bg-paper/10 text-paper' : 'bg-ink/5 text-ink'
+                  }`}>
+                    <opt.icon size={24} />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <span className="font-serif text-xl">{opt.label}</span>
+                    <span className={`text-xs italic opacity-60 ${profile === opt.id ? 'text-paper' : 'text-accent'}`}>
+                      {opt.desc}
+                    </span>
+                  </div>
                 </button>
               ))}
             </div>

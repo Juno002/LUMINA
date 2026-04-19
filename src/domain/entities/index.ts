@@ -135,7 +135,7 @@ export interface SleepEntry {
   sleepEfficiencyPct: number;   // (timeAsleepMin / timeInBedMin) * 100
 }
 
-export type ClinicalProfile = 'anxiety' | 'depression' | 'anger' | 'unspecified';
+export type ClinicalProfile = 'anxiety' | 'depression' | 'ocd' | 'sleep' | 'unspecified';
 
 export interface CrisisContact {
   id: string;

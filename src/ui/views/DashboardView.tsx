@@ -143,7 +143,15 @@ export default function DashboardView({ vault, onUpdate, onOpenCrisis, onOpenDay
           <p className="text-xl md:text-3xl leading-tight font-serif italic max-w-2xl">
             "{context.quote}"
           </p>
-          <p className="editorial-meta text-[9px] opacity-40 italic uppercase tracking-widest">{context.suggestion}</p>
+          <div className="flex flex-col gap-2">
+            <p className="editorial-meta text-[9px] opacity-40 italic uppercase tracking-widest">{context.suggestion}</p>
+            <div className="flex items-center gap-3 py-4 border-y border-ink/5 mt-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></div>
+              <p className="text-xs font-serif italic text-accent opacity-80">
+                {t(`clinical_insights.${vault.profile?.clinicalProfile || 'general'}` as any)}
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Mobile-Only Quick Stats Pulse */}

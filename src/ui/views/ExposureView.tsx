@@ -98,6 +98,7 @@ export default function ExposureView({ data, onUpdate }: { data: ExposureData, o
       safetyBehaviorsAvoided: activeSession.safetyBehaviorsAvoided
     };
     onUpdate({ ...data, logs: [newLog, ...data.logs] });
+    triggerHaptic('success');
     setActiveSession(null);
     setShowAdvanced(false);
   };
@@ -364,7 +365,7 @@ export default function ExposureView({ data, onUpdate }: { data: ExposureData, o
                      <div key={log.id} className="group border border-ink/5 rounded-[2rem] bg-paper overflow-hidden hover:shadow-xl hover:shadow-ink/[0.02] transition-all">
                         <LogItem log={log} anchorText={item?.text || t('common.removedAnchor')} />
                         {(log.catastrophicPrediction || log.realOutcome) && (
-                          <div className="px-8 pb-8 pt-2 grid grid-cols-1 md:grid-cols-2 gap-8 border-t border-ink/5 mt-4">
+                           <div className="px-8 pb-8 pt-2 grid grid-cols-1 md:grid-cols-2 gap-8 border-t border-ink/5 mt-4">
                              {log.catastrophicPrediction && (
                                <div className="flex flex-col gap-2">
                                   <span className="text-[8px] font-mono uppercase tracking-widest text-accent opacity-60">{t('exposure.shadowLabel')}</span>
@@ -375,6 +376,12 @@ export default function ExposureView({ data, onUpdate }: { data: ExposureData, o
                                <div className="flex flex-col gap-2">
                                   <span className="text-[8px] font-mono uppercase tracking-widest text-accent opacity-60">{t('exposure.lightLabel')}</span>
                                   <p className="text-sm font-serif italic text-ink leading-relaxed">"{log.realOutcome}"</p>
+                               </div>
+                             )}
+                             {log.safetyBehaviorsAvoided && (
+                               <div className="col-span-1 md:col-span-2 flex flex-col gap-2 border-t border-ink/5 pt-4">
+                                  <span className="text-[8px] font-mono uppercase tracking-widest text-accent opacity-60">{t('exposure.safetyBehaviors')}</span>
+                                  <p className="text-sm font-serif italic text-green-600/70 leading-relaxed">"{log.safetyBehaviorsAvoided}"</p>
                                </div>
                              )}
                           </div>
