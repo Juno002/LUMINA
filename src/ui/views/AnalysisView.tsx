@@ -202,7 +202,6 @@ export default function AnalysisView({ vault }: { vault: Vault }) {
             </p>
           </div>
         </div>
-        </div>
       </div>
 
       {inferredBeliefs && (
