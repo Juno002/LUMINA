@@ -157,6 +157,7 @@ export interface UserProfile {
   autoLockMinutes?: number; // 1, 3, 5, 10, 30
   soundEnabled?: boolean; // NEW: Audio feedback preference
   theme?: 'default' | 'night' | 'ink-deep'; // NEW: Visual theme preference
+  language?: 'en' | 'es'; // NEW: Language preference
 }
 
 // --- Habits ---

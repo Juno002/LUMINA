@@ -38,6 +38,7 @@ import {
   EditorialModal, 
   EditorialInput 
 } from '../components/shared';
+import { useTranslation } from '../../application/contexts/LanguageContext';
 
 interface HabitsViewProps {
   vault: Vault;
@@ -46,6 +47,7 @@ interface HabitsViewProps {
 }
 
 export default function HabitsView({ vault, onUpdate, onLevelUp }: HabitsViewProps) {
+  const { t, language } = useTranslation();
   const [isAdding, setIsAdding] = useState(false);
   const [editingValueId, setEditingValueId] = useState<string | null>(null);
   const today = todayISO();
@@ -132,13 +134,13 @@ export default function HabitsView({ vault, onUpdate, onLevelUp }: HabitsViewPro
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div className="flex flex-col gap-2">
           <div className="editorial-meta">Rhythm / Daily Architecture</div>
-          <h2 className="font-serif text-3xl md:text-4xl">Discipline Forged.</h2>
+          <h2 className="font-serif text-3xl md:text-4xl">{t('habits.title')}.</h2>
         </div>
         <EditorialButton 
           onClick={() => setIsAdding(true)}
           icon={<Plus size={14} />}
         >
-          New Habit
+          {t('habits.new_habit')}
         </EditorialButton>
       </div>
 
@@ -146,11 +148,11 @@ export default function HabitsView({ vault, onUpdate, onLevelUp }: HabitsViewPro
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         <div className="p-8 border border-ink/5 rounded-3xl bg-ink/[0.01] flex flex-col gap-4">
           <div className="flex justify-between items-start">
-            <div className="editorial-meta">Current Streak</div>
+            <div className="editorial-meta">{t('habits.streak')}</div>
             <Flame size={16} className={currentStreak > 0 ? "text-orange-400" : "text-accent opacity-20"} />
           </div>
-          <div className="font-serif text-5xl font-light">{currentStreak} <span className="text-sm editorial-meta italic">days</span></div>
-          <div className="editorial-meta text-accent">Consecutive Discipline</div>
+          <div className="font-serif text-5xl font-light">{currentStreak} <span className="text-sm editorial-meta italic">{language === 'es' ? 'días' : 'days'}</span></div>
+          <div className="editorial-meta text-accent">{language === 'es' ? 'Disciplina Consecutiva' : 'Consecutive Discipline'}</div>
         </div>
 
         <div className="p-8 border border-ink/5 rounded-3xl bg-ink/[0.01] flex flex-col gap-4">
@@ -171,27 +173,27 @@ export default function HabitsView({ vault, onUpdate, onLevelUp }: HabitsViewPro
 
         <div className="p-8 border border-ink/5 rounded-3xl bg-ink/[0.01] flex flex-col gap-4">
           <div className="flex justify-between items-start">
-            <div className="editorial-meta">Record Streak</div>
+            <div className="editorial-meta">{language === 'es' ? 'Récord de Racha' : 'Record Streak'}</div>
             <Trophy size={16} className="text-accent opacity-20" />
           </div>
-          <div className="font-serif text-5xl font-light">{vault.stats?.longestStreak || 0} <span className="text-sm editorial-meta italic">days</span></div>
-          <div className="editorial-meta text-accent">Personal Best</div>
+          <div className="font-serif text-5xl font-light">{vault.stats?.longestStreak || 0} <span className="text-sm editorial-meta italic">{language === 'es' ? 'días' : 'days'}</span></div>
+          <div className="editorial-meta text-accent">{language === 'es' ? 'Mejor Marca Personal' : 'Personal Best'}</div>
         </div>
       </div>
 
       {/* Weekly Heatmap */}
       <div className="flex flex-col gap-4 p-8 border border-ink/5 rounded-3xl bg-paper">
         <div className="flex justify-between items-center">
-          <div className="editorial-meta">Weekly Consistency / Heatmap</div>
+          <div className="editorial-meta">{language === 'es' ? 'Consistencia Semanal / Mapa de Calor' : 'Weekly Consistency / Heatmap'}</div>
           <div className="flex items-center gap-4">
-             <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-sm bg-ink/5"></div><span className="text-[8px] editorial-meta uppercase opacity-40">None</span></div>
-             <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-sm bg-ink"></div><span className="text-[8px] editorial-meta uppercase opacity-40">All Done</span></div>
+             <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-sm bg-ink/5"></div><span className="text-[8px] editorial-meta uppercase opacity-40">{language === 'es' ? 'Ninguno' : 'None'}</span></div>
+             <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-sm bg-ink"></div><span className="text-[8px] editorial-meta uppercase opacity-40">{language === 'es' ? 'Completado' : 'All Done'}</span></div>
           </div>
         </div>
         <div className="grid grid-cols-7 gap-2 md:gap-4">
           {weeklyHistory.map((day) => {
             const isToday = day.date === today;
-            const dayName = new Date(day.date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short' });
+            const dayName = new Date(day.date + 'T12:00:00').toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US', { weekday: 'short' });
             return (
               <div key={day.date} className="flex flex-col items-center gap-2">
                 <div 
@@ -259,7 +261,7 @@ export default function HabitsView({ vault, onUpdate, onLevelUp }: HabitsViewPro
                       </h3>
                       {habit.linkedGoalId && (
                         <span className="text-[9px] font-mono uppercase tracking-widest px-2 py-0.5 bg-ink/5 text-ink/50 rounded-full w-fit mt-2">
-                          Aim: {(vault.goals || []).find(g => g.id === habit.linkedGoalId)?.title || 'Goal'}
+                          {language === 'es' ? 'Objetivo:' : 'Aim:'} {(vault.goals || []).find(g => g.id === habit.linkedGoalId)?.title || 'Goal'}
                         </span>
                       )}
                     </div>
@@ -278,14 +280,14 @@ export default function HabitsView({ vault, onUpdate, onLevelUp }: HabitsViewPro
                   <div className="flex flex-col gap-4 pt-2">
                     <div className="flex justify-between items-end">
                       <div className="flex flex-col">
-                         <span className="text-[10px] editorial-meta uppercase opacity-40">Progress</span>
+                         <span className="text-[10px] editorial-meta uppercase opacity-40">{t('habits.progress')}</span>
                          <span className="font-serif text-xl italic">{currentValue} / {habit.targetValue} <span className="text-[10px] editorial-meta not-italic opacity-40">{habit.unit}</span></span>
                       </div>
                       <button 
                         onClick={() => setEditingValueId(habit.id)}
                         className="text-[9px] font-mono uppercase tracking-widest text-accent hover:text-ink transition-colors"
                       >
-                        Adjust Value
+                        {language === 'es' ? 'Ajustar Valor' : 'Adjust Value'}
                       </button>
                     </div>
                     <div className="w-full h-1 bg-ink/5 rounded-full overflow-hidden">
@@ -305,7 +307,7 @@ export default function HabitsView({ vault, onUpdate, onLevelUp }: HabitsViewPro
         {activeHabits.length === 0 && (
           <div className="col-span-full py-20 border-2 border-dashed border-ink/5 rounded-[2.5rem] flex flex-col items-center justify-center gap-4">
             <Calendar className="opacity-10" size={48} strokeWidth={1} />
-            <p className="editorial-meta text-accent italic">No rhythms defined. Start building your architecture.</p>
+            <p className="editorial-meta text-accent italic">{t('habits.no_habits')}</p>
           </div>
         )}
       </div>
@@ -377,9 +379,9 @@ function ValueModal({ isOpen, habit, currentValue, onCancel, onSave }: { isOpen:
           </div>
         </div>
         <div className="flex justify-between items-center gap-4">
-          <button onClick={onCancel} className="editorial-meta">Discard</button>
+          <button onClick={onCancel} className="editorial-meta">{t('common.cancel')}</button>
           <EditorialButton onClick={() => onSave(Number(val))}>
-            Update Log
+            {language === 'es' ? 'Actualizar Registro' : 'Update Log'}
           </EditorialButton>
         </div>
       </div>
@@ -394,6 +396,7 @@ function AddHabitModal({ isOpen, goals, onCancel, onSave }: { isOpen: boolean; g
   const [target, setTarget] = useState('1');
   const [unit, setUnit] = useState('');
   const [linkedGoalId, setLinkedGoalId] = useState<string>('');
+  const { t, language } = useTranslation();
 
   useEffect(() => {
     if (isOpen) {
@@ -434,7 +437,7 @@ function AddHabitModal({ isOpen, goals, onCancel, onSave }: { isOpen: boolean; g
     <EditorialModal 
       isOpen={isOpen} 
       onClose={onCancel}
-      title={showTemplates ? "Inspiration." : "Define a Rhythm."}
+      title={showTemplates ? t('habits.templates') : t('habits.new_habit')}
       subtitle="Creation / Architecture"
     >
       {showTemplates ? (
@@ -462,28 +465,28 @@ function AddHabitModal({ isOpen, goals, onCancel, onSave }: { isOpen: boolean; g
               onClick={() => setShowTemplates(false)}
               className="text-xs uppercase tracking-widest font-mono text-accent hover:text-ink transition-colors border-b border-transparent hover:border-ink pb-1"
             >
-              Or create from scratch
+              {language === 'es' ? 'O crear desde cero' : 'Or create from scratch'}
             </button>
           </div>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="flex flex-col gap-8">
           <EditorialInput 
-            label="Habit Name"
+            label={language === 'es' ? 'Nombre del Hábito' : "Habit Name"}
             required
             autoFocus
-            placeholder="e.g., Morning Reflection"
+            placeholder={language === 'es' ? 'ej. Reflexión Matutina' : "e.g., Morning Reflection"}
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
 
           <div className="flex flex-col gap-3">
-            <label className="editorial-meta">Measurement Type</label>
+            <label className="editorial-meta">{language === 'es' ? 'Tipo de Medición' : 'Measurement Type'}</label>
             <div className="flex gap-4">
               {[
-                { id: 'yesno', icon: Check, label: 'Yes/No' },
-                { id: 'numeric', icon: Hash, label: 'Value' },
-                { id: 'timer', icon: Clock, label: 'Timer' }
+                { id: 'yesno', icon: Check, label: language === 'es' ? 'Sí/No' : 'Yes/No' },
+                { id: 'numeric', icon: Hash, label: language === 'es' ? 'Valor' : 'Value' },
+                { id: 'timer', icon: Clock, label: language === 'es' ? 'Reloj' : 'Timer' }
               ].map(opt => (
                 <button
                   key={opt.id}
@@ -507,7 +510,7 @@ function AddHabitModal({ isOpen, goals, onCancel, onSave }: { isOpen: boolean; g
               className="flex flex-col gap-6"
             >
               <div className="flex flex-col gap-3">
-                <label className="editorial-meta">Target Goal</label>
+                <label className="editorial-meta">{language === 'es' ? 'Meta Objetivo' : 'Target Goal'}</label>
                 <div className="flex items-end gap-4">
                   <EditorialInput 
                     type="number"
@@ -519,7 +522,7 @@ function AddHabitModal({ isOpen, goals, onCancel, onSave }: { isOpen: boolean; g
                   <EditorialInput 
                     className="w-24"
                     variant="mono"
-                    placeholder="Unit"
+                    placeholder={language === 'es' ? 'Unidad' : "Unit"}
                     value={unit}
                     onChange={(e) => setUnit(e.target.value)}
                   />
@@ -530,13 +533,13 @@ function AddHabitModal({ isOpen, goals, onCancel, onSave }: { isOpen: boolean; g
 
           {goals && goals.length > 0 && (
             <div className="flex flex-col gap-3">
-              <label className="editorial-meta">Anchor to a Goal (Optional)</label>
+              <label className="editorial-meta">{language === 'es' ? 'Anclar a un Objetivo (Opcional)' : 'Anchor to a Goal (Optional)'}</label>
               <select 
                 className="w-full bg-transparent border-b border-ink/20 focus:border-ink outline-none py-3 font-serif text-lg italic appearance-none cursor-pointer"
                 value={linkedGoalId}
                 onChange={(e) => setLinkedGoalId(e.target.value)}
               >
-                <option value="" className="font-sans not-italic text-sm">-- No goal --</option>
+                <option value="" className="font-sans not-italic text-sm">-- {language === 'es' ? 'Sin objetivo' : 'No goal'} --</option>
                 {goals.map(g => (
                   <option key={g.id} value={g.id} className="font-sans not-italic text-sm">{g.title}</option>
                 ))}
@@ -545,9 +548,9 @@ function AddHabitModal({ isOpen, goals, onCancel, onSave }: { isOpen: boolean; g
           )}
 
           <div className="flex justify-between items-center pt-4 border-t border-ink/5">
-            <button type="button" onClick={() => setShowTemplates(true)} className="editorial-meta hover:text-ink transition-colors">Back</button>
+            <button type="button" onClick={() => setShowTemplates(true)} className="editorial-meta hover:text-ink transition-colors">{t('common.back')}</button>
             <EditorialButton type="submit" icon={<Plus size={14} />}>
-              Establish Habit
+              {language === 'es' ? 'Establecer Hábito' : 'Establish Habit'}
             </EditorialButton>
           </div>
         </form>

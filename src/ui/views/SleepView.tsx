@@ -15,6 +15,7 @@ import {
   EditorialModal, 
   EditorialInput 
 } from '../components/shared';
+import { useTranslation } from '../../application/contexts/LanguageContext';
 import { 
   LineChart, 
   Line, 
@@ -26,6 +27,7 @@ import {
 } from 'recharts';
 
 export default function SleepView({ entries, onUpdate }: { entries: SleepEntry[], onUpdate: (e: SleepEntry[]) => void }) {
+  const { t, language } = useTranslation();
   const [isAdding, setIsAdding] = useState(false);
   const [newEntry, setNewEntry] = useState({
     date: todayISO(),
@@ -78,13 +80,13 @@ export default function SleepView({ entries, onUpdate }: { entries: SleepEntry[]
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div className="flex flex-col gap-2">
           <div className="editorial-meta">Circadian / Restoration</div>
-          <h2 className="font-serif text-3xl md:text-4xl">Architecture of Rest.</h2>
+          <h2 className="font-serif text-3xl md:text-4xl">{t('sleep.title')}.</h2>
         </div>
         <EditorialButton 
           onClick={() => setIsAdding(true)}
           icon={<Plus size={14} />}
         >
-          Register Night
+          {t('sleep.log_rest')}
         </EditorialButton>
       </div>
 
@@ -93,20 +95,20 @@ export default function SleepView({ entries, onUpdate }: { entries: SleepEntry[]
       <EditorialModal
         isOpen={isAdding}
         onClose={() => setIsAdding(false)}
-        title="Night Reflection."
+        title={language === 'es' ? 'Reflexión Nocturna.' : "Night Reflection."}
         subtitle="Circadian / Restoration"
       >
         <div className="flex flex-col gap-10">
           <div className="grid grid-cols-2 gap-8">
             <EditorialInput 
-              label="Bed Time"
+              label={language === 'es' ? 'Hora de Acostarse' : "Bed Time"}
               type="time"
               variant="mono"
               value={newEntry.bedTime}
               onChange={(e) => setNewEntry({...newEntry, bedTime: e.target.value})}
             />
             <EditorialInput 
-              label="Wake Time"
+              label={language === 'es' ? 'Hora de Despertar' : "Wake Time"}
               type="time"
               variant="mono"
               value={newEntry.wakeTime}
@@ -116,13 +118,13 @@ export default function SleepView({ entries, onUpdate }: { entries: SleepEntry[]
 
           <div className="grid grid-cols-2 gap-8">
             <EditorialInput 
-              label="Latency (min)"
+              label={language === 'es' ? 'Latencia (min)' : "Latency (min)"}
               type="number"
               value={newEntry.latencyMin}
               onChange={(e) => setNewEntry({...newEntry, latencyMin: parseInt(e.target.value) || 0})}
             />
             <EditorialInput 
-              label="Awake (min)"
+              label={language === 'es' ? 'Despierto (min)' : "Awake (min)"}
               type="number"
               value={newEntry.awakeMinutes}
               onChange={(e) => setNewEntry({...newEntry, awakeMinutes: parseInt(e.target.value) || 0})}
@@ -130,7 +132,7 @@ export default function SleepView({ entries, onUpdate }: { entries: SleepEntry[]
           </div>
 
           <div className="flex flex-col gap-3">
-            <label className="editorial-meta opacity-50">Quality (1-5)</label>
+            <label className="editorial-meta opacity-50">{language === 'es' ? 'Calidad (1-5)' : 'Quality (1-5)'}</label>
             <div className="flex gap-4">
               {[1, 2, 3, 4, 5].map(star => (
                 <button 
@@ -146,22 +148,22 @@ export default function SleepView({ entries, onUpdate }: { entries: SleepEntry[]
 
           <div className="p-6 bg-ink/[0.02] border border-ink/5 rounded-2xl flex justify-between items-center">
              <div className="flex flex-col">
-                <span className="editorial-meta text-[9px] uppercase tracking-widest opacity-40">Calculated Efficiency</span>
+                <span className="editorial-meta text-[9px] uppercase tracking-widest opacity-40">{language === 'es' ? 'Eficiencia Calculada' : 'Calculated Efficiency'}</span>
                 <span className={cn("font-serif text-3xl italic", getEfficiencyColor(currentMetrics.sleepEfficiencyPct))}>
                   {currentMetrics.sleepEfficiencyPct}%
                 </span>
              </div>
              {currentMetrics.sleepEfficiencyPct < 85 && (
                <div className="flex items-center gap-2 text-[9px] editorial-meta text-yellow-600/60 max-w-[150px] text-right italic">
-                 <AlertCircle size={14} /> Below clinical target of 85%
+                 <AlertCircle size={14} /> {language === 'es' ? 'Bajo el objetivo clínico del 85%' : 'Below clinical target of 85%'}
                </div>
              )}
           </div>
 
           <div className="flex justify-between items-center pt-8 border-t border-ink/5">
-            <button onClick={() => setIsAdding(false)} className="editorial-meta text-accent hover:text-ink transition-colors">Discard</button>
+            <button onClick={() => setIsAdding(false)} className="editorial-meta text-accent hover:text-ink transition-colors">{t('common.cancel')}</button>
             <EditorialButton onClick={handleAdd} icon={<Check size={14} />}>
-              Solidify Cycle
+              {language === 'es' ? 'Solidificar Ciclo' : 'Solidify Cycle'}
             </EditorialButton>
           </div>
         </div>
@@ -170,15 +172,15 @@ export default function SleepView({ entries, onUpdate }: { entries: SleepEntry[]
           <div className="p-10 border border-ink/10 rounded-[3rem] bg-paper flex flex-col gap-12 shadow-sm">
             <div className="flex justify-between items-start">
               <div className="flex flex-col gap-2">
-                <div className="editorial-meta flex items-center gap-2"><Moon size={12} className="text-accent" /> Last Night's Architecture</div>
+                <div className="editorial-meta flex items-center gap-2"><Moon size={12} className="text-accent" /> {language === 'es' ? 'Arquitectura de Anoche' : "Last Night's Architecture"}</div>
                 <div className="flex items-center gap-4">
                    <h3 className="font-serif text-5xl font-light">{lastEntry?.sleepEfficiencyPct || '--'}%</h3>
-                   <div className="flex flex-col">
-                      <span className="editorial-meta text-[8px] uppercase tracking-[0.2em] opacity-40">Efficiency</span>
-                      <span className={cn("text-[9px] editorial-meta uppercase", getEfficiencyColor(lastEntry?.sleepEfficiencyPct || 0))}>
-                        {lastEntry && lastEntry.sleepEfficiencyPct >= 85 ? 'Optimal' : 'Sub-Optimal'}
-                      </span>
-                   </div>
+                    <div className="flex flex-col">
+                       <span className="editorial-meta text-[8px] uppercase tracking-[0.2em] opacity-40">{language === 'es' ? 'Eficiencia' : 'Efficiency'}</span>
+                       <span className={cn("text-[9px] editorial-meta uppercase", getEfficiencyColor(lastEntry?.sleepEfficiencyPct || 0))}>
+                         {lastEntry && lastEntry.sleepEfficiencyPct >= 85 ? (language === 'es' ? 'Óptimo' : 'Optimal') : (language === 'es' ? 'Sub-óptimo' : 'Sub-Optimal')}
+                       </span>
+                    </div>
                 </div>
               </div>
               <div className="flex gap-1">
@@ -190,19 +192,19 @@ export default function SleepView({ entries, onUpdate }: { entries: SleepEntry[]
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
               <div className="flex flex-col gap-1">
-                <span className="editorial-meta text-[8px] uppercase opacity-40">Bedtime</span>
+                <span className="editorial-meta text-[8px] uppercase opacity-40">{language === 'es' ? 'Acostado' : 'Bedtime'}</span>
                 <span className="font-serif text-lg italic">{lastEntry?.bedTime || '--:--'}</span>
               </div>
               <div className="flex flex-col gap-1">
-                <span className="editorial-meta text-[8px] uppercase opacity-40">Wake</span>
+                <span className="editorial-meta text-[8px] uppercase opacity-40">{language === 'es' ? 'Despertar' : 'Wake'}</span>
                 <span className="font-serif text-lg italic">{lastEntry?.wakeTime || '--:--'}</span>
               </div>
               <div className="flex flex-col gap-1">
-                <span className="editorial-meta text-[8px] uppercase opacity-40">Duration</span>
+                <span className="editorial-meta text-[8px] uppercase opacity-40">{language === 'es' ? 'Duración' : 'Duration'}</span>
                 <span className="font-serif text-lg italic">{lastEntry ? `${Math.floor(lastEntry.timeAsleepMin / 60)}h ${lastEntry.timeAsleepMin % 60}m` : '--'}</span>
               </div>
               <div className="flex flex-col gap-1">
-                <span className="editorial-meta text-[8px] uppercase opacity-40">Latency</span>
+                <span className="editorial-meta text-[8px] uppercase opacity-40">{language === 'es' ? 'Latencia' : 'Latency'}</span>
                 <span className="font-serif text-lg italic">{lastEntry?.latencyMin || '0'}m</span>
               </div>
             </div>
@@ -211,9 +213,13 @@ export default function SleepView({ entries, onUpdate }: { entries: SleepEntry[]
 
             <p className="text-sm italic leading-relaxed text-accent opacity-60 font-serif">
               {lastEntry ? (
-                "Maintaining a high sleep efficiency is critical for cognitive restructuring. A score above 85% indicates strong circadian alignment."
+                language === 'es' 
+                  ? "Mantener una alta eficiencia del sueño es crítico para la reestructuración cognitiva. Una puntuación por encima del 85% indica una fuerte alineación circadiana."
+                  : "Maintaining a high sleep efficiency is critical for cognitive restructuring. A score above 85% indicates strong circadian alignment."
               ) : (
-                "Start registering your nights to map your restorative architecture."
+                language === 'es'
+                  ? "Comienza a registrar tus noches para mapear tu arquitectura restaurativa."
+                  : "Start registering your nights to map your restorative architecture."
               )}
             </p>
           </div>
@@ -221,7 +227,7 @@ export default function SleepView({ entries, onUpdate }: { entries: SleepEntry[]
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="p-8 border border-ink/5 rounded-[2rem] bg-paper flex flex-col gap-4">
                <TrendingUp size={20} className="text-accent" />
-               <div className="editorial-meta">Efficiency Trend</div>
+               <div className="editorial-meta">{language === 'es' ? 'Tendencia de Eficiencia' : 'Efficiency Trend'}</div>
                <div className="h-32 w-full">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={weeklyTrends}>
@@ -237,19 +243,23 @@ export default function SleepView({ entries, onUpdate }: { entries: SleepEntry[]
             <div className="p-8 border border-ink/5 rounded-[2rem] bg-paper flex flex-col gap-6">
                <Sun size={20} className="text-accent" />
                <div className="flex flex-col gap-2">
-                 <div className="editorial-meta">Morning Protocol</div>
-                 <p className="text-xs italic opacity-50 font-serif">Seek 10-20 minutes of bright sunlight within 30 minutes of waking to anchor your clock.</p>
+                 <div className="editorial-meta">{language === 'es' ? 'Protocolo Matutino' : 'Morning Protocol'}</div>
+                 <p className="text-xs italic opacity-50 font-serif">
+                   {language === 'es'
+                     ? "Busca 10-20 minutos de luz solar intensa dentro de los 30 minutos posteriores al despertar para anclar tu reloj biológico."
+                     : "Seek 10-20 minutes of bright sunlight within 30 minutes of waking to anchor your clock."}
+                 </p>
                </div>
             </div>
           </div>
         </div>
 
         <div className="flex flex-col gap-8">
-          <div className="editorial-meta flex items-center gap-2 opacity-40"><Clock size={12} /> Historical Cycles</div>
+          <div className="editorial-meta flex items-center gap-2 opacity-40"><Clock size={12} /> {language === 'es' ? 'Ciclos Históricos' : 'Historical Cycles'}</div>
           <div className="flex flex-col gap-4">
             {entries.length === 0 ? (
               <div className="py-20 text-center border border-dashed border-ink/5 rounded-[3rem]">
-                <p className="editorial-meta italic opacity-30">The chronicle of rest is empty.</p>
+                <p className="editorial-meta italic opacity-30">{t('sleep.empty_state')}</p>
               </div>
             ) : (
               entries.map((entry) => (

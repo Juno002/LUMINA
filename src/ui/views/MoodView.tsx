@@ -11,6 +11,7 @@ import { MoodEntry } from '../../domain/entities';
 import { cn } from '../../shared/utils/TailwindMerge';
 import { todayISO, formatDate } from '../../shared/utils/DateFormatter';
 import { triggerHaptic } from '../../shared/utils/Haptics';
+import { useTranslation } from '../../application/contexts/LanguageContext';
 
 interface MoodViewProps {
   entries: MoodEntry[];
@@ -18,6 +19,7 @@ interface MoodViewProps {
 }
 
 export default function MoodView({ entries, onUpdate }: MoodViewProps) {
+  const { t } = useTranslation();
   const [isAdding, setIsAdding] = useState(false);
   const [newEntry, setNewEntry] = useState<Partial<MoodEntry>>({
     mood: 'Good',
@@ -41,7 +43,7 @@ export default function MoodView({ entries, onUpdate }: MoodViewProps) {
   };
 
   const handleDelete = (id: string) => {
-    if (confirm("Delete this mood record?")) {
+    if (confirm(t('common.confirmDelete'))) {
       onUpdate(entries.filter(e => e.id !== id));
     }
   };
@@ -59,13 +61,13 @@ export default function MoodView({ entries, onUpdate }: MoodViewProps) {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div className="flex flex-col gap-2">
           <div className="editorial-meta">Emotional / Spectrum</div>
-          <h2 className="font-serif text-3xl md:text-4xl text-balance italic">Weather of the Spirit.</h2>
+          <h2 className="font-serif text-3xl md:text-4xl text-balance italic">{t('mood.title')}.</h2>
         </div>
         <button 
           onClick={() => setIsAdding(true)}
           className="w-full md:w-auto bg-ink text-paper px-8 py-4 md:py-3 rounded-full font-mono text-[10px] uppercase tracking-widest hover:opacity-80 transition-all flex items-center justify-center gap-2"
         >
-          <Plus size={14} /> Log Presence
+          <Plus size={14} /> {t('mood.log_presence')}
         </button>
       </div>
 
@@ -79,7 +81,7 @@ export default function MoodView({ entries, onUpdate }: MoodViewProps) {
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
               <div className="flex flex-col gap-6">
-                <label className="editorial-meta">Atmosphere</label>
+                <label className="editorial-meta">{t('mood.atmosphere')}</label>
                 <div className="flex flex-wrap gap-4">
                   {Object.keys(moodIcons).map((m) => (
                     <button
@@ -91,13 +93,13 @@ export default function MoodView({ entries, onUpdate }: MoodViewProps) {
                       )}
                     >
                       {moodIcons[m as keyof typeof moodIcons]}
-                      <span className="font-serif italic">{m}</span>
+                      <span className="font-serif italic">{t(`mood.${m.toLowerCase()}`)}</span>
                     </button>
                   ))}
                 </div>
               </div>
               <div className="flex flex-col gap-6">
-                <label className="editorial-meta">Intensity ({newEntry.intensity}%)</label>
+                <label className="editorial-meta">{t('mood.intensity')} ({newEntry.intensity}%)</label>
                 <input 
                   type="range" 
                   className="accent-ink h-10" 
@@ -105,26 +107,26 @@ export default function MoodView({ entries, onUpdate }: MoodViewProps) {
                   onChange={(e) => setNewEntry({...newEntry, intensity: parseInt(e.target.value)})} 
                 />
                 <div className="flex justify-between editorial-meta text-[9px] opacity-40">
-                  <span>Subtle</span>
-                  <span>Overwhelming</span>
+                  <span>{t('mood.subtle')}</span>
+                  <span>{t('mood.overwhelming')}</span>
                 </div>
               </div>
             </div>
 
             <div className="flex flex-col gap-4">
-              <label className="editorial-meta">Reflection (Optional)</label>
+              <label className="editorial-meta">{t('mood.reflection')}</label>
               <textarea 
                 className="bg-transparent border-b border-ink/10 focus:border-ink outline-none py-4 font-serif text-xl italic resize-none h-32"
-                placeholder="What defines this moment?"
+                placeholder={t('mood.reflection_placeholder')}
                 value={newEntry.note}
                 onChange={(e) => setNewEntry({...newEntry, note: e.target.value})}
               />
             </div>
 
             <div className="flex justify-end gap-6 pt-6 border-t border-ink/5">
-              <button onClick={() => setIsAdding(false)} className="editorial-meta">Cancel</button>
+              <button onClick={() => setIsAdding(false)} className="editorial-meta">{t('common.cancel')}</button>
               <button onClick={handleAdd} className="bg-ink text-paper px-10 py-4 rounded-full font-mono text-[10px] uppercase tracking-widest">
-                Commit to Vault
+                {t('journal.save_entry')}
               </button>
             </div>
           </motion.div>
@@ -135,7 +137,7 @@ export default function MoodView({ entries, onUpdate }: MoodViewProps) {
         {entries.length === 0 ? (
           <div className="col-span-full py-20 text-center border-2 border-dashed border-ink/5 rounded-[3rem]">
             <Heart size={40} className="mx-auto opacity-10 mb-4" />
-            <p className="editorial-meta">The horizon of presence is empty.</p>
+            <p className="editorial-meta">{t('mood.empty_state')}</p>
           </div>
         ) : (
           entries.map((entry) => (
@@ -155,11 +157,11 @@ export default function MoodView({ entries, onUpdate }: MoodViewProps) {
                   <span className="editorial-meta text-[9px] opacity-40">{formatDate(entry.date)}</span>
                   <div className="flex items-center gap-3">
                     {moodIcons[entry.mood as keyof typeof moodIcons] || <Heart size={18} />}
-                    <h3 className="font-serif text-2xl italic">{entry.mood}</h3>
+                    <h3 className="font-serif text-2xl italic">{t(`mood.${entry.mood.toLowerCase()}`)}</h3>
                   </div>
                 </div>
                 <div className="flex flex-col items-end">
-                   <div className="editorial-meta text-[9px] opacity-40">Intensity</div>
+                   <div className="editorial-meta text-[9px] opacity-40">{t('mood.intensity')}</div>
                    <span className="font-mono text-xs">{entry.intensity}%</span>
                 </div>
               </div>

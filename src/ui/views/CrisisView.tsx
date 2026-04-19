@@ -16,6 +16,7 @@ import localforage from 'localforage';
 import { 
   EditorialButton 
 } from '../components/shared';
+import { useTranslation } from '../../application/contexts/LanguageContext';
 
 const CRISIS_KEY = 'lumina_crisis_config';
 
@@ -44,6 +45,7 @@ const BREATH_PHASES: Array<{ phase: 'inhale' | 'hold' | 'exhale'; seconds: numbe
 ];
 
 export default function CrisisView({ onClose, isUnlocked, onNavigate }: CrisisViewProps) {
+  const { t, language } = useTranslation();
   const [data, setData] = useState<CrisisData>({ copingPhrase: '', contacts: [] });
   const [isEditing, setIsEditing] = useState(false);
   const [newName, setNewName] = useState('');
@@ -123,8 +125,8 @@ export default function CrisisView({ onClose, isUnlocked, onNavigate }: CrisisVi
         {/* Header */}
         <div className="flex justify-between items-start">
           <div>
-            <div className="font-mono text-[10px] uppercase tracking-widest text-paper/40 mb-2">Safety Protocol</div>
-            <h1 className="font-serif text-3xl">You are not alone.</h1>
+            <div className="font-mono text-[10px] uppercase tracking-widest text-paper/40 mb-2">{language === 'es' ? 'Protocolo de Seguridad' : 'Safety Protocol'}</div>
+            <h1 className="font-serif text-3xl">{language === 'es' ? 'No estás solo.' : 'You are not alone.'}</h1>
           </div>
           <button onClick={onClose} className="text-paper/40 hover:text-paper transition-colors duration-200">
             <X size={20} />
@@ -135,7 +137,7 @@ export default function CrisisView({ onClose, isUnlocked, onNavigate }: CrisisVi
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2 text-paper/40">
             <Heart size={14} />
-            <span className="font-mono text-[10px] uppercase tracking-widest">Your Coping Phrase</span>
+            <span className="font-mono text-[10px] uppercase tracking-widest">{language === 'es' ? 'Tu Frase de Afrontamiento' : 'Your Coping Phrase'}</span>
           </div>
           {isEditing ? (
             <textarea
@@ -143,7 +145,7 @@ export default function CrisisView({ onClose, isUnlocked, onNavigate }: CrisisVi
               onChange={e => updateCopingPhrase(e.target.value)}
               onBlur={() => setIsEditing(false)}
               autoFocus
-              placeholder="Write something that grounds you..."
+              placeholder={language === 'es' ? 'Escribe algo que te mantenga en el presente...' : 'Write something that grounds you...'}
               rows={3}
               className="bg-paper/5 border border-paper/10 rounded-2xl p-4 text-paper font-serif italic text-lg outline-none placeholder:text-paper/20 resize-none"
             />
@@ -153,7 +155,7 @@ export default function CrisisView({ onClose, isUnlocked, onNavigate }: CrisisVi
               className="text-left p-4 border border-paper/10 rounded-2xl hover:border-paper/20 transition-colors duration-200"
             >
               <p className="font-serif italic text-lg leading-relaxed">
-                {data.copingPhrase || 'Tap to write your coping phrase...'}
+                {data.copingPhrase || (language === 'es' ? 'Toca para escribir tu frase de afrontamiento...' : 'Tap to write your coping phrase...')}
               </p>
             </button>
           )}
@@ -163,7 +165,7 @@ export default function CrisisView({ onClose, isUnlocked, onNavigate }: CrisisVi
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2 text-paper/40">
             <Phone size={14} />
-            <span className="font-mono text-[10px] uppercase tracking-widest">Emergency Contacts</span>
+            <span className="font-mono text-[10px] uppercase tracking-widest">{language === 'es' ? 'Contactos de Emergencia' : 'Emergency Contacts'}</span>
           </div>
 
           {data.contacts.map(contact => (
@@ -178,7 +180,7 @@ export default function CrisisView({ onClose, isUnlocked, onNavigate }: CrisisVi
                   size="sm"
                   variant="ink"
                 >
-                  Call
+                  {language === 'es' ? 'Llamar' : 'Call'}
                 </EditorialButton>
                 <button
                   onClick={() => removeContact(contact.id)}
@@ -196,14 +198,14 @@ export default function CrisisView({ onClose, isUnlocked, onNavigate }: CrisisVi
               type="text"
               value={newName}
               onChange={e => setNewName(e.target.value)}
-              placeholder="Name"
+              placeholder={language === 'es' ? 'Nombre' : 'Name'}
               className="flex-1 bg-transparent border-b border-paper/20 focus:border-paper/50 py-2 text-sm font-serif text-paper placeholder:text-paper/20 outline-none transition-colors duration-200"
             />
             <input
               type="tel"
               value={newPhone}
               onChange={e => setNewPhone(e.target.value)}
-              placeholder="Phone"
+              placeholder={language === 'es' ? 'Teléfono' : 'Phone'}
               className="flex-1 bg-transparent border-b border-paper/20 focus:border-paper/50 py-2 text-sm font-mono text-paper placeholder:text-paper/20 outline-none transition-colors duration-200"
             />
             <button
@@ -218,7 +220,7 @@ export default function CrisisView({ onClose, isUnlocked, onNavigate }: CrisisVi
 
         {/* Crisis Hotlines */}
         <div className="flex flex-col gap-3">
-          <div className="font-mono text-[10px] uppercase tracking-widest text-paper/40">Crisis Hotlines</div>
+          <div className="font-mono text-[10px] uppercase tracking-widest text-paper/40">{language === 'es' ? 'Líneas de Crisis' : 'Crisis Hotlines'}</div>
           {HOTLINES.map(hotline => (
             <div key={hotline.name} className="flex items-center justify-between py-2">
               <div className="flex items-center gap-3">
@@ -231,7 +233,7 @@ export default function CrisisView({ onClose, isUnlocked, onNavigate }: CrisisVi
                 </a>
               ) : (
                 <a href={hotline.url} target="_blank" rel="noopener noreferrer" className="font-mono text-sm text-paper/90 hover:text-paper underline">
-                  Visit
+                  {language === 'es' ? 'Visitar' : 'Visit'}
                 </a>
               )}
             </div>
@@ -242,7 +244,7 @@ export default function CrisisView({ onClose, isUnlocked, onNavigate }: CrisisVi
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2 text-paper/40">
             <Wind size={14} />
-            <span className="font-mono text-[10px] uppercase tracking-widest">Breathing Exercise (4-7-8)</span>
+            <span className="font-mono text-[10px] uppercase tracking-widest">{language === 'es' ? 'Ejercicio de Respiración (4-7-8)' : 'Breathing Exercise (4-7-8)'}</span>
           </div>
           {breathingActive ? (
             <motion.div
@@ -264,7 +266,7 @@ export default function CrisisView({ onClose, isUnlocked, onNavigate }: CrisisVi
                 onClick={() => setBreathingActive(false)}
                 className="text-paper/30 text-xs font-mono hover:text-paper/60 transition-colors duration-200 mt-2"
               >
-                Stop
+                {language === 'es' ? 'Detener' : 'Stop'}
               </button>
             </motion.div>
           ) : (
@@ -274,14 +276,14 @@ export default function CrisisView({ onClose, isUnlocked, onNavigate }: CrisisVi
                 variant="outline"
                 className="w-full py-6 border-paper/10 text-paper hover:bg-paper/5"
               >
-                Start Breathing Exercise
+                {language === 'es' ? 'Iniciar Ejercicio de Respiración' : 'Start Breathing Exercise'}
               </EditorialButton>
               {isUnlocked && onNavigate && (
                 <button
                   onClick={() => onNavigate('breathing')}
                   className="flex items-center justify-center gap-2 py-3 text-paper/40 hover:text-paper transition-colors duration-200 text-xs font-mono uppercase tracking-widest"
                 >
-                  Open Full Breathing View
+                  {language === 'es' ? 'Abrir Vista Completa de Respiración' : 'Open Full Breathing View'}
                   <ArrowRight size={12} />
                 </button>
               )}

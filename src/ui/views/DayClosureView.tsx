@@ -14,6 +14,7 @@ import { getHabitCompletionForDate } from '../../application/usecases/TrackHabit
 import { 
   EditorialButton 
 } from '../components/shared';
+import { useTranslation } from '../../application/contexts/LanguageContext';
 
 interface DayClosureViewProps {
   vault: Vault;
@@ -22,6 +23,7 @@ interface DayClosureViewProps {
 }
 
 export default function DayClosureView({ vault, onClose, onSave }: DayClosureViewProps) {
+  const { t, language } = useTranslation();
   const [step, setStep] = useState(1);
   const [summary, setSummary] = useState('');
   const [gratitude, setGratitude] = useState(['', '', '']);
@@ -76,26 +78,26 @@ export default function DayClosureView({ vault, onClose, onSave }: DayClosureVie
               className="flex flex-col gap-10"
             >
               <div className="flex flex-col gap-2">
-                <span className="editorial-meta text-paper/40 uppercase tracking-[0.3em]">Synthesis</span>
-                <h2 className="font-serif text-4xl md:text-5xl italic leading-tight">How would you summarize today?</h2>
+                <span className="editorial-meta text-paper/40 uppercase tracking-[0.3em]">{language === 'es' ? 'Síntesis' : 'Synthesis'}</span>
+                <h2 className="font-serif text-4xl md:text-5xl italic leading-tight">{language === 'es' ? '¿Cómo resumirías el día de hoy?' : 'How would you summarize today?'}</h2>
               </div>
               
               <textarea 
                 autoFocus
-                placeholder="In one sentence..."
+                placeholder={language === 'es' ? 'En una frase...' : "In one sentence..."}
                 className="bg-transparent border-b border-paper/20 focus:border-paper outline-none py-4 font-serif text-2xl md:text-3xl italic w-full resize-none h-40 leading-relaxed transition-colors"
                 value={summary}
                 onChange={(e) => setSummary(e.target.value)}
               />
 
               <div className="flex justify-between items-center mt-10">
-                <p className="text-paper/30 font-serif italic text-sm">Observe the day as a single stroke of ink.</p>
+                <p className="text-paper/30 font-serif italic text-sm">{language === 'es' ? 'Observa el día como un solo trazo de tinta.' : 'Observe the day as a single stroke of ink.'}</p>
                 <EditorialButton 
                   disabled={!summary.trim()}
                   onClick={() => setStep(2)}
                   icon={<ArrowRight size={14} />}
                 >
-                  Proceed
+                  {t('common.continue')}
                 </EditorialButton>
               </div>
             </motion.div>
@@ -110,8 +112,8 @@ export default function DayClosureView({ vault, onClose, onSave }: DayClosureVie
               className="flex flex-col gap-10"
             >
               <div className="flex flex-col gap-2">
-                <span className="editorial-meta text-paper/40 uppercase tracking-[0.3em]">Grace</span>
-                <h2 className="font-serif text-4xl md:text-5xl italic leading-tight">Three things you're grateful for:</h2>
+                <span className="editorial-meta text-paper/40 uppercase tracking-[0.3em]">{language === 'es' ? 'Gracia' : 'Grace'}</span>
+                <h2 className="font-serif text-4xl md:text-5xl italic leading-tight">{language === 'es' ? 'Tres cosas por las que estás agradecido:' : "Three things you're grateful for:"}</h2>
               </div>
 
               <div className="flex flex-col gap-8">
@@ -131,13 +133,13 @@ export default function DayClosureView({ vault, onClose, onSave }: DayClosureVie
 
               <div className="flex justify-between items-center mt-10">
                 <button onClick={() => setStep(1)} className="editorial-meta text-paper/30 flex items-center gap-2">
-                  <ChevronLeft size={14} /> Back
+                  <ChevronLeft size={14} /> {t('common.back')}
                 </button>
                 <EditorialButton 
                   onClick={() => setStep(3)}
                   icon={<CheckCircle2 size={14} />}
                 >
-                  Finalize
+                  {language === 'es' ? 'Finalizar' : 'Finalize'}
                 </EditorialButton>
               </div>
             </motion.div>
@@ -151,36 +153,36 @@ export default function DayClosureView({ vault, onClose, onSave }: DayClosureVie
               className="flex flex-col gap-12"
             >
               <div className="flex flex-col gap-2">
-                <span className="editorial-meta text-paper/40 uppercase tracking-[0.3em]">Alignment</span>
-                <h2 className="font-serif text-4xl md:text-5xl italic leading-tight">The day is secured.</h2>
+                <span className="editorial-meta text-paper/40 uppercase tracking-[0.3em]">{language === 'es' ? 'Alineación' : 'Alignment'}</span>
+                <h2 className="font-serif text-4xl md:text-5xl italic leading-tight">{language === 'es' ? 'El día está asegurado.' : 'The day is secured.'}</h2>
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-8 py-10 border-y border-paper/10">
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center gap-2 opacity-40">
                     <Flame size={12} />
-                    <span className="editorial-meta text-[8px] uppercase tracking-widest">Habits</span>
+                    <span className="editorial-meta text-[8px] uppercase tracking-widest">{language === 'es' ? 'Hábitos' : 'Habits'}</span>
                   </div>
                   <span className="font-mono text-xl">{habitStats.completed}/{habitStats.total}</span>
                 </div>
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center gap-2 opacity-40">
                     <BookOpen size={12} />
-                    <span className="editorial-meta text-[8px] uppercase tracking-widest">Journal</span>
+                    <span className="editorial-meta text-[8px] uppercase tracking-widest">{language === 'es' ? 'Diario' : 'Journal'}</span>
                   </div>
                   <span className="font-mono text-xl">{journalCount}</span>
                 </div>
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center gap-2 opacity-40">
                     <Activity size={12} />
-                    <span className="editorial-meta text-[8px] uppercase tracking-widest">Exposures</span>
+                    <span className="editorial-meta text-[8px] uppercase tracking-widest">{language === 'es' ? 'Exposiciones' : 'Exposures'}</span>
                   </div>
                   <span className="font-mono text-xl">{exposureCount}</span>
                 </div>
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center gap-2 opacity-40">
                     <Star size={12} />
-                    <span className="editorial-meta text-[8px] uppercase tracking-widest">Sleep</span>
+                    <span className="editorial-meta text-[8px] uppercase tracking-widest">{language === 'es' ? 'Sueño' : 'Sleep'}</span>
                   </div>
                   <span className="font-mono text-xl">{sleepEntry?.quality || '--'}/5</span>
                 </div>
@@ -188,7 +190,9 @@ export default function DayClosureView({ vault, onClose, onSave }: DayClosureVie
 
               <div className="flex flex-col gap-6">
                  <p className="text-paper/60 italic font-serif leading-relaxed text-center px-10">
-                   "You have observed, restructured, and persisted. Rest now. The chronicle remains safe."
+                   {language === 'es'
+                     ? '"Has observado, reestructurado y persistido. Descansa ahora. La crónica permanece a salvo."'
+                     : '"You have observed, restructured, and persisted. Rest now. The chronicle remains safe."'}
                  </p>
               </div>
 
@@ -199,7 +203,7 @@ export default function DayClosureView({ vault, onClose, onSave }: DayClosureVie
                   className="px-20 py-8 text-lg tracking-[0.2em]"
                   icon={<CheckCircle2 size={24} />}
                 >
-                  Close the Vault
+                  {language === 'es' ? 'Cerrar Bóveda' : 'Close the Vault'}
                 </EditorialButton>
               </div>
             </motion.div>

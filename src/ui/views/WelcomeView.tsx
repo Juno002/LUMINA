@@ -5,8 +5,10 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowRight, Shield, User, Heart, Lock } from 'lucide-react';
+import { ArrowRight, Shield, User, Heart, Lock, Globe } from 'lucide-react';
 import { ClinicalProfile } from '../../domain/entities';
+import { useTranslation } from '../../application/contexts/LanguageContext';
+import { cn } from '../../shared/utils/TailwindMerge';
 
 interface WelcomeViewProps {
   onCreateVault: (name: string, password: string, clinicalProfile: ClinicalProfile) => void;
@@ -15,6 +17,7 @@ interface WelcomeViewProps {
 type SetupStep = 'intro' | 'name' | 'profile' | 'security';
 
 export default function WelcomeView({ onCreateVault }: WelcomeViewProps) {
+  const { t, language, setLanguage } = useTranslation();
   const [step, setStep] = useState<SetupStep>('intro');
   const [name, setName] = useState('');
   const [profile, setProfile] = useState<ClinicalProfile>('unspecified');
@@ -54,16 +57,38 @@ export default function WelcomeView({ onCreateVault }: WelcomeViewProps) {
           >
             <div className="flex flex-col gap-4">
               <div className="editorial-meta">Lumina Core / Welcome</div>
-              <h1 className="font-serif text-7xl md:text-8xl font-light">Lumina.</h1>
+              <h1 className="font-serif text-7xl md:text-8xl font-light">{t('welcome.title')}</h1>
               <p className="font-serif italic text-xl text-accent max-w-md mx-auto leading-relaxed">
-                An editorial space for cognitive clarity and emotional sovereignty.
+                {t('welcome.subtitle')}
               </p>
+            </div>
+
+            <div className="flex justify-center gap-6 mt-2">
+              <button 
+                onClick={() => setLanguage('en')}
+                className={cn(
+                  "flex items-center gap-2 font-mono text-[9px] uppercase tracking-widest transition-all",
+                  language === 'en' ? "text-ink opacity-100" : "text-accent opacity-40 hover:opacity-60"
+                )}
+              >
+                English
+              </button>
+              <div className="w-[1px] h-3 bg-ink/10 self-center" />
+              <button 
+                onClick={() => setLanguage('es')}
+                className={cn(
+                  "flex items-center gap-2 font-mono text-[9px] uppercase tracking-widest transition-all",
+                  language === 'es' ? "text-ink opacity-100" : "text-accent opacity-40 hover:opacity-60"
+                )}
+              >
+                Español
+              </button>
             </div>
             <button 
               onClick={() => setStep('name')}
               className="mx-auto flex items-center gap-4 bg-ink text-paper px-10 py-5 rounded-full font-mono text-[10px] uppercase tracking-[0.3em] hover:opacity-80 transition-all"
             >
-              Begin Initialization <ArrowRight size={14} />
+              {t('welcome.begin')} <ArrowRight size={14} />
             </button>
           </motion.div>
         )}
@@ -76,8 +101,8 @@ export default function WelcomeView({ onCreateVault }: WelcomeViewProps) {
             className="max-w-md w-full flex flex-col gap-12"
           >
             <div className="flex flex-col gap-2">
-              <div className="editorial-meta">Step 01 / Identity</div>
-              <h2 className="font-serif text-4xl">How should we address you?</h2>
+              <div className="editorial-meta">{t('welcome.step_identity')}</div>
+              <h2 className="font-serif text-4xl">{t('welcome.ask_name')}</h2>
             </div>
             <div className="flex flex-col gap-8">
               <input 
@@ -85,7 +110,7 @@ export default function WelcomeView({ onCreateVault }: WelcomeViewProps) {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Identity name..."
+                placeholder={t('welcome.name_placeholder')}
                 className="bg-transparent border-b border-ink/20 focus:border-ink outline-none py-4 font-serif text-3xl italic transition-all"
               />
               <button 
@@ -93,7 +118,7 @@ export default function WelcomeView({ onCreateVault }: WelcomeViewProps) {
                 onClick={() => setStep('profile')}
                 className="self-end flex items-center gap-2 bg-ink text-paper px-8 py-3 rounded-full font-mono text-[10px] uppercase tracking-widest disabled:opacity-20 transition-all"
               >
-                Continue <ArrowRight size={14} />
+                {t('common.continue')} <ArrowRight size={14} />
               </button>
             </div>
           </motion.div>
@@ -107,17 +132,17 @@ export default function WelcomeView({ onCreateVault }: WelcomeViewProps) {
             className="max-w-xl w-full flex flex-col gap-12"
           >
             <div className="flex flex-col gap-2">
-              <div className="editorial-meta">Step 02 / Clinical Context</div>
-              <h2 className="font-serif text-4xl">Define your primary focus.</h2>
-              <p className="text-sm text-accent italic">This calibrates Lambda's distortion detection engine.</p>
+              <div className="editorial-meta">{t('welcome.step_clinical')}</div>
+              <h2 className="font-serif text-4xl">{t('welcome.define_focus')}</h2>
+              <p className="text-sm text-accent italic">{t('welcome.calibrate_lambda')}</p>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {[
-                { id: 'anxiety', label: 'Anxiety & Worry', icon: Heart },
-                { id: 'depression', label: 'Mood & Energy', icon: Heart },
-                { id: 'anger', label: 'Irritability & Anger', icon: Heart },
-                { id: 'unspecified', label: 'General Exploration', icon: User }
+                { id: 'anxiety', label: t('welcome.focus_anxiety'), icon: Heart },
+                { id: 'depression', label: t('welcome.focus_mood'), icon: Heart },
+                { id: 'anger', label: t('welcome.focus_anger'), icon: Heart },
+                { id: 'unspecified', label: t('welcome.focus_general'), icon: User }
               ].map((opt) => (
                 <button
                   key={opt.id}
@@ -133,12 +158,12 @@ export default function WelcomeView({ onCreateVault }: WelcomeViewProps) {
             </div>
 
             <div className="flex justify-between items-center">
-              <button onClick={() => setStep('name')} className="editorial-meta hover:text-ink transition-colors">Back</button>
+              <button onClick={() => setStep('name')} className="editorial-meta hover:text-ink transition-colors">{t('common.back')}</button>
               <button 
                 onClick={() => setStep('security')}
                 className="flex items-center gap-2 bg-ink text-paper px-8 py-3 rounded-full font-mono text-[10px] uppercase tracking-widest transition-all"
               >
-                Continue <ArrowRight size={14} />
+                {t('common.continue')} <ArrowRight size={14} />
               </button>
             </div>
           </motion.div>
@@ -152,14 +177,14 @@ export default function WelcomeView({ onCreateVault }: WelcomeViewProps) {
             className="max-w-md w-full flex flex-col gap-12"
           >
             <div className="flex flex-col gap-2">
-              <div className="editorial-meta">Step 03 / Sovereignty</div>
-              <h2 className="font-serif text-4xl">Secure your local vault.</h2>
-              <p className="text-sm text-accent italic">Lumina uses zero-knowledge encryption. If you lose this passphrase, your data is unrecoverable.</p>
+              <div className="editorial-meta">{t('welcome.step_sovereignty')}</div>
+              <h2 className="font-serif text-4xl">{t('welcome.secure_vault')}</h2>
+              <p className="text-sm text-accent italic">{t('welcome.zero_knowledge_warning')}</p>
             </div>
             
             <div className="flex flex-col gap-6">
               <div className="flex flex-col gap-2">
-                <label className="editorial-meta flex items-center gap-2"><Lock size={12} /> Set Master Passphrase</label>
+                <label className="editorial-meta flex items-center gap-2"><Lock size={12} /> {t('welcome.set_passphrase')}</label>
                 <input 
                   autoFocus
                   type="password"
@@ -169,7 +194,7 @@ export default function WelcomeView({ onCreateVault }: WelcomeViewProps) {
                 />
               </div>
               <div className="flex flex-col gap-2">
-                <label className="editorial-meta flex items-center gap-2"><Shield size={12} /> Confirm Passphrase</label>
+                <label className="editorial-meta flex items-center gap-2"><Shield size={12} /> {t('welcome.confirm_passphrase')}</label>
                 <input 
                   type="password"
                   value={confirmPassword}
@@ -179,20 +204,20 @@ export default function WelcomeView({ onCreateVault }: WelcomeViewProps) {
               </div>
 
               {password && confirmPassword && password !== confirmPassword && (
-                <p className="text-xs text-red-500 italic">Passphrases do not match.</p>
+                <p className="text-xs text-red-500 italic">{t('welcome.mismatch')}</p>
               )}
 
               <div className="flex justify-between items-center mt-6">
-                <button onClick={() => setStep('profile')} className="editorial-meta hover:text-ink transition-colors">Back</button>
+                <button onClick={() => setStep('profile')} className="editorial-meta hover:text-ink transition-colors">{t('common.back')}</button>
                 <button 
                   disabled={!password || password !== confirmPassword || isInitializing}
                   onClick={handleFinalize}
                   className="flex items-center gap-2 bg-ink text-paper px-10 py-4 rounded-full font-mono text-[10px] uppercase tracking-widest disabled:opacity-20 transition-all hover:scale-105"
                 >
                   {isInitializing ? (
-                    <>Calibrating Engine...</>
+                    <>{t('welcome.calibrating')}</>
                   ) : (
-                    <>Create Secure Vault <Shield size={14} /></>
+                    <>{t('welcome.create_vault')} <Shield size={14} /></>
                   )}
                 </button>
               </div>

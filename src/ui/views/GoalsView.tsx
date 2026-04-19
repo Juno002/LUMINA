@@ -16,8 +16,10 @@ import {
   EditorialInput, 
   EditorialTextArea 
 } from '../components/shared';
+import { useTranslation } from '../../application/contexts/LanguageContext';
 
 export default function GoalsView({ goals, onUpdate }: { goals: Goal[], onUpdate: (g: Goal[]) => void }) {
+  const { t, language } = useTranslation();
   const [isAdding, setIsAdding] = useState(false);
   const [newGoal, setNewGoal] = useState({
     title: '',
@@ -109,7 +111,7 @@ export default function GoalsView({ goals, onUpdate }: { goals: Goal[], onUpdate
   };
 
   const handleDelete = (id: string) => {
-    if (confirm("Cancel this strategic objective?")) {
+    if (confirm(language === 'es' ? "¿Cancelar este objetivo estratégico?" : "Cancel this strategic objective?")) {
       onUpdate(goals.filter(g => g.id !== id));
     }
   };
@@ -119,13 +121,13 @@ export default function GoalsView({ goals, onUpdate }: { goals: Goal[], onUpdate
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div className="flex flex-col gap-2">
           <div className="editorial-meta">Strategy / Objectives</div>
-          <h2 className="font-serif text-3xl md:text-4xl">The Master Plan.</h2>
+          <h2 className="font-serif text-3xl md:text-4xl">{t('goals.title')}.</h2>
         </div>
         <EditorialButton 
           onClick={() => setIsAdding(true)}
           icon={<Zap size={14} />}
         >
-          Define SMART Goal
+          {t('goals.define_smart')}
         </EditorialButton>
       </div>
 
@@ -133,14 +135,14 @@ export default function GoalsView({ goals, onUpdate }: { goals: Goal[], onUpdate
         <div className="lg:col-span-12 flex flex-col gap-10">
           <div className="p-10 border border-ink/10 rounded-[3.5rem] bg-ink text-paper flex flex-col gap-8 shadow-2xl relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-3xl pointer-events-none"></div>
-            <h3 className="font-serif text-4xl leading-tight">Clarity of Intent.</h3>
+            <h3 className="font-serif text-4xl leading-tight">{t('goals.clarity_of_intent')}.</h3>
             <p className="text-sm italic opacity-60 leading-relaxed font-serif max-w-2xl">
-              A SMART goal is a contract with your future self. It removes the ambiguity that leads to procrastination and provides a direct path to achievement.
+              {t('goals.smart_description')}
             </p>
             <div className="flex flex-col gap-4 pt-6 max-w-sm">
                <div className="flex justify-between items-center text-[10px] uppercase tracking-widest font-mono opacity-40">
-                 <span>Active Strategic Alignment</span>
-                 <span>{goals.filter(g => g.status === 'active').length} Active</span>
+                 <span>{t('goals.active_alignment')}</span>
+                 <span>{goals.filter(g => g.status === 'active').length} {t('goals.active')}</span>
                </div>
                <div className="h-[2px] w-full bg-white/10 rounded-full overflow-hidden">
                  <motion.div 
@@ -154,13 +156,13 @@ export default function GoalsView({ goals, onUpdate }: { goals: Goal[], onUpdate
         </div>
 
         <div className="lg:col-span-12 flex flex-col gap-6">
-          <div className="editorial-meta flex items-center gap-2 opacity-40 mb-2"><CheckCircle2 size={12} /> Current Objectives</div>
+          <div className="editorial-meta flex items-center gap-2 opacity-40 mb-2"><CheckCircle2 size={12} /> {t('goals.current_objectives')}</div>
           {goals.length === 0 ? (
             <div className="py-24 flex flex-col items-center justify-center gap-6 border-2 border-dashed border-ink/5 rounded-[3rem]">
                <Target size={60} className="mx-auto opacity-10" strokeWidth={1} />
                <div className="text-center">
-                 <p className="editorial-meta text-lg">The master plan is empty.</p>
-                 <p className="editorial-meta text-accent opacity-40 text-xs italic mt-1">Define your first SMART goal to begin calibration.</p>
+                 <p className="editorial-meta text-lg">{t('goals.empty_master_plan')}</p>
+                 <p className="editorial-meta text-accent opacity-40 text-xs italic mt-1">{t('goals.define_first_smart')}</p>
                </div>
             </div>
           ) : (
@@ -182,28 +184,28 @@ export default function GoalsView({ goals, onUpdate }: { goals: Goal[], onUpdate
       <EditorialModal
         isOpen={isAdding}
         onClose={() => setIsAdding(false)}
-        title="Define Objective."
+        title={language === 'es' ? 'Definir Objetivo.' : "Define Objective."}
         subtitle="Strategy / SMART"
       >
         <div className="flex flex-col gap-8">
           <EditorialInput 
             autoFocus
-            label="Objective Title"
-            placeholder="e.g., Achieve deep work mastery..."
+            label={language === 'es' ? 'Título del Objetivo' : "Objective Title"}
+            placeholder={language === 'es' ? 'ej. Lograr maestría en trabajo profundo...' : "e.g., Achieve deep work mastery..."}
             value={newGoal.title}
             onChange={(e) => setNewGoal({...newGoal, title: e.target.value})}
           />
 
           <EditorialTextArea 
-            label="Measurable Criterion (S.M.A.R.T)"
-            placeholder="e.g., Complete 3 pomodoros without distractions every weekday..."
+            label={language === 'es' ? 'Criterio Medible (S.M.A.R.T)' : "Measurable Criterion (S.M.A.R.T)"}
+            placeholder={language === 'es' ? 'ej. Completar 3 pomodoros sin distracciones cada día de la semana...' : "e.g., Complete 3 pomodoros without distractions every weekday..."}
             value={newGoal.description}
             onChange={(e) => setNewGoal({...newGoal, description: e.target.value})}
           />
 
           <div className="grid grid-cols-2 gap-6">
             <div className="flex flex-col gap-2">
-              <label className="editorial-meta text-[9px] uppercase tracking-widest opacity-50">Priority</label>
+              <label className="editorial-meta text-[9px] uppercase tracking-widest opacity-50">{language === 'es' ? 'Prioridad' : 'Priority'}</label>
               <div className="flex gap-2">
                 {(['low', 'medium', 'high'] as const).map(p => (
                   <button 
@@ -222,7 +224,7 @@ export default function GoalsView({ goals, onUpdate }: { goals: Goal[], onUpdate
               </div>
             </div>
             <EditorialInput 
-              label="Target Date"
+              label={language === 'es' ? 'Fecha Objetivo' : "Target Date"}
               type="date"
               variant="mono"
               value={newGoal.targetDate}
@@ -231,10 +233,10 @@ export default function GoalsView({ goals, onUpdate }: { goals: Goal[], onUpdate
           </div>
 
           <div className="flex flex-col gap-4 border-t border-ink/5 pt-6">
-            <label className="editorial-meta text-[9px] uppercase tracking-widest opacity-50">Milestones (Sub-goals)</label>
+            <label className="editorial-meta text-[9px] uppercase tracking-widest opacity-50">{language === 'es' ? 'Hitos (Sub-metas)' : 'Milestones (Sub-goals)'}</label>
             <div className="flex gap-2">
               <input 
-                placeholder="Add sub-task..."
+                placeholder={language === 'es' ? 'Añadir sub-tarea...' : "Add sub-task..."}
                 className="flex-grow bg-transparent border-b border-ink/10 py-1 outline-none font-serif italic text-sm focus:border-ink"
                 value={newMilestoneTitle}
                 onChange={(e) => setNewMilestoneTitle(e.target.value)}
@@ -257,9 +259,9 @@ export default function GoalsView({ goals, onUpdate }: { goals: Goal[], onUpdate
           </div>
 
           <div className="flex justify-between items-center pt-8 border-t border-ink/5">
-            <button onClick={() => setIsAdding(false)} className="editorial-meta text-accent hover:text-ink transition-colors">Discard</button>
+            <button onClick={() => setIsAdding(false)} className="editorial-meta text-accent hover:text-ink transition-colors">{t('common.cancel')}</button>
             <EditorialButton onClick={handleAddGoal} icon={<Check size={14} />}>
-              Establish Goal
+              {language === 'es' ? 'Establecer Objetivo' : 'Establish Goal'}
             </EditorialButton>
           </div>
         </div>

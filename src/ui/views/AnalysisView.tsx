@@ -17,12 +17,11 @@ import {
   AreaChart,
   Area
 } from 'recharts';
-import { Activity, Brain, TrendingUp } from 'lucide-react';
-import { cn } from '../../shared/utils/TailwindMerge';
-import { Vault, ThoughtEntry, ActivationActivity } from '../../domain/entities';
 import { calculateICC } from '../../domain/services/ICCCalculator';
+import { useTranslation } from '../../application/contexts/LanguageContext';
 
 export default function AnalysisView({ vault }: { vault: Vault }) {
+  const { t, language } = useTranslation();
   const [activeMetric, setActiveMetric] = useState<'mood' | 'activation' | 'icc'>('mood');
 
   const journalEntries = useMemo(() => vault.journal || [], [vault.journal]);
@@ -67,7 +66,7 @@ export default function AnalysisView({ vault }: { vault: Vault }) {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div className="flex flex-col gap-2">
           <div className="editorial-meta">Metrics / Behavioral Synapse</div>
-          <h2 className="font-serif text-3xl md:text-4xl">Statistical Resilience.</h2>
+          <h2 className="font-serif text-3xl md:text-4xl">{language === 'es' ? 'Resiliencia Estadística.' : 'Statistical Resilience.'}</h2>
         </div>
         <div className="flex gap-6 w-full md:w-auto border-b md:border-none border-ink/5 pt-2">
           {['mood', 'activation', 'icc'].map((m) => (
@@ -79,7 +78,11 @@ export default function AnalysisView({ vault }: { vault: Vault }) {
                 activeMetric === m ? "border-ink text-ink" : "border-transparent text-accent"
               )}
             >
-              {m === 'mood' ? 'Intensity Flux' : m === 'activation' ? 'Activity Pulse' : 'Cognitive Change'}
+              {m === 'mood' 
+                ? (language === 'es' ? 'Flujo de Intensidad' : 'Intensity Flux') 
+                : m === 'activation' 
+                  ? (language === 'es' ? 'Pulso de Actividad' : 'Activity Pulse') 
+                  : (language === 'es' ? 'Cambio Cognitivo' : 'Cognitive Change')}
             </button>
           ))}
         </div>
@@ -90,11 +93,11 @@ export default function AnalysisView({ vault }: { vault: Vault }) {
           <div className="p-10 border border-ink/10 rounded-[2rem] bg-paper relative overflow-hidden">
             <div className="flex justify-between items-start mb-10 relative z-10">
               <div className="flex flex-col gap-1">
-                <div className="editorial-meta">Historical Horizon</div>
+                <div className="editorial-meta">{language === 'es' ? 'Horizonte Histórico' : 'Historical Horizon'}</div>
                 <h3 className="font-serif text-2xl">
-                  {activeMetric === 'mood' && 'Emotional Intensity.'}
-                  {activeMetric === 'activation' && 'Behavioral Momentum.'}
-                  {activeMetric === 'icc' && 'Cognitive Restructuring.'}
+                  {activeMetric === 'mood' && (language === 'es' ? 'Intensidad Emocional.' : 'Emotional Intensity.')}
+                  {activeMetric === 'activation' && (language === 'es' ? 'Momentum Conductual.' : 'Behavioral Momentum.')}
+                  {activeMetric === 'icc' && (language === 'es' ? 'Reestructuración Cognitiva.' : 'Cognitive Restructuring.')}
                 </h3>
               </div>
               <Activity className="text-accent" size={20} />
@@ -102,7 +105,7 @@ export default function AnalysisView({ vault }: { vault: Vault }) {
 
             <div className="h-[350px] w-full relative z-10">
               {trendData.length === 0 ? (
-                <div className="h-full flex items-center justify-center editorial-meta opacity-20 italic">No historical data in current orbit.</div>
+                <div className="h-full flex items-center justify-center editorial-meta opacity-20 italic">{language === 'es' ? 'No hay datos históricos en la órbita actual.' : 'No historical data in current orbit.'}</div>
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
                   {activeMetric === 'icc' ? (
@@ -130,10 +133,10 @@ export default function AnalysisView({ vault }: { vault: Vault }) {
 
         <div className="col-span-12 lg:col-span-4 flex flex-col gap-10">
           <div className="flex flex-col gap-4">
-            <div className="editorial-meta">Foundations & Patterns</div>
+            <div className="editorial-meta">{language === 'es' ? 'Fundamentos y Patrones' : 'Foundations & Patterns'}</div>
             <div className="flex flex-col gap-4">
               {distortionData.length === 0 ? (
-                <p className="editorial-meta text-xs italic opacity-30 py-4">Scan archive for cognitive patterns...</p>
+                <p className="editorial-meta text-xs italic opacity-30 py-4">{language === 'es' ? 'Escaneando archivo en busca de patrones cognitivos...' : 'Scan archive for cognitive patterns...'}</p>
               ) : (
                 distortionData.map((d, i) => (
                   <div key={d.name} className="flex flex-col gap-2">
@@ -157,14 +160,20 @@ export default function AnalysisView({ vault }: { vault: Vault }) {
 
           <div className="p-8 border border-ink/10 rounded-3xl bg-ink text-paper flex flex-col gap-4 mt-auto">
             <Brain size={24} className="opacity-50" />
-            <div className="editorial-meta opacity-50">Pulse Insights</div>
+            <div className="editorial-meta opacity-50">{language === 'es' ? 'Información del Pulso' : 'Pulse Insights'}</div>
             <p className="text-sm italic leading-relaxed">
               {avgICC > 0.6 ? (
-                "High cognitive flexibility detected. Your ability to challenge automatic thoughts is significantly increasing."
+                language === 'es' 
+                  ? "Alta flexibilidad cognitiva detectada. Tu capacidad para desafiar pensamientos automáticos está aumentando significativamente."
+                  : "High cognitive flexibility detected. Your ability to challenge automatic thoughts is significantly increasing."
               ) : avgICC > 0.35 ? (
-                "Moderate change index. Perspective shifts are becoming more frequent. Continue the friend technique."
+                language === 'es'
+                  ? "Índice de cambio moderado. Los cambios de perspectiva son más frecuentes. Continúa con la técnica del amigo."
+                  : "Moderate change index. Perspective shifts are becoming more frequent. Continue the friend technique."
               ) : (
-                "Awaiting further restructuring logs to establish significant cognitive change index."
+                language === 'es'
+                  ? "Esperando más registros de reestructuración para establecer un índice de cambio cognitivo significativo."
+                  : "Awaiting further restructuring logs to establish significant cognitive change index."
               )}
             </p>
           </div>
@@ -175,9 +184,9 @@ export default function AnalysisView({ vault }: { vault: Vault }) {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
         {[
-          { label: 'Avg Change Index', value: avgICC.toFixed(2), sub: 'Shift effectiveness', icon: TrendingUp },
-          { label: 'Momentum Store', value: activations.filter((a: ActivationActivity) => a.completed).length, sub: 'Total Wins', icon: Activity },
-          { label: 'Obs. Continuity', value: journalEntries.length, sub: 'Log Entries', icon: Brain },
+          { label: language === 'es' ? 'Índice Promedio' : 'Avg Change Index', value: avgICC.toFixed(2), sub: language === 'es' ? 'Efectividad del cambio' : 'Shift effectiveness', icon: TrendingUp },
+          { label: language === 'es' ? 'Reserva de Momentum' : 'Momentum Store', value: activations.filter((a: ActivationActivity) => a.completed).length, sub: language === 'es' ? 'Logros Totales' : 'Total Wins', icon: Activity },
+          { label: language === 'es' ? 'Continuidad' : 'Obs. Continuity', value: journalEntries.length, sub: language === 'es' ? 'Registros' : 'Log Entries', icon: Brain },
         ].map((stat) => (
           <div key={stat.label} className="flex flex-col gap-4 p-8 border border-ink/5 rounded-3xl hover:bg-ink/[0.01] transition-all">
             <div className="flex justify-between items-start">

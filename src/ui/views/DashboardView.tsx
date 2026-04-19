@@ -10,6 +10,7 @@ import { Flame, Moon as MoonIcon, Star, CheckCircle2 } from "lucide-react";
 import { cn } from '../../shared/utils/TailwindMerge';
 import { todayISO } from '../../shared/utils/DateFormatter';
 import { triggerHaptic } from '../../shared/utils/Haptics';
+import { useTranslation } from '../../application/contexts/LanguageContext';
 
 import { Vault, ActivationActivity, Goal } from '../../domain/entities';
 import LambdaAvatar from '../components/shared/LambdaAvatar';
@@ -32,6 +33,7 @@ interface DashboardViewProps {
  * Central hub of Lumina. Features the Lambda Avatar and daily momentum tracking.
  */
 export default function DashboardView({ vault, onUpdate, onOpenCrisis, onOpenDayClosure }: DashboardViewProps) {
+  const { t } = useTranslation();
   const momentum = (vault.activations?.filter((a: ActivationActivity) => a.completed && a.plannedDate === todayISO()).length || 0) * 20;
   const pendingActions = vault.activations?.filter((a: ActivationActivity) => !a.completed).length || 0;
   
@@ -39,9 +41,9 @@ export default function DashboardView({ vault, onUpdate, onOpenCrisis, onOpenDay
 
   const getGreeting = () => {
     const hour = new Date().getHours();
-    if (hour < 12) return { label: "Morning / Awakening", quote: "The dawn is a tabula rasa. What will you scribe?", suggestion: "Perhaps a moment of coherence in Breathing?" };
-    if (hour < 18) return { label: "Mid-Day / Zenith", quote: "Presence is the only absolute. Observe without judgment.", suggestion: "Review your Active Intentions." };
-    return { label: "Evening / Restoration", quote: "The day concludes. The vault remains. Rest is ritual.", suggestion: "Register your sleep architecture." };
+    if (hour < 12) return t('dashboard.morning');
+    if (hour < 18) return t('dashboard.midday');
+    return t('dashboard.evening');
   };
 
   const context = getGreeting();
@@ -80,9 +82,9 @@ export default function DashboardView({ vault, onUpdate, onOpenCrisis, onOpenDay
             />
           </div>
 
-          {/* Strategic Progress */}
-          <div className="flex flex-col gap-8 px-4 max-md:hidden lg:flex">
-            <div className="editorial-meta opacity-40">Strategic Progress</div>
+          {/* Strategic Progress (Now visible on mobile but optimized) */}
+          <div className="flex flex-col gap-8 px-4">
+            <div className="editorial-meta opacity-40">{t('dashboard.strategic_progress')}</div>
             <div className="flex flex-col gap-4">
               {(vault.goals || []).slice(0, 3).map((goal: Goal) => (
                 <div key={goal.id} className="flex items-center gap-5 py-4 border-b border-ink/5 group">
@@ -92,10 +94,13 @@ export default function DashboardView({ vault, onUpdate, onOpenCrisis, onOpenDay
                   )}></div>
                   <div className="flex flex-col">
                     <span className={cn("font-serif text-lg italic leading-none", goal.completed && "opacity-20 line-through")}>{goal.title}</span>
-                    <span className="text-[8px] font-mono opacity-30 uppercase mt-1 tracking-widest">{goal.progress}% complete</span>
+                    <span className="text-[8px] font-mono opacity-30 uppercase mt-1 tracking-widest">{goal.progress}% {t('dashboard.strategic_progress').includes('Progreso') ? 'completado' : 'complete'}</span>
                   </div>
                 </div>
               ))}
+              {(vault.goals || []).length === 0 && (
+                 <p className="editorial-meta italic opacity-20 text-xs">{t('dashboard.no_goals')}</p>
+              )}
             </div>
           </div>
 
@@ -114,16 +119,16 @@ export default function DashboardView({ vault, onUpdate, onOpenCrisis, onOpenDay
                <>
                  <CheckCircle2 size={32} className="text-ink/20" />
                  <div className="flex flex-col">
-                    <span className="editorial-meta opacity-30 text-[9px] uppercase tracking-widest">Ritual Complete</span>
-                    <span className="font-serif italic text-accent/40 text-sm">The day is secured.</span>
+                    <span className="editorial-meta opacity-30 text-[9px] uppercase tracking-widest">{t('dashboard.ritual_complete')}</span>
+                    <span className="font-serif italic text-accent/40 text-sm">{t('dashboard.day_secured')}</span>
                  </div>
                </>
              ) : (
                <>
                  <MoonIcon size={32} className="group-hover:rotate-12 transition-transform duration-700" />
                  <div className="flex flex-col">
-                    <span className="editorial-meta opacity-50 text-[9px] uppercase tracking-widest">Closure Ritual</span>
-                    <span className="font-serif italic text-paper/80 text-sm">Begin the final synthesis.</span>
+                    <span className="editorial-meta opacity-50 text-[9px] uppercase tracking-widest">{t('dashboard.closure_ritual')}</span>
+                    <span className="font-serif italic text-paper/80 text-sm">{t('dashboard.begin_synthesis')}</span>
                  </div>
                </>
              )}
@@ -141,9 +146,26 @@ export default function DashboardView({ vault, onUpdate, onOpenCrisis, onOpenDay
           <p className="editorial-meta text-[9px] opacity-40 italic uppercase tracking-widest">{context.suggestion}</p>
         </div>
 
+        {/* Mobile-Only Quick Stats Pulse */}
+        <div className="flex md:hidden gap-4 overflow-x-auto pb-4 no-scrollbar">
+           {[
+             { label: 'XP', value: vault.profile.experience || 0, icon: Flame },
+             { label: t('nav.nightfall'), value: (vault.sleep?.[0]?.quality || '-') + '/5', icon: MoonIcon },
+             { label: t('nav.architecture'), value: (vault.habits?.filter(h => h.completedDates.includes(todayISO())).length || 0), icon: Star }
+           ].map((stat, i) => (
+             <div key={i} className="flex-shrink-0 flex flex-col gap-2 p-6 rounded-3xl border border-ink/5 bg-paper shadow-sm min-w-[140px]">
+                <div className="flex justify-between items-center opacity-40">
+                  <stat.icon size={12} />
+                  <span className="editorial-meta text-[8px] uppercase tracking-tighter">{stat.label}</span>
+                </div>
+                <span className="font-serif text-2xl italic">{stat.value}</span>
+             </div>
+           ))}
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10">
           <div className="flex flex-col gap-6 p-10 border border-ink/5 rounded-[3rem] bg-paper shadow-sm">
-            <span className="editorial-meta opacity-50 uppercase text-[9px] tracking-[0.2em]">Resilience Index</span>
+            <span className="editorial-meta opacity-50 uppercase text-[9px] tracking-[0.2em]">{t('dashboard.resilience_index')}</span>
             <div className="flex items-baseline gap-3">
                <h3 className="font-serif text-5xl">68</h3>
                <span className="editorial-meta opacity-30 lowercase tracking-normal italic text-sm">stable</span>
@@ -160,13 +182,13 @@ export default function DashboardView({ vault, onUpdate, onOpenCrisis, onOpenDay
           
           <div className="flex flex-col gap-6 p-10 border border-ink/5 rounded-[3rem] bg-ink text-paper shadow-2xl relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-3xl pointer-events-none group-hover:scale-150 transition-transform duration-1000"></div>
-            <span className="editorial-meta opacity-40 uppercase text-[9px] tracking-[0.2em]">Active Scope</span>
+            <span className="editorial-meta opacity-40 uppercase text-[9px] tracking-[0.2em]">{t('dashboard.active_scope')}</span>
             <div className="flex items-baseline gap-4">
               <span className="text-7xl font-light tracking-tighter leading-none">{pendingActions.toString().padStart(2, '0')}</span>
-              <span className="editorial-meta opacity-40 italic text-sm">Intentions</span>
+              <span className="editorial-meta opacity-40 italic text-sm">{t('dashboard.intentions')}</span>
             </div>
             <div className="flex justify-between items-center mt-auto">
-              <p className="text-[10px] opacity-30 italic uppercase tracking-widest font-mono">Daily Momentum</p>
+              <p className="text-[10px] opacity-30 italic uppercase tracking-widest font-mono">{t('dashboard.daily_momentum')}</p>
               <div className="flex items-center gap-2">
                  <Flame size={14} className="text-amber-400" />
                  <span className="font-mono text-xs">{momentum}%</span>
@@ -177,8 +199,8 @@ export default function DashboardView({ vault, onUpdate, onOpenCrisis, onOpenDay
 
         <div className="flex flex-col gap-10 pt-16 border-t border-ink/5">
           <div className="flex justify-between items-center">
-            <div className="editorial-meta opacity-40">Gratitude / Grace Logs</div>
-            <button onClick={() => setIsAddingGrace(true)} className="text-[9px] uppercase tracking-widest font-mono text-accent hover:text-ink transition-colors">+ New Entry</button>
+            <div className="editorial-meta opacity-40">{t('dashboard.gratitude_logs')}</div>
+            <button onClick={() => setIsAddingGrace(true)} className="text-[9px] uppercase tracking-widest font-mono text-accent hover:text-ink transition-colors">{t('dashboard.new_entry')}</button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
             {(vault.wellness?.gratitudeEntries || []).slice(0, 3).map((entry) => (
@@ -188,7 +210,7 @@ export default function DashboardView({ vault, onUpdate, onOpenCrisis, onOpenDay
               </div>
             ))}
             {(vault.wellness?.gratitudeEntries || []).length === 0 && (
-              <p className="editorial-meta italic opacity-20 text-xs">No entries recorded in this vault.</p>
+              <p className="editorial-meta italic opacity-20 text-xs">{t('dashboard.no_entries')}</p>
             )}
           </div>
         </div>

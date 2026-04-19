@@ -8,6 +8,7 @@ import { ChevronRight } from 'lucide-react';
 import { ThoughtEntry } from '../../../../domain/entities';
 import { formatDate } from '../../../../shared/utils/DateFormatter';
 import { calculateICC } from '../../../../domain/services/ICCCalculator';
+import { useTranslation } from '../../../../application/contexts/LanguageContext';
 
 interface EntryCardProps {
   entry: ThoughtEntry;
@@ -20,6 +21,7 @@ interface EntryCardProps {
  * Displays a summary of a thought entry with level and ICC badges.
  */
 const EntryCard: React.FC<EntryCardProps> = ({ entry, onDelete, onEdit }) => {
+  const { t, language } = useTranslation();
   const icc = useMemo(() => {
     if (entry.level === 3 && entry.originalIntensity !== undefined && entry.finalCredibility !== undefined) {
       return calculateICC(entry.originalIntensity, entry.finalCredibility);
@@ -54,10 +56,10 @@ const EntryCard: React.FC<EntryCardProps> = ({ entry, onDelete, onEdit }) => {
           </div>
           <div className="flex items-center gap-4 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
             <button onClick={onEdit} className="editorial-meta text-[9px] uppercase hover:text-ink">
-              Edit
+              {language === 'es' ? 'Editar' : 'Edit'}
             </button>
             <button onClick={onDelete} className="editorial-meta text-[9px] uppercase text-red-500/50 hover:text-red-500">
-              Delete
+              {t('common.delete')}
             </button>
           </div>
         </div>

@@ -18,6 +18,7 @@ import {
   EditorialInput, 
   EditorialTextArea 
 } from '../components/shared';
+import { useTranslation } from '../../application/contexts/LanguageContext';
 import { 
   LineChart, 
   Line, 
@@ -40,6 +41,7 @@ interface ActiveSession {
 }
 
 export default function ExposureView({ data, onUpdate }: { data: ExposureData, onUpdate: (d: ExposureData) => void }) {
+  const { t, language } = useTranslation();
   const [activeTab, setActiveTab] = useState<'hierarchy' | 'logs'>('hierarchy');
   const [isAdding, setIsAdding] = useState(false);
   const [newAnchor, setNewAnchor] = useState({ text: '', sud: 50 });
@@ -61,7 +63,7 @@ export default function ExposureView({ data, onUpdate }: { data: ExposureData, o
   };
 
   const handleDeleteAnchor = (id: string) => {
-    if (!confirm("Are you sure you want to remove this fear anchor?")) return;
+    if (!confirm(t('common.confirmDelete'))) return;
     triggerHaptic('heavy');
     onUpdate({ ...data, hierarchy: data.hierarchy.filter(i => i.id !== id) });
   };
@@ -117,7 +119,7 @@ export default function ExposureView({ data, onUpdate }: { data: ExposureData, o
       <EditorialModal
         isOpen={!!activeSession}
         onClose={() => setActiveSession(null)}
-        title="Active Exposure Cycle."
+        title={t('exposure.activeCycle')}
         subtitle={activeSession?.item.text || "Exposure"}
       >
         <div className="flex flex-col gap-8">
@@ -125,7 +127,7 @@ export default function ExposureView({ data, onUpdate }: { data: ExposureData, o
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="flex flex-col gap-4">
-                  <label className="editorial-meta text-[9px] uppercase tracking-widest opacity-50 text-center md:text-left">Distress Level: Before ({activeSession.preSud})</label>
+                  <label className="editorial-meta text-[9px] uppercase tracking-widest opacity-50 text-center md:text-left">{t('exposure.preSud')} ({activeSession.preSud})</label>
                   <input 
                     type="range" 
                     className="accent-ink h-1 w-full" 
@@ -134,7 +136,7 @@ export default function ExposureView({ data, onUpdate }: { data: ExposureData, o
                   />
                 </div>
                 <div className="flex flex-col gap-4">
-                  <label className="editorial-meta text-[9px] uppercase tracking-widest opacity-50 text-center md:text-left">Distress Level: After ({activeSession.postSud})</label>
+                  <label className="editorial-meta text-[9px] uppercase tracking-widest opacity-50 text-center md:text-left">{t('exposure.postSud')} ({activeSession.postSud})</label>
                   <input 
                     type="range" 
                     className="accent-ink h-1 w-full" 
@@ -145,7 +147,7 @@ export default function ExposureView({ data, onUpdate }: { data: ExposureData, o
               </div>
 
               <EditorialInput 
-                label="Duration (Minutes)"
+                label={t('exposure.duration')}
                 type="number"
                 value={activeSession.duration}
                 onChange={(e) => setActiveSession({...activeSession, duration: parseInt(e.target.value) || 0})}
@@ -157,7 +159,7 @@ export default function ExposureView({ data, onUpdate }: { data: ExposureData, o
                   className="flex items-center gap-2 editorial-meta text-accent hover:text-ink transition-colors w-fit"
                 >
                   {showAdvanced ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-                  Advanced ERP Data
+                  {t('exposure.advancedData')}
                 </button>
                 
                 <AnimatePresence>
@@ -169,20 +171,20 @@ export default function ExposureView({ data, onUpdate }: { data: ExposureData, o
                       className="overflow-hidden flex flex-col gap-6 pt-4"
                     >
                       <EditorialTextArea 
-                        label="Catastrophic Prediction (What do you fear will happen?)"
-                        placeholder="e.g., I will have a heart attack and no one will help..."
+                        label={t('exposure.prediction')}
+                        placeholder={t('exposure.predictionPlaceholder')}
                         value={activeSession.catastrophicPrediction}
                         onChange={(e) => setActiveSession({...activeSession, catastrophicPrediction: e.target.value})}
                       />
                       <EditorialTextArea 
-                        label="Actual Outcome (What actually happened?)"
-                        placeholder="e.g., I felt tight in my chest but I continued to breathe and it passed..."
+                        label={t('exposure.outcome')}
+                        placeholder={t('exposure.outcomePlaceholder')}
                         value={activeSession.realOutcome}
                         onChange={(e) => setActiveSession({...activeSession, realOutcome: e.target.value})}
                       />
                       <EditorialTextArea 
-                        label="Safety Behaviors Avoided"
-                        placeholder="e.g., I didn't check my pulse, I didn't call my partner for reassurance..."
+                        label={t('exposure.safetyBehaviors')}
+                        placeholder={t('exposure.safetyBehaviorsPlaceholder')}
                         value={activeSession.safetyBehaviorsAvoided}
                         onChange={(e) => setActiveSession({...activeSession, safetyBehaviorsAvoided: e.target.value})}
                       />
@@ -196,10 +198,10 @@ export default function ExposureView({ data, onUpdate }: { data: ExposureData, o
                   onClick={() => setActiveSession(null)} 
                   className="editorial-meta text-accent hover:text-red-500 transition-colors"
                 >
-                  Discard
+                  {t('common.cancel')}
                 </button>
                 <EditorialButton onClick={commitSession} icon={<Check size={14} />}>
-                  Archive Cycle
+                  {t('common.archive')}
                 </EditorialButton>
               </div>
             </>
@@ -210,20 +212,20 @@ export default function ExposureView({ data, onUpdate }: { data: ExposureData, o
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div className="flex flex-col gap-2">
           <div className="editorial-meta">Protocol / ERP</div>
-          <h2 className="font-serif text-3xl md:text-4xl">Facing the Storm.</h2>
+          <h2 className="font-serif text-3xl md:text-4xl">{t('exposure.title')}</h2>
         </div>
         <div className="flex gap-8 w-full md:w-auto border-b md:border-none border-ink/5">
           <button 
             onClick={() => setActiveTab('hierarchy')}
             className={cn("editorial-meta pb-4 md:pb-2 border-b-2 transition-all flex-grow md:flex-grow-0 text-center", activeTab === 'hierarchy' ? "border-ink text-ink" : "border-transparent text-accent")}
           >
-            Hierarchy
+            {t('exposure.hierarchy')}
           </button>
           <button 
             onClick={() => setActiveTab('logs')}
             className={cn("editorial-meta pb-4 md:pb-2 border-b-2 transition-all flex-grow md:flex-grow-0 text-center", activeTab === 'logs' ? "border-ink text-ink" : "border-transparent text-accent")}
           >
-            History
+            {t('exposure.history')}
           </button>
         </div>
       </div>
@@ -234,11 +236,10 @@ export default function ExposureView({ data, onUpdate }: { data: ExposureData, o
             <div className="p-10 border border-ink/5 rounded-[2.5rem] bg-ink/[0.01] flex flex-col gap-6">
               <div className="flex items-center gap-3">
                 <ShieldAlert className="text-accent" size={20} />
-                <span className="editorial-meta text-[10px] uppercase tracking-widest">Therapeutic Wisdom</span>
+                <span className="editorial-meta text-[10px] uppercase tracking-widest">{t('exposure.wisdomTitle')}</span>
               </div>
               <p className="text-sm italic leading-relaxed font-serif opacity-60">
-                Exposure therapy works through habituation. By gradually approaching feared situations without using safety behaviors, you teach your brain that the danger is not real. 
-                SUDs (Subjective Units of Distress) help map this journey.
+                {t('exposure.wisdomText')}
               </p>
             </div>
             
@@ -246,26 +247,26 @@ export default function ExposureView({ data, onUpdate }: { data: ExposureData, o
               <div className="p-8 border border-ink/10 rounded-[2rem] bg-paper shadow-lg flex flex-col gap-6">
                 <EditorialInput 
                   autoFocus
-                  label="Anchor Description"
-                  placeholder="e.g., Sitting in a crowded cafe alone"
+                  label={t('exposure.anchorDescription')}
+                  placeholder={t('exposure.anchorPlaceholder')}
                   value={newAnchor.text}
                   onChange={(e) => setNewAnchor({...newAnchor, text: e.target.value})}
                 />
                 <div className="flex flex-col gap-4">
                   <div className="flex justify-between items-center">
-                    <label className="editorial-meta text-[9px] uppercase tracking-widest">Expected Intensity</label>
+                    <label className="editorial-meta text-[9px] uppercase tracking-widest">{t('exposure.expectedIntensity')}</label>
                     <span className="font-mono text-xs">{newAnchor.sud} SUDs</span>
                   </div>
                   <input type="range" className="accent-ink h-1" value={newAnchor.sud} onChange={(e) => setNewAnchor({...newAnchor, sud: parseInt(e.target.value)})} />
                   <div className="flex justify-between text-[8px] editorial-meta opacity-30 uppercase">
-                    <span>Peace</span>
-                    <span>Panic</span>
+                    <span>{t('common.peace')}</span>
+                    <span>{t('common.panic')}</span>
                   </div>
                 </div>
                 <div className="flex justify-end gap-6 mt-4">
-                  <button onClick={() => setIsAdding(false)} className="editorial-meta">Cancel</button>
+                  <button onClick={() => setIsAdding(false)} className="editorial-meta">{t('common.cancel')}</button>
                   <EditorialButton onClick={handleAddAnchor}>
-                    Solidify Anchor
+                    {t('exposure.solidifyAnchor')}
                   </EditorialButton>
                 </div>
               </div>
@@ -274,12 +275,12 @@ export default function ExposureView({ data, onUpdate }: { data: ExposureData, o
                 onClick={() => setIsAdding(true)}
                 className="group w-full py-6 border-2 border-dashed border-ink/10 rounded-[2rem] hover:border-ink/30 hover:bg-ink/[0.01] transition-all editorial-meta flex items-center justify-center gap-2"
               >
-                <Plus size={14} className="group-hover:rotate-90 transition-transform" /> Add Fear Anchor
+                <Plus size={14} className="group-hover:rotate-90 transition-transform" /> {t('exposure.addAnchor')}
               </button>
             )}
 
             <div className="flex flex-col gap-6">
-               <div className="editorial-meta flex items-center gap-2 opacity-40"><ChartIcon size={12} /> Habituation Trends</div>
+               <div className="editorial-meta flex items-center gap-2 opacity-40"><ChartIcon size={12} /> {t('exposure.habituationTrends')}</div>
                {data.hierarchy.filter(h => (logsByItem[h.id]?.length || 0) >= 2).map(item => (
                  <div key={item.id} className="border border-ink/5 rounded-2xl overflow-hidden bg-white/50">
                     <button 
@@ -288,7 +289,7 @@ export default function ExposureView({ data, onUpdate }: { data: ExposureData, o
                     >
                       <span className="font-serif italic text-sm">{item.text}</span>
                       <div className="flex items-center gap-4">
-                        <span className="text-[9px] editorial-meta opacity-40 uppercase">{logsByItem[item.id].length} Cycles</span>
+                        <span className="text-[9px] editorial-meta opacity-40 uppercase">{logsByItem[item.id].length} {t('exposure.cycles')}</span>
                         {expandedChartId === item.id ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                       </div>
                     </button>
@@ -305,7 +306,7 @@ export default function ExposureView({ data, onUpdate }: { data: ExposureData, o
                                 <YAxis domain={[0, 100]} hide />
                                 <Tooltip 
                                   contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', fontFamily: 'serif' }}
-                                  labelFormatter={(val) => `Cycle #${val}`}
+                                  labelFormatter={(val) => `${t('common.cycle')} #${val}`}
                                 />
                                 <Line type="monotone" dataKey="pre" stroke="#1a1a1a" strokeDasharray="5 5" strokeWidth={1} dot={{ r: 3 }} />
                                 <Line type="monotone" dataKey="post" stroke="#1a1a1a" strokeWidth={2} dot={{ r: 4 }} />
@@ -317,7 +318,7 @@ export default function ExposureView({ data, onUpdate }: { data: ExposureData, o
                  </div>
                ))}
                {data.hierarchy.filter(h => (logsByItem[h.id]?.length || 0) >= 2).length === 0 && (
-                 <p className="text-[10px] editorial-meta italic opacity-30 text-center">Consistency is required to map habituation.</p>
+                 <p className="text-[10px] editorial-meta italic opacity-30 text-center">{t('exposure.noHabituationData')}</p>
                )}
             </div>
           </div>
@@ -325,13 +326,13 @@ export default function ExposureView({ data, onUpdate }: { data: ExposureData, o
           <div className="flex flex-col gap-6">
             {data.hierarchy.length === 0 ? (
               <div className="py-20 text-center border border-dashed border-ink/5 rounded-[2.5rem]">
-                <p className="editorial-meta text-accent italic opacity-40">The hierarchy is empty.</p>
+                <p className="editorial-meta text-accent italic opacity-40">{t('exposure.emptyHierarchy')}</p>
               </div>
             ) : (
               <div className="flex flex-col gap-4">
                 <div className="flex justify-between editorial-meta text-[8px] uppercase tracking-widest opacity-30 mb-2">
-                  <span>Fear Anchor</span>
-                  <span>SUD Intensity</span>
+                  <span>{t('exposure.fearAnchor')}</span>
+                  <span>{t('exposure.sudIntensity')}</span>
                 </div>
                 {data.hierarchy.map(item => (
                   <HierarchyItem 
@@ -351,8 +352,8 @@ export default function ExposureView({ data, onUpdate }: { data: ExposureData, o
             <div className="py-24 flex flex-col items-center justify-center gap-6 border-2 border-dashed border-ink/5 rounded-[3rem]">
               <History className="opacity-10" size={60} strokeWidth={1} />
               <div className="text-center">
-                <p className="editorial-meta text-lg">Your history is a blank page.</p>
-                <p className="editorial-meta text-accent opacity-40 text-xs italic mt-1">Every cycle recorded is a step toward freedom.</p>
+                <p className="editorial-meta text-lg">{t('exposure.emptyHistory')}</p>
+                <p className="editorial-meta text-accent opacity-40 text-xs italic mt-1">{t('exposure.historyEncouragement')}</p>
               </div>
             </div>
            ) : (
@@ -361,18 +362,18 @@ export default function ExposureView({ data, onUpdate }: { data: ExposureData, o
                    const item = data.hierarchy.find(i => i.id === log.fearItemId);
                    return (
                      <div key={log.id} className="group border border-ink/5 rounded-[2rem] bg-paper overflow-hidden hover:shadow-xl hover:shadow-ink/[0.02] transition-all">
-                        <LogItem log={log} anchorText={item?.text || 'Removed Anchor'} />
+                        <LogItem log={log} anchorText={item?.text || t('common.removedAnchor')} />
                         {(log.catastrophicPrediction || log.realOutcome) && (
                           <div className="px-8 pb-8 pt-2 grid grid-cols-1 md:grid-cols-2 gap-8 border-t border-ink/5 mt-4">
                              {log.catastrophicPrediction && (
                                <div className="flex flex-col gap-2">
-                                  <span className="text-[8px] font-mono uppercase tracking-widest text-accent opacity-60">The Shadow (Prediction)</span>
+                                  <span className="text-[8px] font-mono uppercase tracking-widest text-accent opacity-60">{t('exposure.shadowLabel')}</span>
                                   <p className="text-sm font-serif italic opacity-80 leading-relaxed">"{log.catastrophicPrediction}"</p>
                                </div>
                              )}
                              {log.realOutcome && (
                                <div className="flex flex-col gap-2">
-                                  <span className="text-[8px] font-mono uppercase tracking-widest text-accent opacity-60">The Light (Actual Outcome)</span>
+                                  <span className="text-[8px] font-mono uppercase tracking-widest text-accent opacity-60">{t('exposure.lightLabel')}</span>
                                   <p className="text-sm font-serif italic text-ink leading-relaxed">"{log.realOutcome}"</p>
                                </div>
                              )}
