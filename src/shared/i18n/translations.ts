@@ -74,7 +74,14 @@ export const translations = {
       template_journal: 'CBT Synthesis',
       template_work: 'Deep Architecture',
       complete_action: 'Action Recorded',
-      no_habits: 'No rhythms defined in this architecture.'
+      no_habits: 'No rhythms defined in this architecture.',
+      log_action: 'Log',
+      unit_default: 'value',
+      days: 'days',
+      consecutive_discipline: 'Consecutive Discipline',
+      experience_level: 'Experience Level',
+      for_level: 'for Level',
+      linked_aim: 'Aim'
     },
     momentum: {
       title: 'Active Momentum',
@@ -172,6 +179,30 @@ export const translations = {
       empty_state: 'No rest architecture recorded.',
       notes: 'Nocturnal Observations'
     },
+    analysis: {
+      title: 'Statistical Resilience',
+      subtitle: 'Metrics / Behavioral Synapse',
+      mood_flux: 'Intensity Flux',
+      activity_pulse: 'Activity Pulse',
+      cognitive_change: 'Cognitive Change',
+      historical_horizon: 'Historical Horizon',
+      emotional_intensity: 'Emotional Intensity.',
+      behavioral_momentum: 'Behavioral Momentum.',
+      cognitive_restructuring: 'Cognitive Restructuring.',
+      no_data: 'No historical data in current orbit.',
+      foundations: 'Foundations & Patterns',
+      pulse_insights: 'Pulse Insights',
+      no_patterns: 'Scan archive for cognitive patterns...',
+      insight_high: 'High cognitive flexibility detected. Your ability to challenge automatic thoughts is significantly increasing.',
+      insight_mid: 'Moderate change index. Perspective shifts are becoming more frequent. Continue the friend technique.',
+      insight_low: 'Awaiting further restructuring logs to establish significant cognitive change index.',
+      stat_avg_change: 'Avg Change Index',
+      stat_avg_sub: 'Shift effectiveness',
+      stat_momentum: 'Momentum Store',
+      stat_momentum_sub: 'Total Wins',
+      stat_continuity: 'Obs. Continuity',
+      stat_continuity_sub: 'Log Entries'
+    },
     settings: {
       title: 'System Control',
       security_protocol: 'Security Protocol',
@@ -218,7 +249,9 @@ export const translations = {
       confirm_passphrase: 'Confirm Passphrase',
       mismatch: 'Passphrases do not match.',
       calibrating: 'Calibrating Engine...',
-      create_vault: 'Create Secure Vault'
+      create_vault: 'Create Secure Vault',
+      welcome_back: 'Welcome back.',
+      secure_vault_desc: 'Enter your passphrase to access your sanctuary.'
     }
   },
   es: {
@@ -291,7 +324,14 @@ export const translations = {
       template_journal: 'Síntesis TCC',
       template_work: 'Arquitectura Profunda',
       complete_action: 'Acción Registrada',
-      no_habits: 'No hay ritmos definidos en esta arquitectura.'
+      no_habits: 'No hay ritmos definidos en esta arquitectura.',
+      log_action: 'Registrar',
+      unit_default: 'valor',
+      days: 'días',
+      consecutive_discipline: 'Disciplina Consecutiva',
+      experience_level: 'Nivel de Experiencia',
+      for_level: 'para el Nivel',
+      linked_aim: 'Objetivo'
     },
     momentum: {
       title: 'Momentum Activo',
@@ -389,6 +429,30 @@ export const translations = {
       empty_state: 'No hay registros de descanso.',
       notes: 'Observaciones Nocturnas'
     },
+    analysis: {
+      title: 'Resiliencia Estadística',
+      subtitle: 'Métricas / Sinapsis Conductual',
+      mood_flux: 'Flujo de Intensidad',
+      activity_pulse: 'Pulso de Actividad',
+      cognitive_change: 'Cambio Cognitivo',
+      historical_horizon: 'Horizonte Histórico',
+      emotional_intensity: 'Intensidad Emocional.',
+      behavioral_momentum: 'Momentum Conductual.',
+      cognitive_restructuring: 'Reestructuración Cognitiva.',
+      no_data: 'No hay datos históricos en la órbita actual.',
+      foundations: 'Fundamentos y Patrones',
+      pulse_insights: 'Información del Pulso',
+      no_patterns: 'Escaneando archivo en busca de patrones cognitivos...',
+      insight_high: 'Alta flexibilidad cognitiva detectada. Tu capacidad para desafiar pensamientos automáticos está aumentando significativamente.',
+      insight_mid: 'Índice de cambio moderado. Los cambios de perspectiva son más frecuentes. Continúa con la técnica del amigo.',
+      insight_low: 'Esperando más registros de reestructuración para establecer un índice de cambio cognitivo significativo.',
+      stat_avg_change: 'Índice Promedio',
+      stat_avg_sub: 'Efectividad del cambio',
+      stat_momentum: 'Reserva de Momentum',
+      stat_momentum_sub: 'Logros Totales',
+      stat_continuity: 'Continuidad',
+      stat_continuity_sub: 'Registros'
+    },
     settings: {
       title: 'Control del Sistema',
       security_protocol: 'Protocolo de Seguridad',
@@ -435,7 +499,9 @@ export const translations = {
       confirm_passphrase: 'Confirmar Contraseña',
       mismatch: 'Las contraseñas no coinciden.',
       calibrating: 'Calibrando Motor...',
-      create_vault: 'Crear Bóveda Segura'
+      create_vault: 'Crear Bóveda Segura',
+      welcome_back: 'Bienvenido de nuevo.',
+      secure_vault_desc: 'Introduce tu contraseña para acceder a tu santuario.'
     }
   }
 };

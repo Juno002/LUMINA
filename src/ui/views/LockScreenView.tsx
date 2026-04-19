@@ -7,6 +7,7 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { ArrowRight, Eye, EyeOff, ShieldAlert } from 'lucide-react';
 import { AnimationSpeeds, EasingCurves } from '../../domain/constants/Theme';
+import { useTranslation } from '../../application/contexts/LanguageContext';
 
 interface LockScreenProps {
   onUnlock: (password: string) => Promise<boolean>;
@@ -15,6 +16,7 @@ interface LockScreenProps {
 }
 
 export default function LockScreenView({ onUnlock, error, onOpenCrisis }: LockScreenProps) {
+  const { t } = useTranslation();
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -50,8 +52,8 @@ export default function LockScreenView({ onUnlock, error, onOpenCrisis }: LockSc
       >
         <div className="text-center flex flex-col gap-2">
           <div className="editorial-meta">Security / Vault Locked</div>
-          <h1 className="font-serif text-4xl">Welcome back.</h1>
-          <p className="text-accent text-sm font-serif italic opacity-60">Enter your passphrase to access your sanctuary.</p>
+          <h1 className="font-serif text-4xl">{t('welcome.welcome_back')}</h1>
+          <p className="text-accent text-sm font-serif italic opacity-60">{t('welcome.secure_vault_desc')}</p>
         </div>
 
         <form onSubmit={handleUnlock} className="flex flex-col gap-6">
@@ -61,7 +63,7 @@ export default function LockScreenView({ onUnlock, error, onOpenCrisis }: LockSc
               type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Your Passphrase"
+              placeholder={t('welcome.set_passphrase')}
               className={`w-full bg-transparent border-b py-4 font-serif italic text-2xl outline-none transition-all ${
                 error ? 'border-red-400 text-red-500' : 'border-ink/10 focus:border-ink'
               }`}
@@ -79,7 +81,7 @@ export default function LockScreenView({ onUnlock, error, onOpenCrisis }: LockSc
                 animate={{ opacity: 1, x: 0 }}
                 className="text-[10px] font-mono uppercase tracking-widest text-red-400 mt-2"
               >
-                Passphrase incorrect. Access denied.
+                {t('welcome.mismatch')}
               </motion.p>
             )}
           </div>
@@ -90,7 +92,7 @@ export default function LockScreenView({ onUnlock, error, onOpenCrisis }: LockSc
             className="group relative flex items-center justify-center gap-3 bg-ink text-paper py-4 rounded-full font-mono text-[10px] uppercase tracking-[0.2em] transition-all hover:scale-[1.02] disabled:opacity-20 disabled:hover:scale-100 overflow-hidden"
           >
             <span className="relative z-10">
-              {isSubmitting ? 'Opening Vault...' : 'Unlock Sanctuary'}
+              {isSubmitting ? t('welcome.calibrating') : t('welcome.begin')}
             </span>
             {!isSubmitting && <ArrowRight size={14} className="relative z-10 group-hover:translate-x-1 transition-transform" />}
             
@@ -109,7 +111,7 @@ export default function LockScreenView({ onUnlock, error, onOpenCrisis }: LockSc
           onClick={onOpenCrisis}
           className="flex items-center justify-center gap-2 text-accent/40 hover:text-red-400 transition-all text-[9px] font-mono uppercase tracking-widest"
         >
-          <ShieldAlert size={12} /> Emergency Access / SOS
+          <ShieldAlert size={12} /> {t('settings.crisis_plan')}
         </button>
       </motion.div>
 
@@ -118,3 +120,4 @@ export default function LockScreenView({ onUnlock, error, onOpenCrisis }: LockSc
     </div>
   );
 }
+

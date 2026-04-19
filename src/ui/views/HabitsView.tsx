@@ -120,7 +120,7 @@ export default function HabitsView({ vault, onUpdate, onLevelUp }: HabitsViewPro
   };
 
   const handleDelete = (id: string) => {
-    if (confirm("Archive this architectural rhythm?")) {
+    if (confirm(t('common.confirmDelete'))) {
       triggerHaptic('heavy');
       onUpdate({
         ...vault,
@@ -151,13 +151,13 @@ export default function HabitsView({ vault, onUpdate, onLevelUp }: HabitsViewPro
             <div className="editorial-meta">{t('habits.streak')}</div>
             <Flame size={16} className={currentStreak > 0 ? "text-orange-400" : "text-accent opacity-20"} />
           </div>
-          <div className="font-serif text-5xl font-light">{currentStreak} <span className="text-sm editorial-meta italic">{language === 'es' ? 'días' : 'days'}</span></div>
-          <div className="editorial-meta text-accent">{language === 'es' ? 'Disciplina Consecutiva' : 'Consecutive Discipline'}</div>
+          <div className="font-serif text-5xl font-light">{currentStreak} <span className="text-sm editorial-meta italic">{t('habits.days')}</span></div>
+          <div className="editorial-meta text-accent">{t('habits.consecutive_discipline')}</div>
         </div>
 
         <div className="p-8 border border-ink/5 rounded-3xl bg-ink/[0.01] flex flex-col gap-4">
           <div className="flex justify-between items-start">
-            <div className="editorial-meta">Experience Level</div>
+            <div className="editorial-meta">{t('habits.experience_level')}</div>
             <Zap size={16} className="text-accent" />
           </div>
           <div className="font-serif text-5xl font-light">{vault.stats?.level || 1}</div>
@@ -168,7 +168,7 @@ export default function HabitsView({ vault, onUpdate, onLevelUp }: HabitsViewPro
               className="h-full bg-ink"
             />
           </div>
-          <div className="editorial-meta text-accent text-[9px]">{xpInfo.current} / {xpInfo.needed} XP for Level {(vault.stats?.level || 1) + 1}</div>
+          <div className="editorial-meta text-accent text-[9px]">{xpInfo.current} / {xpInfo.needed} XP {t('habits.for_level')} {(vault.stats?.level || 1) + 1}</div>
         </div>
 
         <div className="p-8 border border-ink/5 rounded-3xl bg-ink/[0.01] flex flex-col gap-4">
@@ -261,7 +261,7 @@ export default function HabitsView({ vault, onUpdate, onLevelUp }: HabitsViewPro
                       </h3>
                       {habit.linkedGoalId && (
                         <span className="text-[9px] font-mono uppercase tracking-widest px-2 py-0.5 bg-ink/5 text-ink/50 rounded-full w-fit mt-2">
-                          {language === 'es' ? 'Objetivo:' : 'Aim:'} {(vault.goals || []).find(g => g.id === habit.linkedGoalId)?.title || 'Goal'}
+                          {t('habits.linked_aim')}: {(vault.goals || []).find(g => g.id === habit.linkedGoalId)?.title || 'Goal'}
                         </span>
                       )}
                     </div>
@@ -340,6 +340,7 @@ export default function HabitsView({ vault, onUpdate, onLevelUp }: HabitsViewPro
 }
 
 function ValueModal({ isOpen, habit, currentValue, onCancel, onSave }: { isOpen: boolean; habit?: Habit; currentValue: number; onCancel: () => void; onSave: (v: number) => void }) {
+  const { t, language } = useTranslation();
   const [val, setVal] = useState(currentValue.toString());
 
   // Keep track of the last known habit for exit animations
@@ -362,7 +363,7 @@ function ValueModal({ isOpen, habit, currentValue, onCancel, onSave }: { isOpen:
       isOpen={isOpen} 
       onClose={onCancel}
       title={displayHabit?.name || ''}
-      subtitle={`Log ${displayHabit?.unit || 'value'}`}
+      subtitle={`${t('habits.log_action')} ${displayHabit?.unit || t('habits.unit_default')}`}
       maxWidth="sm"
     >
       <div className="flex flex-col gap-8">
