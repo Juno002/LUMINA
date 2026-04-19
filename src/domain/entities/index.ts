@@ -76,6 +76,8 @@ export interface ActivationActivity {
   linkedGoalId?: string;
   completedAt?: string; // ISO timestamp
   completedDate?: string; // YYYY-MM-DD for daily filtering
+  actualValue?: number; // Actual Joy experienced
+  actualDifficulty?: number; // Actual Effort required
 }
 
 export type RecurrencePattern = 'none' | 'daily' | 'weekly' | 'monthly';
@@ -111,6 +113,10 @@ export interface MoodEntry {
   mood: string;
   intensity: number;
   note: string;
+  sensations?: string[]; // Body markers (heat, tension, etc)
+  urges?: string;       // Behavioral impulses
+  triggers?: string;    // Environmental context
+}
 }
 
 export interface wellness {

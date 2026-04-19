@@ -224,6 +224,13 @@ function JournalForm({ initialData, onCancel, onSave, clinicalProfile }: FormPro
               />
             ))}
           </div>
+        </div>
+
+        {/* Therapeutic Nudge */}
+        <div className="bg-ink/[0.02] border-l-2 border-accent p-6 rounded-r-2xl">
+           <p className="text-xs font-serif italic text-accent opacity-70 leading-relaxed">
+             {t(`journal.prompts.${clinicalProfile || 'general'}` as any)}
+           </p>
         </div>        {/* Level 1: Observation */}
         <AnimatePresence mode="wait">
           {(!isMobile || currentStep === 1) && (

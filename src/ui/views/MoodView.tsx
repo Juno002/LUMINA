@@ -35,11 +35,23 @@ export default function MoodView({ entries, onUpdate }: MoodViewProps) {
       date: newEntry.date || todayISO(),
       mood: newEntry.mood || 'Good',
       intensity: newEntry.intensity || 70,
-      note: newEntry.note || ''
+      note: newEntry.note || '',
+      sensations: newEntry.sensations || [],
+      urges: newEntry.urges || '',
+      triggers: newEntry.triggers || ''
     };
     onUpdate([entry, ...entries]);
     setIsAdding(false);
-    setNewEntry({ mood: 'Good', intensity: 70, note: '', date: todayISO() });
+    setNewEntry({ mood: 'Good', intensity: 70, note: '', date: todayISO(), sensations: [], urges: '', triggers: '' });
+  };
+
+  const toggleSensation = (s: string) => {
+    const current = newEntry.sensations || [];
+    if (current.includes(s)) {
+      setNewEntry({ ...newEntry, sensations: current.filter(x => x !== s) });
+    } else {
+      setNewEntry({ ...newEntry, sensations: [...current, s] });
+    }
   };
 
   const handleDelete = (id: string) => {
@@ -111,6 +123,50 @@ export default function MoodView({ entries, onUpdate }: MoodViewProps) {
                   <span>{t('mood.overwhelming')}</span>
                 </div>
               </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+               <div className="flex flex-col gap-4">
+                  <label className="editorial-meta">{t('mood.sensations')}</label>
+                  <div className="flex flex-wrap gap-2">
+                    {['tension', 'heat', 'cold', 'heavy', 'heart'].map(s => (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => toggleSensation(s)}
+                        className={cn(
+                          "px-4 py-2 rounded-xl border text-[10px] font-mono uppercase tracking-widest transition-all",
+                          newEntry.sensations?.includes(s) ? "bg-ink text-paper border-ink" : "border-ink/5 text-accent hover:border-ink/20"
+                        )}
+                      >
+                        {t(`mood.sensation_${s}` as any)}
+                      </button>
+                    ))}
+                  </div>
+               </div>
+               <div className="flex flex-col gap-4">
+                  <label className="editorial-meta">{t('mood.triggers')}</label>
+                  <input 
+                    type="text"
+                    className="bg-transparent border-b border-ink/10 focus:border-ink outline-none py-2 font-serif text-lg italic"
+                    placeholder="Context / Trigger..."
+                    value={newEntry.triggers || ''}
+                    onChange={(e) => setNewEntry({...newEntry, triggers: e.target.value})}
+                  />
+               </div>
+            </div>
+
+            <div className="flex flex-col gap-4">
+              <label className="editorial-meta">{t('mood.urges')}</label>
+              <input 
+                type="text"
+                className="bg-transparent border-b border-ink/10 focus:border-ink outline-none py-2 font-serif text-lg italic"
+                placeholder="What is your impulse?"
+                value={newEntry.urges || ''}
+                onChange={(e) => setNewEntry({...newEntry, urges: e.target.value})}
+              />
             </div>
 
             <div className="flex flex-col gap-4">
@@ -170,6 +226,30 @@ export default function MoodView({ entries, onUpdate }: MoodViewProps) {
                   {entry.note}
                 </p>
               )}
+              
+              <div className="flex flex-col gap-4 mt-2">
+                {entry.triggers && (
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                    <span className="editorial-meta text-[9px] uppercase opacity-60">{entry.triggers}</span>
+                  </div>
+                )}
+                {entry.urges && (
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                    <span className="editorial-meta text-[9px] uppercase opacity-60">Urge: {entry.urges}</span>
+                  </div>
+                )}
+                {entry.sensations && entry.sensations.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {entry.sensations.map(s => (
+                      <span key={s} className="bg-ink/[0.03] text-[8px] uppercase font-mono px-2 py-0.5 rounded border border-ink/5 text-accent">
+                        {t(`mood.sensation_${s}` as any)}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
               <div className="mt-auto h-1 w-full bg-ink/5 rounded-full overflow-hidden">
                  <motion.div 
                   initial={{ width: 0 }}

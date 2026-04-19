@@ -29,6 +29,8 @@ export default function ActivationView({ activities, habits = [], goals = [], on
   const { t, language } = useTranslation();
   const [isAdding, setIsAdding] = useState(false);
   const [newActivity, setNewActivity] = useState({ title: '', value: 5, difficulty: 5, linkedHabitId: '', linkedGoalId: '' });
+  const [feedbackActivityId, setFeedbackActivityId] = useState<string | null>(null);
+  const [feedbackData, setFeedbackData] = useState({ actualValue: 5, actualDifficulty: 5 });
 
   const activeActivities = useMemo(() => 
     activities.filter(a => !a.completed).sort((a,b) => b.value - a.value), 
@@ -60,10 +62,42 @@ export default function ActivationView({ activities, habits = [], goals = [], on
   };
 
   const handleToggle = (id: string) => {
-    triggerHaptic('medium');
+    const activity = activities.find(a => a.id === id);
+    if (!activity) return;
+
+    if (!activity.completed) {
+      // Opening feedback modal before completion
+      triggerHaptic('medium');
+      setFeedbackActivityId(id);
+      setFeedbackData({ 
+        actualValue: activity.value, 
+        actualDifficulty: activity.difficulty 
+      });
+    } else {
+      // Un-completing
+      triggerHaptic('light');
+      onUpdate(activities.map(a => 
+        a.id === id ? { ...a, completed: false, completedDate: undefined } : a
+      ));
+    }
+  };
+
+  const handleFeedbackSubmit = () => {
+    if (!feedbackActivityId) return;
+    triggerHaptic('success');
     onUpdate(activities.map(a => 
-      a.id === id ? { ...a, completed: !a.completed, completedDate: !a.completed ? todayISO() : undefined } : a
+      a.id === feedbackActivityId 
+        ? { 
+            ...a, 
+            completed: true, 
+            completedDate: todayISO(),
+            completedAt: new Date().toISOString(),
+            actualValue: feedbackData.actualValue,
+            actualDifficulty: feedbackData.actualDifficulty
+          } 
+        : a
     ));
+    setFeedbackActivityId(null);
   };
 
   const handleDelete = (id: string) => {
@@ -214,6 +248,34 @@ export default function ActivationView({ activities, habits = [], goals = [], on
               <button onClick={() => setIsAdding(false)} className="editorial-meta">{t('common.cancel')}</button>
               <EditorialButton onClick={handleAdd} icon={<Check size={14} />}>
                 {language === 'es' ? 'Comprometer' : 'Commit'}
+              </EditorialButton>
+          </div>
+        </div>
+      </EditorialModal>
+
+      {/* Feedback Modal */}
+      <EditorialModal
+        isOpen={!!feedbackActivityId}
+        onClose={() => setFeedbackActivityId(null)}
+        title={t('momentum.feedback_title')}
+        subtitle={activities.find(a => a.id === feedbackActivityId)?.title || ''}
+      >
+        <div className="flex flex-col gap-10">
+          <div className="flex flex-col gap-8">
+            <div className="flex flex-col gap-3">
+              <label className="editorial-meta text-[9px]">{t('momentum.actual_joy')} ({feedbackData.actualValue}/10)</label>
+              <input type="range" min="1" max="10" className="accent-ink h-10" value={feedbackData.actualValue} onChange={(e) => setFeedbackData({...feedbackData, actualValue: parseInt(e.target.value)})} />
+            </div>
+            <div className="flex flex-col gap-3">
+              <label className="editorial-meta text-[9px]">{t('momentum.actual_effort')} ({feedbackData.actualDifficulty}/10)</label>
+              <input type="range" min="1" max="10" className="accent-ink h-10" value={feedbackData.actualDifficulty} onChange={(e) => setFeedbackData({...feedbackData, actualDifficulty: parseInt(e.target.value)})} />
+            </div>
+          </div>
+          
+          <div className="flex justify-between items-center pt-4">
+              <button onClick={() => setFeedbackActivityId(null)} className="editorial-meta">{t('common.cancel')}</button>
+              <EditorialButton onClick={handleFeedbackSubmit} icon={<Check size={14} />}>
+                {language === 'es' ? 'Finalizar' : 'Finish'}
               </EditorialButton>
           </div>
         </div>

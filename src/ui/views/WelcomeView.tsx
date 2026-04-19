@@ -14,11 +14,11 @@ interface WelcomeViewProps {
   onCreateVault: (name: string, password: string, clinicalProfile: ClinicalProfile, language: string) => void;
 }
 
-type SetupStep = 'disclaimer' | 'intro' | 'name' | 'profile' | 'security';
+type SetupStep = 'language' | 'disclaimer' | 'intro' | 'name' | 'profile' | 'security';
 
 export default function WelcomeView({ onCreateVault }: WelcomeViewProps) {
   const { t, language, setLanguage } = useTranslation();
-  const [step, setStep] = useState<SetupStep>('disclaimer');
+  const [step, setStep] = useState<SetupStep>('language');
   const [name, setName] = useState('');
   const [profile, setProfile] = useState<ClinicalProfile>('unspecified');
   const [password, setPassword] = useState('');
@@ -48,6 +48,56 @@ export default function WelcomeView({ onCreateVault }: WelcomeViewProps) {
   return (
     <div className="flex flex-col items-center justify-center min-h-[90vh] w-full p-6 bg-paper selection:bg-ink selection:text-paper">
       <AnimatePresence mode="wait">
+        {step === 'language' && (
+          <motion.div 
+            key="language"
+            variants={containerVariants}
+            initial="initial" animate="animate" exit="exit"
+            className="max-w-xl w-full flex flex-col gap-12 text-center"
+          >
+            <div className="flex flex-col gap-4">
+              <div className="editorial-meta">Lumina Core / Initialize</div>
+              <h1 className="font-serif text-5xl md:text-6xl font-light">Linguistic Architecture.</h1>
+              <p className="font-serif italic text-lg text-accent max-w-xs mx-auto opacity-60">
+                Choose your primary linguistic environment.
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-4 items-center">
+              <div className="flex justify-center gap-12 py-8 border-y border-ink/5 w-full max-w-xs mx-auto">
+                <button 
+                  onClick={() => setLanguage('en')}
+                  className={cn(
+                    "flex flex-col items-center gap-3 font-mono text-[10px] uppercase tracking-[0.2em] transition-all",
+                    language === 'en' ? "text-ink scale-110" : "text-accent opacity-30 hover:opacity-100"
+                  )}
+                >
+                  <span className="text-2xl font-serif italic mb-1">En</span>
+                  English
+                </button>
+                <div className="w-[1px] h-12 bg-ink/5" />
+                <button 
+                  onClick={() => setLanguage('es')}
+                  className={cn(
+                    "flex flex-col items-center gap-3 font-mono text-[10px] uppercase tracking-[0.2em] transition-all",
+                    language === 'es' ? "text-ink scale-110" : "text-accent opacity-30 hover:opacity-100"
+                  )}
+                >
+                  <span className="text-2xl font-serif italic mb-1">Es</span>
+                  Español
+                </button>
+              </div>
+
+              <button 
+                onClick={() => setStep('disclaimer')}
+                className="mt-8 flex items-center gap-4 bg-ink text-paper px-12 py-5 rounded-full font-mono text-[10px] uppercase tracking-[0.3em] hover:opacity-80 transition-all hover:scale-105"
+              >
+                {language === 'es' ? 'Continuar' : 'Continue'} <ArrowRight size={14} />
+              </button>
+            </div>
+          </motion.div>
+        )}
+
         {step === 'disclaimer' && (
           <motion.div 
             key="disclaimer"
@@ -91,26 +141,8 @@ export default function WelcomeView({ onCreateVault }: WelcomeViewProps) {
               </p>
             </div>
 
-            <div className="flex justify-center gap-6 mt-2">
-              <button 
-                onClick={() => setLanguage('en')}
-                className={cn(
-                  "flex items-center gap-2 font-mono text-[9px] uppercase tracking-widest transition-all",
-                  language === 'en' ? "text-ink opacity-100" : "text-accent opacity-40 hover:opacity-60"
-                )}
-              >
-                English
-              </button>
-              <div className="w-[1px] h-3 bg-ink/10 self-center" />
-              <button 
-                onClick={() => setLanguage('es')}
-                className={cn(
-                  "flex items-center gap-2 font-mono text-[9px] uppercase tracking-widest transition-all",
-                  language === 'es' ? "text-ink opacity-100" : "text-accent opacity-40 hover:opacity-60"
-                )}
-              >
-                Español
-              </button>
+            <div className="flex justify-center gap-6 mt-2 opacity-20 pointer-events-none">
+              <span className="font-mono text-[9px] uppercase tracking-widest">{language === 'en' ? 'English Architecture' : 'Arquitectura Española'}</span>
             </div>
             <button 
               onClick={() => setStep('name')}

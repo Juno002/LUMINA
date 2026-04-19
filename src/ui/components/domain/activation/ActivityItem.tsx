@@ -31,10 +31,20 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity, linkedHabit, link
           {activity.title}
         </h4>
         <div className="flex flex-wrap items-center gap-2 mt-1">
-           <span className="editorial-meta text-[8px] uppercase text-accent border border-ink/5 rounded px-1.5 py-0.5">Joy: {activity.value}/10</span>
-           <span className="editorial-meta text-[8px] uppercase text-accent border border-ink/5 rounded px-1.5 py-0.5">Effort: {activity.difficulty}/10</span>
-           {linkedHabit && <span className="editorial-meta text-[8px] uppercase text-ink bg-ink/5 rounded px-1.5 py-0.5">Habit: {linkedHabit.name}</span>}
-           {linkedGoal && <span className="editorial-meta text-[8px] uppercase text-ink bg-ink/5 rounded px-1.5 py-0.5">Aim: {linkedGoal.title}</span>}
+            {!activity.completed ? (
+              <>
+                <span className="editorial-meta text-[8px] uppercase text-accent border border-ink/5 rounded px-1.5 py-0.5">Anticipated Joy: {activity.value}/10</span>
+                <span className="editorial-meta text-[8px] uppercase text-accent border border-ink/5 rounded px-1.5 py-0.5">Anticipated Effort: {activity.difficulty}/10</span>
+              </>
+            ) : (
+              <>
+                <span className="editorial-meta text-[8px] uppercase text-emerald-500 border border-emerald-500/10 rounded px-1.5 py-0.5">Real Joy: {activity.actualValue}/10</span>
+                <span className="editorial-meta text-[8px] uppercase text-amber-500 border border-amber-500/10 rounded px-1.5 py-0.5">Real Effort: {activity.actualDifficulty}/10</span>
+                <span className="editorial-meta text-[8px] uppercase text-accent/30 italic ml-1"> (Plan: {activity.value}v / {activity.difficulty}d)</span>
+              </>
+            )}
+            {linkedHabit && <span className="editorial-meta text-[8px] uppercase text-ink bg-ink/5 rounded px-1.5 py-0.5">Habit: {linkedHabit.name}</span>}
+            {linkedGoal && <span className="editorial-meta text-[8px] uppercase text-ink bg-ink/5 rounded px-1.5 py-0.5">Aim: {linkedGoal.title}</span>}
         </div>
         {!activity.completed && (
           <button 
