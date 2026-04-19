@@ -27,7 +27,8 @@ import {
   calculateStreak, 
   getHabitCompletionForDate, 
   updateHabitValue,
-  getWeeklyHistory 
+  getWeeklyHistory,
+  isRecoveryDay 
 } from '../../application/usecases/TrackHabitUseCase';
 import { awardXP, checkStreakBonuses } from '../../application/usecases/GamificationEngine';
 import { getXPForNextLevel } from '../../domain/constants/Gamification';
@@ -89,6 +90,14 @@ export default function HabitsView({ vault, onUpdate, onLevelUp }: HabitsViewPro
     // Award XP
     const { vault: xpVault, event } = awardXP(updatedVault, 'HABIT_COMPLETE');
     let finalVault = xpVault;
+
+    // Check for Recovery Bonus (first completion after a gap)
+    const statsToday = getHabitCompletionForDate(finalVault, today);
+    if (statsToday.completed === 1 && isRecoveryDay(finalVault, today)) {
+       const { vault: recoveryVault, event: recoveryEvent } = awardXP(finalVault, 'RESILIENCE_RECOVERY');
+       finalVault = recoveryVault;
+       // Notify user somehow? 
+    }
     
     if (event.didLevelUp && onLevelUp) {
       onLevelUp(event.newLevel!);

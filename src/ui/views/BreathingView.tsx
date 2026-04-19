@@ -13,7 +13,7 @@ import {
 } from '../components/shared';
 import { useTranslation } from '../../application/contexts/LanguageContext';
 
-type ExerciseType = 'box' | '478' | 'calm';
+type ExerciseType = 'box' | '478' | 'anchor' | 'calm';
 
 interface Exercise {
   id: ExerciseType;
@@ -53,6 +53,16 @@ const EXERCISES: Record<string, Record<ExerciseType, Exercise>> = {
         { name: 'Inhale', duration: 6 },
         { name: 'Exhale', duration: 6 },
       ]
+    },
+    anchor: {
+      id: 'anchor',
+      name: 'The Anchor',
+      description: 'Immediate grounding for high-intensity states. Focus on the long exhale.',
+      phases: [
+        { name: 'Inhale', duration: 2 },
+        { name: 'Exhale', duration: 5 },
+        { name: 'Pause', duration: 3 },
+      ]
     }
   },
   es: {
@@ -84,6 +94,16 @@ const EXERCISES: Record<string, Record<ExerciseType, Exercise>> = {
       phases: [
         { name: 'Inhala', duration: 6 },
         { name: 'Exhala', duration: 6 },
+      ]
+    },
+    anchor: {
+      id: 'anchor',
+      name: 'El Ancla',
+      description: 'Arraigo inmediato para estados de alta intensidad. Enfoque en la exhalación larga.',
+      phases: [
+        { name: 'Inhala', duration: 2 },
+        { name: 'Exhala', duration: 5 },
+        { name: 'Pausa', duration: 3 },
       ]
     }
   }
@@ -156,8 +176,7 @@ export default function BreathingView() {
             {/* Outer Ring */}
             <div className="absolute inset-0 border-2 border-ink/5 rounded-full" />
             
-            {/* Pulsing Circle */}
-            <motion.div
+             <motion.div
               animate={{
                 scale: currentPhase.name.toLowerCase().includes('inhale') || currentPhase.name.toLowerCase().includes('inhala') ? 1.5 : (currentPhase.name.toLowerCase().includes('exhale') || currentPhase.name.toLowerCase().includes('exhala') ? 1 : (phaseIndex === 1 && activeExercise.id === 'box' ? 1.5 : (phaseIndex === 1 && activeExercise.id === '478' ? 1.5 : 1))),
                 opacity: isRunning ? 1 : 0.2
@@ -166,7 +185,10 @@ export default function BreathingView() {
                 duration: currentPhase.duration,
                 ease: "linear"
               }}
-              className="w-32 h-32 bg-ink rounded-full shadow-[0_0_60px_rgba(0,0,0,0.1)]"
+              className={cn(
+                "w-32 h-32 rounded-full shadow-[0_0_60px_rgba(0,0,0,0.1)] transition-colors duration-1000",
+                activeExercise.id === 'anchor' ? "bg-blue-900 shadow-blue-900/40" : "bg-ink"
+              )}
             />
 
             {/* Micro-timer */}

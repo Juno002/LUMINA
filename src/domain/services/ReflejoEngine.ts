@@ -28,11 +28,11 @@ export function getReflejoState(params: {
 }): ReflejoState {
   
   // Priority 1: ANCHOR (crisis, high intensity, low ICC, rumination)
-  if (params.isCrisis || (params.currentIntensity && params.currentIntensity >= 8)) {
+  if (params.isCrisis || (params.currentIntensity && params.currentIntensity >= 80)) {
     return {
       mode: 'anchor',
       messageKey: 'lambda.anchor_crisis',
-      color: 'text-amber-400',
+      color: 'text-red-500',
       animation: 'pulse-slow'
     };
   }
@@ -41,7 +41,7 @@ export function getReflejoState(params: {
     return {
       mode: 'anchor',
       messageKey: 'lambda.anchor_rumination',
-      color: 'text-amber-400',
+      color: 'text-red-500',
       animation: 'pulse-slow'
     };
   }
@@ -50,7 +50,7 @@ export function getReflejoState(params: {
     return {
       mode: 'anchor',
       messageKey: 'lambda.anchor_low_icc',
-      color: 'text-amber-400',
+      color: 'text-red-500',
       animation: 'pulse-slow'
     };
   }
@@ -60,7 +60,7 @@ export function getReflejoState(params: {
     return {
       mode: 'mentor',
       messageKey: 'lambda.mentor_high_icc',
-      color: 'text-emerald-400',
+      color: 'text-amber-500',
       animation: 'float'
     };
   }
@@ -69,8 +69,18 @@ export function getReflejoState(params: {
     return {
       mode: 'mentor',
       messageKey: 'lambda.mentor_consistency',
-      color: 'text-emerald-400',
+      color: 'text-amber-500',
       animation: 'float'
+    };
+  }
+
+  // Moderate intensity (Effort/Observer mode)
+  if (params.currentIntensity && params.currentIntensity >= 40) {
+    return {
+      mode: 'observer',
+      messageKey: 'lambda.observer_moderate',
+      color: 'text-slate-400',
+      animation: 'neutral'
     };
   }
 
@@ -78,7 +88,7 @@ export function getReflejoState(params: {
   return {
     mode: 'observer',
     messageKey: 'lambda.observer_default',
-    color: 'text-blue-400',
+    color: 'text-slate-400',
     animation: 'neutral'
   };
 }

@@ -131,3 +131,21 @@ export function getWeeklyHistory(vault: Vault, today: string): { date: string; p
 
   return history.reverse();
 }
+
+/**
+ * Detects if today is a 'recovery' day (first completion after at least one empty day).
+ */
+export function isRecoveryDay(vault: Vault, today: string): boolean {
+  const statsToday = getHabitCompletionForDate(vault, today);
+  if (statsToday.completed === 0) return false;
+
+  // Check if yesterday was empty
+  const d = new Date(today + 'T12:00:00');
+  d.setDate(d.getDate() - 1);
+  const yesterday = d.toISOString().split('T')[0];
+  
+  const statsYesterday = getHabitCompletionForDate(vault, yesterday);
+  
+  // If yesterday had no completions, and today has at least one, it's a recovery!
+  return statsYesterday.completed === 0;
+}

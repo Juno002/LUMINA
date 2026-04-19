@@ -12,6 +12,7 @@ export const XP_REWARDS = {
   STREAK_BONUS_7: 100,       // 7-day streak
   STREAK_BONUS_30: 500,      // 30-day streak
   EXPOSURE_SESSION: 20,
+  RESILIENCE_RECOVERY: 40,   // Bonus for resuming after a gap
 } as const;
 
 export const LEVEL_THRESHOLDS = [

@@ -61,9 +61,9 @@ const LambdaAvatar: React.FC<LambdaAvatarProps> = ({ state, onLongPress }) => {
 
   const getGlowColor = () => {
     switch (state.mode) {
-      case 'anchor': return 'shadow-[0_0_40px_rgba(251,191,36,0.15)]';
-      case 'mentor': return 'shadow-[0_0_40px_rgba(52,211,153,0.15)]';
-      case 'observer': return 'shadow-[0_0_40px_rgba(96,165,250,0.15)]';
+      case 'anchor': return 'shadow-[0_0_40px_rgba(239,68,68,0.2)]';
+      case 'mentor': return 'shadow-[0_0_40px_rgba(245,158,11,0.2)]';
+      case 'observer': return 'shadow-[0_0_40px_rgba(148,163,184,0.15)]';
     }
   };
 
@@ -82,9 +82,9 @@ const LambdaAvatar: React.FC<LambdaAvatarProps> = ({ state, onLongPress }) => {
           {...getAnimationProps()}
           className={cn(
             "w-24 h-24 rounded-full border border-ink/5 flex items-center justify-center transition-colors duration-1000",
-            state.mode === 'anchor' && "bg-amber-400/5 border-amber-400/20",
-            state.mode === 'mentor' && "bg-emerald-400/5 border-emerald-400/20",
-            state.mode === 'observer' && "bg-blue-400/5 border-blue-400/20",
+            state.mode === 'anchor' && "bg-red-500/5 border-red-500/20",
+            state.mode === 'mentor' && "bg-amber-500/5 border-amber-500/20",
+            state.mode === 'observer' && "bg-slate-400/5 border-slate-400/20",
             getGlowColor()
           )}
         >

@@ -20,15 +20,16 @@ export const translations = {
       vault_hub: 'The Vault'
     },
     lambda: {
-      anchor_crisis: 'Breathe. This feeling is real, but it is temporary.',
-      anchor_rumination: 'A pattern is forming. Consider a different angle.',
-      anchor_low_icc: 'The belief persists. Try gathering more counter-evidence.',
-      mentor_high_icc: 'Your restructuring is working. The pattern is shifting.',
-      mentor_consistency: 'Consistency is its own reward. Welcome back.',
-      observer_default: 'Observing without judgment.',
-      mode_anchor: 'Anchor Mode',
-      mode_observer: 'Observer Mode',
-      mode_mentor: 'Mentor Mode'
+      mode_anchor: 'Anchor Mode / Active Regulation',
+      mode_observer: 'Observer Mode / Neutral Presence',
+      mode_mentor: 'Mentor Mode / Wisdom Flow',
+      anchor_crisis: 'Intensity is high. Return to the breath. Activate the Anchor protocol.',
+      anchor_rumination: 'Circular patterns detected. Anchor your presence in the now.',
+      anchor_low_icc: 'Perspective is rigid. Breathe and observe the resistance.',
+      observer_default: 'Equilibrium maintained. Observation is your greatest strength.',
+      mentor_high_icc: 'Cognitive fluidity detected. Your resilience is manifesting.',
+      mentor_consistency: 'Discipline is the architecture of the soul. Continue.',
+      observer_moderate: 'Effort required. Manifest momentum or chronicled reflection.'
     },
     dashboard: {
       morning: {
@@ -117,7 +118,7 @@ export const translations = {
       for_level: 'for Level',
       linked_aim: 'Aim'
     },
-    momentum: {
+    momentum_active: {
       title: 'Active Momentum',
       new_task: 'New Intention',
       planned: 'Planned Architecture',
@@ -321,15 +322,16 @@ export const translations = {
       vault_hub: 'La Bóveda'
     },
     lambda: {
-      anchor_crisis: 'Respira. Este sentimiento es real, pero es temporal.',
-      anchor_rumination: 'Un patrón se está formando. Considera un ángulo diferente.',
-      anchor_low_icc: 'La creencia persiste. Intenta reunir más contra-evidencia.',
-      mentor_high_icc: 'Tu reestructuración está funcionando. El patrón está cambiando.',
-      mentor_consistency: 'La consistencia es su propia recompensa. Bienvenido de vuelta.',
-      observer_default: 'Observando sin juzgar.',
-      mode_anchor: 'Modo Ancla',
-      mode_observer: 'Modo Observador',
-      mode_mentor: 'Modo Mentor'
+      mode_anchor: 'Modo Ancla / Regulación Activa',
+      mode_observer: 'Modo Observador / Presencia Neutral',
+      mode_mentor: 'Modo Mentor / Flujo de Sabiduría',
+      anchor_crisis: 'La intensidad es alta. Regresa a la respiración. Activa el protocolo Ancla.',
+      anchor_rumination: 'Patrones circulares detectados. Ancla tu presencia en el ahora.',
+      anchor_low_icc: 'La perspectiva es rígida. Respira y observa la resistencia.',
+      observer_default: 'Equilibrio mantenido. La observación es tu mayor fuerza.',
+      mentor_high_icc: 'Fluidez cognitiva detectada. Tu resiliencia se está manifestando.',
+      mentor_consistency: 'La disciplina es la arquitectura del alma. Continúa.',
+      observer_moderate: 'Esfuerzo necesario. Manifiesta momentum o reflexión crónica.'
     },
     dashboard: {
       morning: {
