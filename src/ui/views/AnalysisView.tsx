@@ -21,6 +21,7 @@ import {
 } from 'recharts';
 import { calculateICC } from '../../domain/services/ICCCalculator';
 import { useTranslation } from '../../application/contexts/LanguageContext';
+import { Vault, ThoughtEntry, ActivationActivity } from '../../domain/entities';
 
 export default function AnalysisView({ vault }: { vault: Vault }) {
   const { t, language } = useTranslation();

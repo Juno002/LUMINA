@@ -131,7 +131,8 @@ export default function App() {
     item: { id: string, icon: any, label: string }, 
     isActive: boolean, 
     isSidebarOpen: boolean, 
-    onClick: () => void 
+    onClick: () => void,
+    key?: string
   }) {
     const { t } = useTranslation();
     return (

@@ -149,9 +149,9 @@ export default function DashboardView({ vault, onUpdate, onOpenCrisis, onOpenDay
         {/* Mobile-Only Quick Stats Pulse */}
         <div className="flex md:hidden gap-4 overflow-x-auto pb-4 no-scrollbar">
            {[
-             { label: 'XP', value: vault.profile.experience || 0, icon: Flame },
+             { label: 'XP', value: vault.stats?.totalExp || 0, icon: Flame },
              { label: t('nav.nightfall'), value: (vault.sleep?.[0]?.quality || '-') + '/5', icon: MoonIcon },
-             { label: t('nav.architecture'), value: (vault.habits?.filter(h => h.completedDates.includes(todayISO())).length || 0), icon: Star }
+             { label: t('nav.architecture'), value: (vault.habitLogs?.filter(l => l.date === todayISO() && l.completed).length || 0), icon: Star }
            ].map((stat, i) => (
              <div key={i} className="flex-shrink-0 flex flex-col gap-2 p-6 rounded-3xl border border-ink/5 bg-paper shadow-sm min-w-[140px]">
                 <div className="flex justify-between items-center opacity-40">
