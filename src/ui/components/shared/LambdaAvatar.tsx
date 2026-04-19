@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { ReflejoState } from '../../../domain/services/ReflejoEngine';
 import { AnimationSpeeds, EasingCurves } from '../../../domain/constants/Theme';
 import { cn } from '../../../shared/utils/TailwindMerge';
+import { useTranslation } from '../../../application/contexts/LanguageContext';
 
 interface LambdaAvatarProps {
   state: ReflejoState;
@@ -20,6 +21,7 @@ interface LambdaAvatarProps {
  * Supports Anchor, Observer, and Mentor modes with subtle animations.
  */
 const LambdaAvatar: React.FC<LambdaAvatarProps> = ({ state, onLongPress }) => {
+  const { t } = useTranslation();
   const [isPressing, setIsPressing] = useState(false);
   const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -123,12 +125,12 @@ const LambdaAvatar: React.FC<LambdaAvatarProps> = ({ state, onLongPress }) => {
 
       <div className="flex flex-col items-center gap-4 max-w-[200px] text-center">
          <motion.p 
-           key={state.message}
+           key={state.messageKey}
            initial={{ opacity: 0, y: 5 }}
            animate={{ opacity: 1, y: 0 }}
            className="text-xs font-serif italic opacity-60 leading-relaxed"
          >
-           "{state.message}"
+           "{t(state.messageKey)}"
          </motion.p>
 
          <div className="flex flex-col items-center gap-2">
@@ -144,7 +146,7 @@ const LambdaAvatar: React.FC<LambdaAvatarProps> = ({ state, onLongPress }) => {
               ))}
             </div>
             <span className="font-mono text-[7px] uppercase tracking-[0.2em] opacity-30">
-              {state.mode} mode
+              {t(`lambda.mode_${state.mode}`)}
             </span>
          </div>
       </div>

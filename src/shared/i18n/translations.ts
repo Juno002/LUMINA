@@ -19,6 +19,17 @@ export const translations = {
       settings: 'Settings',
       vault_hub: 'The Vault'
     },
+    lambda: {
+      anchor_crisis: 'Breathe. This feeling is real, but it is temporary.',
+      anchor_rumination: 'A pattern is forming. Consider a different angle.',
+      anchor_low_icc: 'The belief persists. Try gathering more counter-evidence.',
+      mentor_high_icc: 'Your restructuring is working. The pattern is shifting.',
+      mentor_consistency: 'Consistency is its own reward. Welcome back.',
+      observer_default: 'Observing without judgment.',
+      mode_anchor: 'Anchor Mode',
+      mode_observer: 'Observer Mode',
+      mode_mentor: 'Mentor Mode'
+    },
     dashboard: {
       morning: {
         label: "Morning / Awakening",
@@ -268,6 +279,17 @@ export const translations = {
       resilience: 'Resiliencia',
       settings: 'Configuración',
       vault_hub: 'La Bóveda'
+    },
+    lambda: {
+      anchor_crisis: 'Respira. Este sentimiento es real, pero es temporal.',
+      anchor_rumination: 'Un patrón se está formando. Considera un ángulo diferente.',
+      anchor_low_icc: 'La creencia persiste. Intenta reunir más contra-evidencia.',
+      mentor_high_icc: 'Tu reestructuración está funcionando. El patrón está cambiando.',
+      mentor_consistency: 'La consistencia es su propia recompensa. Bienvenido de vuelta.',
+      observer_default: 'Observando sin juzgar.',
+      mode_anchor: 'Modo Ancla',
+      mode_observer: 'Modo Observador',
+      mode_mentor: 'Modo Mentor'
     },
     dashboard: {
       morning: {

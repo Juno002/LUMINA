@@ -7,8 +7,8 @@ export type ReflejoMode = 'mentor' | 'observer' | 'anchor';
 
 export interface ReflejoState {
   mode: ReflejoMode;
-  message: string;
-  color: string;        // Tailwind color class
+  messageKey: string;    // Translation key for the message
+  color: string;         // Tailwind color class
   animation: 'float' | 'neutral' | 'pulse-slow';
 }
 
@@ -16,6 +16,7 @@ export interface ReflejoState {
  * ReflejoEngine:
  * Pure logic to determine the state of the Lambda (λ) avatar based on clinical metrics.
  * Lambda is a reflection of data, not an AI personality.
+ * Returns translation keys instead of literal strings for i18n support.
  */
 export function getReflejoState(params: {
   avgICC: number | null;           // Average ICC from recent L3 entries
@@ -27,11 +28,10 @@ export function getReflejoState(params: {
 }): ReflejoState {
   
   // Priority 1: ANCHOR (crisis, high intensity, low ICC, rumination)
-  // Purpose: Grounding and pattern recognition when internal volatility is high.
   if (params.isCrisis || (params.currentIntensity && params.currentIntensity >= 8)) {
     return {
       mode: 'anchor',
-      message: 'Breathe. This feeling is real, but it is temporary.',
+      messageKey: 'lambda.anchor_crisis',
       color: 'text-amber-400',
       animation: 'pulse-slow'
     };
@@ -40,7 +40,7 @@ export function getReflejoState(params: {
   if (params.isRumination) {
     return {
       mode: 'anchor',
-      message: 'A pattern is forming. Consider a different angle.',
+      messageKey: 'lambda.anchor_rumination',
       color: 'text-amber-400',
       animation: 'pulse-slow'
     };
@@ -49,18 +49,17 @@ export function getReflejoState(params: {
   if (params.avgICC !== null && params.avgICC < 0.35) {
     return {
       mode: 'anchor',
-      message: 'The belief persists. Try gathering more counter-evidence.',
+      messageKey: 'lambda.anchor_low_icc',
       color: 'text-amber-400',
       animation: 'pulse-slow'
     };
   }
 
   // Priority 2: MENTOR (high ICC, consistency)
-  // Purpose: Reinforce positive cognitive shifts and discipline.
   if (params.avgICC !== null && params.avgICC > 0.60) {
     return {
       mode: 'mentor',
-      message: 'Your restructuring is working. The pattern is shifting.',
+      messageKey: 'lambda.mentor_high_icc',
       color: 'text-emerald-400',
       animation: 'float'
     };
@@ -69,18 +68,18 @@ export function getReflejoState(params: {
   if (params.todayEntries === 1 && params.totalEntries > 1) {
     return {
       mode: 'mentor',
-      message: 'Consistency is its own reward. Welcome back.',
+      messageKey: 'lambda.mentor_consistency',
       color: 'text-emerald-400',
       animation: 'float'
     };
   }
 
   // Priority 3: OBSERVER (default)
-  // Purpose: Non-judgmental presence during stable states.
   return {
     mode: 'observer',
-    message: 'Observing without judgment.',
+    messageKey: 'lambda.observer_default',
     color: 'text-blue-400',
     animation: 'neutral'
   };
 }
+

@@ -11,26 +11,25 @@ class WebAudioFeedbackService {
   private ctx: AudioContext | null = null;
   private enabled: boolean = true;
 
-  private initContext() {
+  private async ensureContext(): Promise<AudioContext> {
     if (!this.ctx) {
       // @ts-expect-error - webkitAudioContext is non-standard
       const AudioContextClass = window.AudioContext || window.webkitAudioContext;
       this.ctx = new AudioContextClass();
     }
     if (this.ctx.state === 'suspended') {
-      this.ctx.resume();
+      await this.ctx.resume();
     }
+    return this.ctx;
   }
 
   setEnabled(enabled: boolean) {
     this.enabled = enabled;
   }
 
-  private playTone(frequency: number, duration: number, gainValue: number, startTime: number) {
-    if (!this.enabled || !this.ctx) return;
-
-    const osc = this.ctx.createOscillator();
-    const gainNode = this.ctx.createGain();
+  private playTone(ctx: AudioContext, frequency: number, duration: number, gainValue: number, startTime: number) {
+    const osc = ctx.createOscillator();
+    const gainNode = ctx.createGain();
 
     osc.type = 'sine';
     osc.frequency.setValueAtTime(frequency, startTime);
@@ -39,7 +38,7 @@ class WebAudioFeedbackService {
     gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
 
     osc.connect(gainNode);
-    gainNode.connect(this.ctx.destination);
+    gainNode.connect(ctx.destination);
 
     osc.start(startTime);
     osc.stop(startTime + duration);
@@ -48,46 +47,51 @@ class WebAudioFeedbackService {
   /**
    * Single clean "ding" for basic completion.
    */
-  playComplete() {
-    this.initContext();
-    const now = this.ctx!.currentTime;
-    this.playTone(880, 0.4, 0.1, now); // A5 note
+  async playComplete() {
+    if (!this.enabled) return;
+    const ctx = await this.ensureContext();
+    const now = ctx.currentTime;
+    this.playTone(ctx, 880, 0.4, 0.1, now); // A5 note
   }
 
   /**
    * Ascending crystal chime for significant progress.
    */
-  playSuccess() {
-    this.initContext();
-    const now = this.ctx!.currentTime;
+  async playSuccess() {
+    if (!this.enabled) return;
+    const ctx = await this.ensureContext();
+    const now = ctx.currentTime;
     // C5 -> E5 -> G5
-    this.playTone(523.25, 0.5, 0.08, now);
-    this.playTone(659.25, 0.5, 0.08, now + 0.08);
-    this.playTone(783.99, 0.5, 0.08, now + 0.16);
+    this.playTone(ctx, 523.25, 0.5, 0.08, now);
+    this.playTone(ctx, 659.25, 0.5, 0.08, now + 0.08);
+    this.playTone(ctx, 783.99, 0.5, 0.08, now + 0.16);
   }
 
   /**
    * Ascending arpeggio with resonance for level-up celebrations.
    */
-  playLevelUp() {
-    this.initContext();
-    const now = this.ctx!.currentTime;
+  async playLevelUp() {
+    if (!this.enabled) return;
+    const ctx = await this.ensureContext();
+    const now = ctx.currentTime;
     // C5 -> E5 -> G5 -> C6
     const notes = [523.25, 659.25, 783.99, 1046.50];
     notes.forEach((freq, i) => {
-      this.playTone(freq, 0.8, 0.12, now + i * 0.12);
+      this.playTone(ctx, freq, 0.8, 0.12, now + i * 0.12);
     });
   }
 
   /**
    * Quick rhythmic double-tap for streaks.
    */
-  playStreak() {
-    this.initContext();
-    const now = this.ctx!.currentTime;
-    this.playTone(660, 0.2, 0.06, now);
-    this.playTone(660, 0.2, 0.06, now + 0.06);
+  async playStreak() {
+    if (!this.enabled) return;
+    const ctx = await this.ensureContext();
+    const now = ctx.currentTime;
+    this.playTone(ctx, 660, 0.2, 0.06, now);
+    this.playTone(ctx, 660, 0.2, 0.06, now + 0.06);
   }
 }
 
 export const audioFeedback = new WebAudioFeedbackService();
+
