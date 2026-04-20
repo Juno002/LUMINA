@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowRight, Shield, User, Heart, Lock, Globe, ShieldAlert, Zap, Moon, CloudRain } from 'lucide-react';
+import { ArrowRight, Shield, Heart, Lock, Globe, ShieldAlert, Zap, Moon } from 'lucide-react';
 import { ClinicalProfile } from '../../domain/entities';
 import { useTranslation } from '../../application/contexts/LanguageContext';
 import { cn } from '../../shared/utils/TailwindMerge';

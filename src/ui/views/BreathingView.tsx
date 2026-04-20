@@ -110,7 +110,7 @@ const EXERCISES: Record<string, Record<ExerciseType, Exercise>> = {
 };
 
 export default function BreathingView() {
-  const { t, language } = useTranslation();
+  const { language } = useTranslation();
   const currentExercises = EXERCISES[language] || EXERCISES.en;
   const [activeExercise, setActiveExercise] = useState<Exercise>(currentExercises.box);
   const [isRunning, setIsRunning] = useState(false);

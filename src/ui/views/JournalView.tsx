@@ -3,27 +3,18 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect, useMemo } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { AnimationSpeeds, EasingCurves } from '../../domain/constants/Theme';
-import { Plus, Search, BookOpen, X, ArrowRight, Sparkles, Check } from 'lucide-react';
-import { ThoughtEntry, ClinicalProfile } from '../../domain/entities';
-import { todayISO } from '../../shared/utils/DateFormatter';
+import React, { useMemo, useState } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
+import { BookOpen, Plus, Search } from 'lucide-react';
+import { ClinicalProfile, ThoughtEntry, Vault } from '../../domain/entities';
 import { triggerHaptic } from '../../shared/utils/Haptics';
 import EntryCard from '../components/domain/journal/EntryCard';
-import { detectDistortions } from '../../application/usecases/DetectDistortionsUseCase';
-import { calculateICC } from '../../domain/services/ICCCalculator';
-import { COGNITIVE_DISTORTIONS } from '../../domain/constants/Distortions';
+import JournalForm from '../components/domain/journal/JournalForm';
 import { 
-  EditorialButton, 
-  EditorialInput, 
-  EditorialTextArea 
+  ConfirmActionModal,
+  EditorialButton
 } from '../components/shared';
 import { useTranslation } from '../../application/contexts/LanguageContext';
-import { cn } from '../../shared/utils/TailwindMerge';
-import LambdaAvatar from '../components/shared/LambdaAvatar';
-import { computeReflejoState } from '../../application/usecases/GetReflejoStateUseCase';
-import { Vault } from '../../domain/entities';
 
 interface JournalViewProps {
   entries: ThoughtEntry[];
@@ -32,10 +23,11 @@ interface JournalViewProps {
 }
 
 export default function JournalView({ entries, onUpdate, clinicalProfile }: JournalViewProps) {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [editingEntry, setEditingEntry] = useState<ThoughtEntry | null>(null);
+  const [entryToDeleteId, setEntryToDeleteId] = useState<string | null>(null);
 
   const filteredEntries = useMemo(() => entries.filter(e => 
     e.situation?.toLowerCase().includes(search.toLowerCase()) ||
@@ -53,11 +45,11 @@ export default function JournalView({ entries, onUpdate, clinicalProfile }: Jour
     setEditingEntry(null);
   };
 
-  const handleDelete = (id: string) => {
-    if (confirm("Erase this observation summary?")) {
-      triggerHaptic('heavy');
-      onUpdate(entries.filter(e => e.id !== id));
-    }
+  const handleDelete = () => {
+    if (!entryToDeleteId) return;
+    triggerHaptic('heavy');
+    onUpdate(entries.filter(e => e.id !== entryToDeleteId));
+    setEntryToDeleteId(null);
   };
 
   return (
@@ -95,7 +87,7 @@ export default function JournalView({ entries, onUpdate, clinicalProfile }: Jour
             initialData={editingEntry || undefined}
             onCancel={() => { setIsFormOpen(false); setEditingEntry(null); }} 
             onSave={handleSave} 
-            vault={{ habits: [], habitLogs: [], journal: entries, profile: { clinicalProfile } } as any}
+            vault={{ habits: [], habitLogs: [], journal: entries, profile: { clinicalProfile } } as Vault}
           />
         ) : (
           <motion.div 
@@ -115,7 +107,7 @@ export default function JournalView({ entries, onUpdate, clinicalProfile }: Jour
                 <EntryCard 
                   key={entry.id} 
                   entry={entry} 
-                  onDelete={() => handleDelete(entry.id)} 
+                  onDelete={() => setEntryToDeleteId(entry.id)} 
                   onEdit={() => { setEditingEntry(entry); setIsFormOpen(true); }}
                 />
               ))
@@ -123,399 +115,20 @@ export default function JournalView({ entries, onUpdate, clinicalProfile }: Jour
           </motion.div>
         )}
       </AnimatePresence>
+
+      <ConfirmActionModal
+        isOpen={!!entryToDeleteId}
+        onClose={() => setEntryToDeleteId(null)}
+        onConfirm={handleDelete}
+        title={language === 'es' ? 'Eliminar observación.' : 'Delete observation.'}
+        description={
+          language === 'es'
+            ? 'Esta observación se eliminará de la crónica de forma permanente.'
+            : 'This observation will be removed from the chronicle permanently.'
+        }
+        confirmLabel={t('common.delete')}
+        cancelLabel={t('common.cancel')}
+      />
     </div>
-  );
-}
-
-interface FormProps {
-  initialData?: ThoughtEntry;
-  onCancel: () => void;
-  onSave: (e: ThoughtEntry) => void;
-  clinicalProfile?: ClinicalProfile;
-  vault?: Vault;
-}
-
-function JournalForm({ initialData, onCancel, onSave, clinicalProfile, vault }: FormProps) {
-  const { t, language } = useTranslation();
-  const [level, setLevel] = useState<1 | 2 | 3>(initialData?.level || 1);
-  const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState<Partial<ThoughtEntry>>(initialData || {
-    date: todayISO(),
-    intensity: 5,
-    level: 1,
-    distortions: [],
-    tags: []
-  });
-
-  const reflejoState = useMemo(() => vault ? computeReflejoState(vault) : null, [vault]);
-
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-
-  // Distortion detection with debounce logic
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (formData.automaticThought) {
-        const detected = detectDistortions(formData.automaticThought, clinicalProfile);
-        const detectedIds = detected.map(d => d.id);
-        // Merge with existing but don't overwrite user-deleted ones (simplified for now: just update)
-        setFormData(prev => ({ ...prev, distortions: detectedIds }));
-      }
-    }, 600);
-    return () => clearTimeout(timer);
-  }, [formData.automaticThought, clinicalProfile]);
-
-  const iccResult = useMemo(() => {
-    if (level === 3 && formData.originalIntensity !== undefined && formData.finalCredibility !== undefined) {
-      return calculateICC(formData.originalIntensity, formData.finalCredibility);
-    }
-    return null;
-  }, [level, formData.originalIntensity, formData.finalCredibility]);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSave({
-      ...formData as ThoughtEntry,
-      id: formData.id || crypto.randomUUID(),
-      level,
-      tags: formData.tags || [],
-      distortions: formData.distortions || [],
-      rationalResponse: formData.rationalResponse || '',
-      outcomeMood: formData.outcomeMood || formData.primaryEmotion || '',
-      outcomeIntensity: formData.outcomeIntensity || formData.intensity || 5
-    });
-  };
-
-  const totalSteps = level === 1 ? 2 : level === 2 ? 3 : 4;
-  const canGoNext = currentStep < totalSteps;
-  const canGoPrev = currentStep > 1;
-
-  const handleNext = () => {
-    if (canGoNext) {
-      triggerHaptic('light');
-      setCurrentStep(s => s + 1);
-    }
-  };
-
-  const handlePrev = () => {
-    if (canGoPrev) {
-      triggerHaptic('light');
-      setCurrentStep(s => s - 1);
-    }
-  };
-
-  return (
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }} 
-      exit={{ opacity: 0, y: 20 }}
-      transition={{ duration: AnimationSpeeds.fluid, ease: EasingCurves.editorial }}
-      className="p-8 md:p-12 border border-ink/10 rounded-[2rem] bg-paper shadow-2xl shadow-ink/5"
-    >
-      <form onSubmit={handleSubmit} className="flex flex-col gap-10">
-        {/* Level Indicator */}
-        <div className="flex justify-between items-center">
-          <div className="flex flex-col gap-1">
-            <div className="editorial-meta uppercase tracking-widest text-[9px] opacity-40">CBT Framework / Level {level}</div>
-            <div className="font-serif italic text-lg">
-              {level === 1 && (language === 'es' ? 'Observación y Conciencia' : 'Observation & Awareness')}
-              {level === 2 && (language === 'es' ? 'Desplazamiento y Perspectiva' : 'Displacement & Perspective')}
-              {level === 3 && (language === 'es' ? 'Reestructuración Basada en Evidencia' : 'Evidence-based Restructuring')}
-            </div>
-          </div>
-          <div className="flex gap-2">
-            {[1, 2, 3].map(l => (
-              <button
-                key={l}
-                type="button"
-                onClick={() => setLevel(l as 1 | 2 | 3)}
-                className={`w-3 h-3 rounded-full transition-all duration-300 ${level >= l ? 'bg-ink' : 'bg-ink/10'}`}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* Therapeutic Nudge */}
-        <div className="bg-ink/[0.02] border-l-2 border-accent p-6 rounded-r-2xl">
-           <p className="text-xs font-serif italic text-accent opacity-70 leading-relaxed">
-             {t(`journal.prompts.${clinicalProfile || 'general'}` as any)}
-           </p>
-        </div>        {/* Level 1: Observation */}
-        <AnimatePresence mode="wait">
-          {(!isMobile || currentStep === 1) && (
-            <motion.div 
-              key="step1"
-              initial={isMobile ? { opacity: 0, x: 20 } : {}}
-              animate={isMobile ? { opacity: 1, x: 0 } : {}}
-              exit={isMobile ? { opacity: 0, x: -20 } : {}}
-              className="grid grid-cols-1 md:grid-cols-2 gap-10"
-            >
-              <EditorialTextArea 
-                label={t('journal.situation')}
-                required
-                placeholder={language === 'es' ? '¿Qué pasó? (ej. reunión con el jefe)' : "What happened? (e.g., meeting with boss)"}
-                value={formData.situation || ''}
-                onChange={(e) => setFormData({...formData, situation: e.target.value})}
-              />
-              <div className="flex flex-col gap-3">
-                <EditorialTextArea 
-                  label={t('journal.thought')}
-                  required
-                  placeholder={language === 'es' ? '¿Qué te dijiste a ti mismo?' : "What did you tell yourself?"}
-                  value={formData.automaticThought || ''}
-                  onChange={(e) => setFormData({...formData, automaticThought: e.target.value})}
-                />
-                
-                {/* Distortion Chips */}
-                <AnimatePresence>
-                  {formData.distortions && formData.distortions.length > 0 && (
-                    <motion.div 
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      className="flex flex-wrap gap-2 mt-2"
-                    >
-                      {formData.distortions.map(dId => {
-                        const d = COGNITIVE_DISTORTIONS.find(x => x.id === dId);
-                        return d ? (
-                          <span key={dId} className="bg-ink/5 text-accent border border-ink/5 px-3 py-1 rounded-full text-[9px] font-mono uppercase tracking-tighter flex items-center gap-2">
-                            {d.name}
-                            <button type="button" onClick={() => setFormData(f => ({ ...f, distortions: f.distortions?.filter(x => x !== dId) }))}>
-                              <X size={10} />
-                            </button>
-                          </span>
-                        ) : null;
-                      })}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                {/* Nudge L2 */}
-                {level === 1 && formData.distortions && formData.distortions.length > 0 && !isMobile && (
-                  <motion.button
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    type="button"
-                    onClick={() => { setLevel(2); triggerHaptic('light'); }}
-                    className="text-left text-sm text-accent hover:text-ink transition-colors font-serif italic flex items-center gap-2 mt-4"
-                  >
-                    <Sparkles size={14} />
-                    {language === 'es' ? 'Distorsiones detectadas. ¿Quieres ir más profundo?' : 'Distortions detected. Would you like to go deeper?'} 
-                    <span className="underline underline-offset-4">Level {language === 'es' ? '2' : '2'} →</span>
-                  </motion.button>
-                )}
-              </div>
-            </motion.div>
-          )}
-
-          {(!isMobile || currentStep === 2) && (
-            <motion.div 
-              key="step2"
-              initial={isMobile ? { opacity: 0, x: 20 } : {}}
-              animate={isMobile ? { opacity: 1, x: 0 } : {}}
-              exit={isMobile ? { opacity: 0, x: -20 } : {}}
-              className="grid grid-cols-1 md:grid-cols-3 gap-10"
-            >
-              <EditorialInput 
-                label={language === 'es' ? 'Emoción Central' : "Core Emotion"}
-                required
-                placeholder={language === 'es' ? 'Ansiedad, Tristeza, Frustración...' : "Anxious, Sad, Frustrated..."}
-                value={formData.primaryEmotion || ''}
-                onChange={(e) => setFormData({...formData, primaryEmotion: e.target.value})}
-              />
-              <div className="flex flex-col gap-3">
-                <label className="editorial-meta">{t('journal.level')} ({formData.intensity}/10)</label>
-                <input 
-                  type="range"
-                  min="1"
-                  max="10"
-                  step="1"
-                  className="accent-ink h-10"
-                  value={formData.intensity}
-                  onChange={(e) => setFormData({...formData, intensity: parseInt(e.target.value)})}
-                />
-              </div>
-              <EditorialInput 
-                label={language === 'es' ? 'Fecha de Observación' : "Observation Date"}
-                type="date"
-                variant="mono"
-                value={formData.date}
-                onChange={(e) => setFormData({...formData, date: e.target.value})}
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Level 2: Displacement */}
-        <AnimatePresence>
-          {level >= 2 && (!isMobile || currentStep === 3) && (
-            <motion.div
-              initial={isMobile ? { opacity: 0, x: 20 } : { height: 0, opacity: 0 }}
-              animate={isMobile ? { opacity: 1, x: 0 } : { height: 'auto', opacity: 1 }}
-              exit={isMobile ? { opacity: 0, x: -20 } : { height: 0, opacity: 0 }}
-              className="flex flex-col gap-10 overflow-hidden"
-            >
-              {!isMobile && <div className="h-px bg-ink/5 w-full" />}
-              <div className="flex flex-col gap-8">
-                <div className="flex flex-col gap-10">
-                  {/* The "Borrowed" Thought Display */}
-                  <div className="flex flex-col gap-4">
-                    <span className="editorial-meta text-[8px] opacity-40 uppercase tracking-widest">
-                      {language === 'es' ? 'Imagina que un amigo te escribe esto:' : 'Imagine a friend writes this to you:'}
-                    </span>
-                    <div className="flex flex-col gap-6 max-w-xl">
-                      <motion.p 
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        className="font-serif italic text-2xl md:text-3xl text-accent/60 leading-tight pl-4 border-l border-ink/10"
-                      >
-                        « {formData.automaticThought || '...'} »
-                      </motion.p>
-                      
-                      {/* Reflejo as Mediator */}
-                      {reflejoState && (
-                        <div className="flex justify-center py-2">
-                          <div className="scale-75 opacity-50">
-                            <LambdaAvatar state={reflejoState} onLongPress={() => {}} />
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col md:items-end w-full">
-                    <div className="w-full md:max-w-xl">
-                      <EditorialTextArea 
-                        label={language === 'es' ? 'Tu Respuesta Compasiva' : "Your Compassionate Response"}
-                        placeholder={language === 'es' ? 'Si un buen amigo te dijera esto, ¿qué le dirías?' : "If a dear friend told you this, what would you say to them?"}
-                        value={formData.friendResponse || ''}
-                        onChange={(e) => setFormData({...formData, friendResponse: e.target.value})}
-                      />
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Nudge L3 */}
-                {level === 2 && formData.friendResponse && formData.friendResponse.length > 15 && !isMobile && (
-                  <motion.button
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    type="button"
-                    onClick={() => { setLevel(3); triggerHaptic('light'); }}
-                    className="text-left text-sm text-accent hover:text-ink transition-colors font-serif italic flex items-center gap-2"
-                  >
-                    <ArrowRight size={14} />
-                    {language === 'es' ? '¿Listo para desafiar este pensamiento con evidencia?' : 'Ready to challenge this thought with evidence?'}
-                    <span className="underline underline-offset-4">Level 3 →</span>
-                  </motion.button>
-                )}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Level 3: Restructure */}
-        <AnimatePresence>
-          {level === 3 && (!isMobile || currentStep === 4) && (
-            <motion.div
-              initial={isMobile ? { opacity: 0, x: 20 } : { height: 0, opacity: 0 }}
-              animate={isMobile ? { opacity: 1, x: 0 } : { height: 'auto', opacity: 1 }}
-              exit={isMobile ? { opacity: 0, x: -20 } : { height: 0, opacity: 0 }}
-              className="flex flex-col gap-10 overflow-hidden"
-            >
-              {!isMobile && <div className="h-px bg-ink/5 w-full" />}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                <EditorialTextArea 
-                  label={language === 'es' ? 'Evidencia A FAVOR' : "Evidence FOR"}
-                  placeholder={language === 'es' ? '¿Qué hechos apoyan este pensamiento automático?' : "What facts support this automatic thought?"}
-                  value={formData.evidenceFor || ''}
-                  onChange={(e) => setFormData({...formData, evidenceFor: e.target.value})}
-                />
-                <EditorialTextArea 
-                  label={language === 'es' ? 'Evidencia EN CONTRA' : "Evidence AGAINST"}
-                  placeholder={language === 'es' ? '¿Qué hechos contradicen o desafían este pensamiento?' : "What facts contradict or challenge this thought?"}
-                  value={formData.evidenceAgainst || ''}
-                  onChange={(e) => setFormData({...formData, evidenceAgainst: e.target.value})}
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-end">
-                <div className="flex flex-col gap-6">
-                  <div className="flex flex-col gap-3">
-                    <label className="editorial-meta">{language === 'es' ? 'Creencia Inicial' : 'Initial Belief'} ({formData.originalIntensity || 0}/10)</label>
-                    <input 
-                      type="range"
-                      min="1"
-                      max="10"
-                      className="accent-ink h-10"
-                      value={formData.originalIntensity || 5}
-                      onChange={(e) => setFormData({...formData, originalIntensity: parseInt(e.target.value)})}
-                    />
-                  </div>
-                  <div className="flex flex-col gap-3">
-                    <label className="editorial-meta">{language === 'es' ? 'Credibilidad Final' : 'Final Credibility'} ({formData.finalCredibility || 0}/10)</label>
-                    <input 
-                      type="range"
-                      min="1"
-                      max="10"
-                      className="accent-ink h-10"
-                      value={formData.finalCredibility || 5}
-                      onChange={(e) => setFormData({...formData, finalCredibility: parseInt(e.target.value)})}
-                    />
-                  </div>
-                </div>
-
-                {/* ICC Display */}
-                {iccResult && (
-                  <div className="p-6 border border-ink/10 rounded-2xl bg-ink/[0.01] flex items-center gap-6">
-                    <div className={`w-16 h-16 rounded-full border-2 flex items-center justify-center font-mono text-xl font-bold ${
-                      iccResult.label === 'excellent' ? 'text-emerald-500 border-emerald-500/20' : 
-                      iccResult.label === 'moderate' ? 'text-amber-500 border-amber-500/20' : 
-                      'text-red-400 border-red-400/20'
-                    }`}>
-                      {iccResult.value.toFixed(2)}
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <div className="editorial-meta uppercase tracking-widest text-[8px]">Cognitive Change Index</div>
-                      <div className="font-serif italic text-sm text-accent leading-tight">{iccResult.message}</div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <EditorialTextArea 
-                label={t('journal.alternative')}
-                className="h-32"
-                placeholder={language === 'es' ? 'Síntesis: Una forma más realista y útil de ver esta situación...' : "Synthesis: A more realistic, helpful way to view this situation..."}
-                value={formData.rationalResponse || ''}
-                onChange={(e) => setFormData({...formData, rationalResponse: e.target.value})}
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        <div className="flex justify-between items-center pt-10 border-t border-ink/5">
-          <div className="flex gap-4">
-            {isMobile && canGoPrev && (
-              <button type="button" onClick={handlePrev} className="editorial-meta hover:text-ink transition-colors flex items-center gap-2">
-                 ← {language === 'es' ? 'Atrás' : 'Back'}
-              </button>
-            )}
-            <button type="button" onClick={onCancel} className="editorial-meta hover:text-ink transition-colors">{t('common.cancel')}</button>
-          </div>
-          
-          <div className="flex gap-4">
-            {isMobile && canGoNext && (
-              <EditorialButton type="button" onClick={handleNext}>
-                {language === 'es' ? 'Siguiente' : 'Next'} →
-              </EditorialButton>
-            )}
-            {(!isMobile || !canGoNext) && (
-              <EditorialButton type="submit" icon={<Check size={14} />}>
-                {initialData ? (language === 'es' ? 'Actualizar Resumen' : 'Update Summary') : (language === 'es' ? 'Sellar Observación' : 'Seal Observation')}
-              </EditorialButton>
-            )}
-          </div>
-        </div>
-      </form>
-    </motion.div>
   );
 }

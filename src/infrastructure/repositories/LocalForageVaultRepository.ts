@@ -15,6 +15,7 @@ import { cryptoService } from '../services/CryptoService';
 const DEFAULT_VAULT: Vault = {
   profile: { name: '', initialized: false, soundEnabled: true },
   createdAt: new Date().toISOString(),
+  schemaVersion: 1,
   journal: [],
   exposure: { hierarchy: [], logs: [] },
   activations: [],

@@ -56,11 +56,20 @@ export const translations = {
       new_entry: '+ New Entry',
       no_entries: 'No entries recorded in this vault.',
       strategic_progress: 'Strategic Progress',
+      goal_progress_suffix: 'complete',
       no_goals: 'No strategic objectives established.',
       ritual_complete: 'Ritual Complete',
       day_secured: 'The day is secured.',
       closure_ritual: 'Closure Ritual',
-      begin_synthesis: 'Begin the final synthesis.'
+      begin_synthesis: 'Begin the final synthesis.',
+      resilience_pending: 'awaiting baseline',
+      resilience_emerging: 'emerging',
+      resilience_building: 'building',
+      resilience_steady: 'steady',
+      grace_modal_title: 'Register Grace.',
+      grace_modal_prompt: 'What are you grateful for in this absolute present?',
+      grace_modal_placeholder: "A moment of silence, the coffee's warmth...",
+      grace_modal_save: 'Save to Vault'
     },
     clinical_insights: {
       anxiety: 'Worry is just a shadow of the future. Come back to the present moment.',
@@ -97,7 +106,15 @@ export const translations = {
       actual_joy: 'Actual Joy (0-10)',
       actual_effort: 'Actual Effort (0-10)',
       compare_anticipated: 'Anticipated: ',
-      compare_actual: 'Actual: '
+      compare_actual: 'Actual: ',
+      new_task: 'New Intention',
+      planned: 'Planned Architecture',
+      completed: 'Intentions Realized',
+      anchor: 'Strategic Anchor',
+      priority: 'Cognitive Load',
+      high_load: 'High Intensity',
+      medium_load: 'Balanced',
+      low_load: 'Minimalist'
     },
     habits: {
       title: 'Behavioral Architecture',
@@ -254,6 +271,16 @@ export const translations = {
       data_sovereignty_desc: 'Your data is stored using browser-native IndexedDB via the Lumina Vault protocol. No metrics, observations, or identifiers ever leave your hardware environment.',
       passphrase_management: 'Passphrase Management',
       change_passphrase: 'Change Security Passphrase',
+      current_passphrase: 'Current Passphrase',
+      new_passphrase: 'New Passphrase',
+      confirm_new_passphrase: 'Confirm New Passphrase',
+      passphrase_modal_title: 'Change Security Passphrase.',
+      passphrase_modal_subtitle: 'Security / Vault',
+      passphrase_empty: 'All passphrase fields are required.',
+      passphrase_mismatch: 'The new passphrases do not match.',
+      passphrase_incorrect: 'The current passphrase is incorrect.',
+      passphrase_success: 'Passphrase updated successfully.',
+      passphrase_error_prefix: 'Save error:',
       session_control: 'Session Control',
       lock_vault: 'Lock Vault',
       crisis_plan: 'Crisis Plan',
@@ -263,6 +290,18 @@ export const translations = {
       therapeutic_portability_desc: 'Generate reports for review or extract your raw history. Your observations belong to you.',
       clinical_report: 'Clinical Report',
       raw_database: 'Raw Database',
+      encrypted_backup: 'Encrypted Backup',
+      import_backup: 'Restore Backup',
+      backup_export_success: 'Encrypted backup generated successfully.',
+      backup_export_error: 'Could not generate the encrypted backup.',
+      backup_import_modal_title: 'Restore Encrypted Backup.',
+      backup_import_modal_subtitle: 'Recovery / Vault',
+      backup_file_selected: 'Selected file',
+      backup_passphrase: 'Backup Passphrase',
+      backup_import_warning: 'Restoring a backup replaces the current local vault on this device.',
+      backup_import_empty: 'Choose a backup file and enter its passphrase.',
+      backup_import_success: 'Encrypted backup restored successfully.',
+      backup_import_error: 'Could not restore the encrypted backup.',
       aesthetic_feedback: 'Aesthetic & Feedback',
       sensorial_audio: 'Sensorial Audio',
       sensorial_audio_desc: 'Crystal Synthesis Feedback',
@@ -359,11 +398,20 @@ export const translations = {
       new_entry: '+ Nueva Entrada',
       no_entries: 'No hay registros en esta bóveda.',
       strategic_progress: 'Progreso Estratégico',
+      goal_progress_suffix: 'completado',
       no_goals: 'No hay objetivos estratégicos establecidos.',
       ritual_complete: 'Ritual Completado',
       day_secured: 'El día está asegurado.',
       closure_ritual: 'Ritual de Cierre',
-      begin_synthesis: 'Comenzar la síntesis final.'
+      begin_synthesis: 'Comenzar la síntesis final.',
+      resilience_pending: 'sin línea base',
+      resilience_emerging: 'emergente',
+      resilience_building: 'en consolidación',
+      resilience_steady: 'estable',
+      grace_modal_title: 'Registrar gratitud.',
+      grace_modal_prompt: '¿Qué agradeces en este presente absoluto?',
+      grace_modal_placeholder: 'Un momento de silencio, la calidez del café...',
+      grace_modal_save: 'Guardar en la Bóveda'
     },
     clinical_insights: {
       anxiety: 'La preocupación es solo una sombra del futuro. Regresa al momento presente.',
@@ -383,6 +431,13 @@ export const translations = {
       level: 'Nivel de Intensidad',
       save_entry: 'Guardar en la Bóveda',
       empty_state: 'La crónica espera tu primera observación.',
+      prompts: {
+        anxiety: '¿Es una amenaza real o una proyección catastrófica? Busca la evidencia.',
+        depression: 'Concéntrate en los hechos, no en el filtro. ¿Qué pequeño logro estás descartando?',
+        ocd: '¿Puedes tolerar la incertidumbre sin realizar una conducta de seguridad?',
+        sleep: 'Rompe la presión por dormir. ¿Este pensamiento te ayuda a descansar o te mantiene alerta?',
+        general: '¿Qué hechos apoyan o contradicen esta perspectiva?'
+      },
       filter_all: 'Todas las Entradas',
       filter_clinical: 'Enfoque Clínico'
     },
@@ -393,7 +448,27 @@ export const translations = {
       actual_joy: 'Alegría Real (0-10)',
       actual_effort: 'Esfuerzo Real (0-10)',
       compare_anticipated: 'Anticipado: ',
-      compare_actual: 'Real: '
+      compare_actual: 'Real: ',
+      new_task: 'Nueva Intención',
+      planned: 'Arquitectura Planificada',
+      completed: 'Intenciones Realizadas',
+      anchor: 'Anclaje Estratégico',
+      priority: 'Carga Cognitiva',
+      high_load: 'Alta Intensidad',
+      medium_load: 'Equilibrado',
+      low_load: 'Minimalista'
+    },
+    momentum_active: {
+      title: 'Momentum Activo',
+      new_task: 'Nueva Intención',
+      planned: 'Arquitectura Planificada',
+      completed: 'Intenciones Realizadas',
+      anchor: 'Anclaje Estratégico',
+      priority: 'Carga Cognitiva',
+      high_load: 'Alta Intensidad',
+      medium_load: 'Equilibrado',
+      low_load: 'Minimalista',
+      no_tasks: 'No hay intenciones proyectadas para hoy.'
     },
     habits: {
       title: 'Arquitectura Conductual',
@@ -414,18 +489,6 @@ export const translations = {
       experience_level: 'Nivel de Experiencia',
       for_level: 'para el Nivel',
       linked_aim: 'Objetivo'
-    },
-    momentum: {
-      title: 'Momentum Activo',
-      new_task: 'Nueva Intención',
-      planned: 'Arquitectura Planificada',
-      completed: 'Intenciones Realizadas',
-      anchor: 'Anclaje Estratégico',
-      priority: 'Carga Cognitiva',
-      high_load: 'Alta Intensidad',
-      medium_load: 'Equilibrado',
-      low_load: 'Minimalista',
-      no_tasks: 'No hay intenciones proyectadas para hoy.'
     },
     common: {
       save: 'Guardar',
@@ -550,6 +613,16 @@ export const translations = {
       data_sovereignty_desc: 'Tus datos se almacenan localmente mediante IndexedDB bajo el protocolo Lumina Vault. Ninguna métrica u observación abandona nunca tu hardware.',
       passphrase_management: 'Gestión de Contraseña',
       change_passphrase: 'Cambiar Contraseña de Seguridad',
+      current_passphrase: 'Contraseña Actual',
+      new_passphrase: 'Nueva Contraseña',
+      confirm_new_passphrase: 'Confirmar Nueva Contraseña',
+      passphrase_modal_title: 'Cambiar Contraseña de Seguridad.',
+      passphrase_modal_subtitle: 'Seguridad / Bóveda',
+      passphrase_empty: 'Todos los campos de contraseña son obligatorios.',
+      passphrase_mismatch: 'Las nuevas contraseñas no coinciden.',
+      passphrase_incorrect: 'La contraseña actual es incorrecta.',
+      passphrase_success: 'La contraseña se actualizó correctamente.',
+      passphrase_error_prefix: 'Error de guardado:',
       session_control: 'Control de Sesión',
       lock_vault: 'Bloquear Bóveda',
       crisis_plan: 'Plan de Crisis',
@@ -559,6 +632,18 @@ export const translations = {
       therapeutic_portability_desc: 'Genera informes para revisión o extrae tu historial bruto. Tus observaciones te pertenecen.',
       clinical_report: 'Informe Clínico',
       raw_database: 'Base de Datos Bruta',
+      encrypted_backup: 'Respaldo Cifrado',
+      import_backup: 'Restaurar Respaldo',
+      backup_export_success: 'El respaldo cifrado se generó correctamente.',
+      backup_export_error: 'No se pudo generar el respaldo cifrado.',
+      backup_import_modal_title: 'Restaurar Respaldo Cifrado.',
+      backup_import_modal_subtitle: 'Recuperación / Bóveda',
+      backup_file_selected: 'Archivo seleccionado',
+      backup_passphrase: 'Contraseña del Respaldo',
+      backup_import_warning: 'Restaurar un respaldo reemplaza la bóveda local actual en este dispositivo.',
+      backup_import_empty: 'Elige un respaldo e introduce su contraseña.',
+      backup_import_success: 'El respaldo cifrado se restauró correctamente.',
+      backup_import_error: 'No se pudo restaurar el respaldo cifrado.',
       aesthetic_feedback: 'Estética y Feedback',
       sensorial_audio: 'Audio Sensorial',
       sensorial_audio_desc: 'Feedback de Síntesis Cristalina',
@@ -607,3 +692,11 @@ export const translations = {
 
 export type Language = 'en' | 'es';
 export type TranslationKeys = typeof translations.en;
+export type TranslationTree = typeof translations.en;
+export type TranslationValue = string | TranslationGroup;
+export interface TranslationGroup {
+  [key: string]: TranslationValue;
+}
+
+const _shapeCheck: TranslationTree = translations.es;
+void _shapeCheck;

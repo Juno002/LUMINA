@@ -4,13 +4,14 @@
  */
 
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion } from 'motion/react';
 import { Target, Zap, Plus, CheckCircle2, Check } from 'lucide-react';
 import { Goal, RecurrencePattern, Milestone } from '../../domain/entities';
 import { todayISO } from '../../shared/utils/DateFormatter';
 import GoalItem from '../components/domain/goals/GoalItem';
 import { cn } from '../../shared/utils/TailwindMerge';
 import { 
+  ConfirmActionModal,
   EditorialButton, 
   EditorialModal, 
   EditorialInput, 
@@ -32,6 +33,7 @@ export default function GoalsView({ goals, onUpdate }: { goals: Goal[], onUpdate
     milestones: [] as { id: string, title: string, completed: boolean }[]
   });
   const [newMilestoneTitle, setNewMilestoneTitle] = useState('');
+  const [goalToDeleteId, setGoalToDeleteId] = useState<string | null>(null);
 
   const handleAddMilestone = () => {
     if (!newMilestoneTitle.trim()) return;
@@ -110,10 +112,10 @@ export default function GoalsView({ goals, onUpdate }: { goals: Goal[], onUpdate
     }));
   };
 
-  const handleDelete = (id: string) => {
-    if (confirm(language === 'es' ? "¿Cancelar este objetivo estratégico?" : "Cancel this strategic objective?")) {
-      onUpdate(goals.filter(g => g.id !== id));
-    }
+  const handleDelete = () => {
+    if (!goalToDeleteId) return;
+    onUpdate(goals.filter(g => g.id !== goalToDeleteId));
+    setGoalToDeleteId(null);
   };
 
   return (
@@ -173,7 +175,7 @@ export default function GoalsView({ goals, onUpdate }: { goals: Goal[], onUpdate
                   goal={goal} 
                   onToggle={() => handleToggleGoal(goal.id)} 
                   onToggleMilestone={(mid) => toggleMilestone(goal.id, mid)}
-                  onDelete={() => handleDelete(goal.id)} 
+                  onDelete={() => setGoalToDeleteId(goal.id)} 
                 />
               ))}
             </div>
@@ -266,6 +268,20 @@ export default function GoalsView({ goals, onUpdate }: { goals: Goal[], onUpdate
           </div>
         </div>
       </EditorialModal>
+
+      <ConfirmActionModal
+        isOpen={!!goalToDeleteId}
+        onClose={() => setGoalToDeleteId(null)}
+        onConfirm={handleDelete}
+        title={language === 'es' ? 'Archivar objetivo.' : 'Archive objective.'}
+        description={
+          language === 'es'
+            ? 'Este objetivo saldrá del plan estratégico activo y dejará de aparecer en el tablero.'
+            : 'This objective will leave the active strategic plan and stop appearing in the main dashboard.'
+        }
+        confirmLabel={t('common.archive')}
+        cancelLabel={t('common.cancel')}
+      />
     </div>
   );
 }

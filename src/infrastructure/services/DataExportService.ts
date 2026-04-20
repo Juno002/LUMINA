@@ -5,6 +5,12 @@
 
 import { Vault } from '../../domain/entities';
 
+function escapeCsvCell(value: unknown): string {
+  const normalized = value === null || value === undefined ? '' : String(value);
+  const escaped = normalized.replace(/"/g, '""');
+  return `"${escaped}"`;
+}
+
 /**
  * DataExportService:
  * Generates exportable reports and raw data files.
@@ -73,7 +79,14 @@ export const DataExportService = {
     
     journal.forEach(e => {
       const distortions = (e.distortions || []).join('; ');
-      csv += `${e.date},"${e.primaryEmotion}",${e.intensity},${e.level},"${distortions}",${e.outcomeIntensity}\n`;
+      csv += [
+        escapeCsvCell(e.date),
+        escapeCsvCell(e.primaryEmotion),
+        escapeCsvCell(e.intensity),
+        escapeCsvCell(e.level),
+        escapeCsvCell(distortions),
+        escapeCsvCell(e.outcomeIntensity ?? '')
+      ].join(',') + '\n';
     });
     
     return csv;

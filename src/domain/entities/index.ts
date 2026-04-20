@@ -117,9 +117,8 @@ export interface MoodEntry {
   urges?: string;       // Behavioral impulses
   triggers?: string;    // Environmental context
 }
-}
 
-export interface wellness {
+export interface Wellness {
   gratitudeEntries: { id: string; text: string; date: string }[];
   moodEntries: MoodEntry[];
 }
@@ -225,7 +224,8 @@ export interface Vault {
   activations: ActivationActivity[];
   goals: Goal[];
   sleep: SleepEntry[];
-  wellness: wellness;
+  schemaVersion: number;
+  wellness: Wellness;
   habits: Habit[]; 
   habitLogs: HabitLog[]; 
   stats: UserStats; 

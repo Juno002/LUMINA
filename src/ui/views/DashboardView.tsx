@@ -5,16 +5,17 @@
 
 import React, { useState, useMemo } from 'react';
 import { motion } from "motion/react";
-import { AnimationSpeeds, EasingCurves } from '../../domain/constants/Theme';
+import { EasingCurves } from '../../domain/constants/Theme';
 import { Flame, Moon as MoonIcon, Star, CheckCircle2 } from "lucide-react";
 import { cn } from '../../shared/utils/TailwindMerge';
-import { todayISO } from '../../shared/utils/DateFormatter';
+import { todayISO, shiftLocalISODate } from '../../shared/utils/DateFormatter';
 import { triggerHaptic } from '../../shared/utils/Haptics';
 import { useTranslation } from '../../application/contexts/LanguageContext';
 
-import { Vault, ActivationActivity, Goal } from '../../domain/entities';
+import { Vault, ActivationActivity, Goal, ThoughtEntry } from '../../domain/entities';
 import LambdaAvatar from '../components/shared/LambdaAvatar';
 import { computeReflejoState } from '../../application/usecases/GetReflejoStateUseCase';
+import { calculateICC } from '../../domain/services/ICCCalculator';
 import { 
   EditorialButton, 
   EditorialModal, 
@@ -28,25 +29,89 @@ interface DashboardViewProps {
   onOpenDayClosure?: () => void;
 }
 
+interface GreetingContent {
+  label: string;
+  quote: string;
+  suggestion: string;
+}
+
 /**
  * DashboardView Component:
  * Central hub of Lumina. Features the Lambda Avatar and daily momentum tracking.
  */
 export default function DashboardView({ vault, onUpdate, onOpenCrisis, onOpenDayClosure }: DashboardViewProps) {
-  const { t } = useTranslation();
-  const momentum = (vault.activations?.filter((a: ActivationActivity) => a.completed && a.plannedDate === todayISO()).length || 0) * 20;
+  const { t, tGroup } = useTranslation();
+  const today = todayISO();
+  const momentum = (vault.activations?.filter((a: ActivationActivity) => a.completed && a.plannedDate === today).length || 0) * 20;
   const pendingActions = vault.activations?.filter((a: ActivationActivity) => !a.completed).length || 0;
   
   const reflejoState = useMemo(() => computeReflejoState(vault), [vault]);
 
-  const getGreeting = () => {
+  const getGreeting = (): GreetingContent => {
     const hour = new Date().getHours();
-    if (hour < 12) return t('dashboard.morning');
-    if (hour < 18) return t('dashboard.midday');
-    return t('dashboard.evening');
+    if (hour < 12) return tGroup<GreetingContent>('dashboard.morning');
+    if (hour < 18) return tGroup<GreetingContent>('dashboard.midday');
+    return tGroup<GreetingContent>('dashboard.evening');
   };
 
   const context = getGreeting();
+  const resilienceIndex = useMemo(() => {
+    const components: number[] = [];
+    const windowStart = shiftLocalISODate(today, -6);
+
+    const recentL3Entries = (vault.journal || [])
+      .filter((entry: ThoughtEntry) => entry.level === 3 && entry.originalIntensity !== undefined && entry.finalCredibility !== undefined)
+      .slice(0, 10);
+
+    if (recentL3Entries.length > 0) {
+      const avgICC =
+        recentL3Entries.reduce(
+          (sum, entry) => sum + calculateICC(entry.originalIntensity!, entry.finalCredibility!).value,
+          0
+        ) / recentL3Entries.length;
+      components.push(Math.round(avgICC * 100));
+    }
+
+    const recentActivations = (vault.activations || []).filter(
+      (activity) => activity.plannedDate >= windowStart && activity.plannedDate <= today
+    );
+    if (recentActivations.length > 0) {
+      const completedActivations = recentActivations.filter((activity) => activity.completed).length;
+      components.push(Math.round((completedActivations / recentActivations.length) * 100));
+    }
+
+    const activeHabitIds = new Set((vault.habits || []).filter((habit) => habit.isActive).map((habit) => habit.id));
+    if (activeHabitIds.size > 0) {
+      const dates = Array.from({ length: 7 }, (_, index) => shiftLocalISODate(today, -index));
+      const dateSet = new Set(dates);
+      const completedHabitLogs = (vault.habitLogs || []).filter(
+        (log) => log.completed && dateSet.has(log.date) && activeHabitIds.has(log.habitId)
+      ).length;
+      const totalHabitChecks = activeHabitIds.size * dates.length;
+      components.push(Math.round((completedHabitLogs / totalHabitChecks) * 100));
+    }
+
+    const recentSleepEntries = (vault.sleep || []).filter((entry) => entry.date >= windowStart && entry.date <= today);
+    if (recentSleepEntries.length > 0) {
+      const averageSleepQuality =
+        recentSleepEntries.reduce((sum, entry) => sum + entry.quality, 0) / recentSleepEntries.length;
+      components.push(Math.round((averageSleepQuality / 5) * 100));
+    }
+
+    if (components.length === 0) {
+      return null;
+    }
+
+    return Math.round(components.reduce((sum, value) => sum + value, 0) / components.length);
+  }, [today, vault.activations, vault.habitLogs, vault.habits, vault.journal, vault.sleep]);
+
+  const resilienceLabel = resilienceIndex === null
+    ? t('dashboard.resilience_pending')
+    : resilienceIndex >= 70
+      ? t('dashboard.resilience_steady')
+      : resilienceIndex >= 45
+        ? t('dashboard.resilience_building')
+        : t('dashboard.resilience_emerging');
 
   const [isAddingGrace, setIsAddingGrace] = useState(false);
   const [graceText, setGraceText] = useState('');
@@ -56,18 +121,18 @@ export default function DashboardView({ vault, onUpdate, onOpenCrisis, onOpenDay
     triggerHaptic('success');
     const g = vault.wellness?.gratitudeEntries || [];
     const updatedVault = {
-      ...vault,
-      wellness: {
-        ...vault.wellness,
-        gratitudeEntries: [{ id: crypto.randomUUID(), text: graceText, date: todayISO() }, ...g]
-      }
-    };
+        ...vault,
+        wellness: {
+          ...vault.wellness,
+          gratitudeEntries: [{ id: crypto.randomUUID(), text: graceText, date: today }, ...g]
+        }
+      };
     onUpdate(updatedVault);
     setGraceText('');
     setIsAddingGrace(false);
   };
 
-  const isDayClosed = vault.closedDays?.some(d => d.date === todayISO());
+  const isDayClosed = vault.closedDays?.some(d => d.date === today);
 
   return (
     <div className="editorial-grid pb-20 max-md:flex max-md:flex-col">
@@ -94,7 +159,7 @@ export default function DashboardView({ vault, onUpdate, onOpenCrisis, onOpenDay
                   )}></div>
                   <div className="flex flex-col">
                     <span className={cn("font-serif text-lg italic leading-none", goal.completed && "opacity-20 line-through")}>{goal.title}</span>
-                    <span className="text-[8px] font-mono opacity-30 uppercase mt-1 tracking-widest">{goal.progress}% {t('dashboard.strategic_progress').includes('Progreso') ? 'completado' : 'complete'}</span>
+                    <span className="text-[8px] font-mono opacity-30 uppercase mt-1 tracking-widest">{goal.progress}% {t('dashboard.goal_progress_suffix')}</span>
                   </div>
                 </div>
               ))}
@@ -148,7 +213,7 @@ export default function DashboardView({ vault, onUpdate, onOpenCrisis, onOpenDay
             <div className="flex items-center gap-3 py-4 border-y border-ink/5 mt-2">
               <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></div>
               <p className="text-xs font-serif italic text-accent opacity-80">
-                {t(`clinical_insights.${vault.profile?.clinicalProfile || 'general'}` as any)}
+                {t(`clinical_insights.${vault.profile?.clinicalProfile || 'general'}`)}
               </p>
             </div>
           </div>
@@ -159,7 +224,7 @@ export default function DashboardView({ vault, onUpdate, onOpenCrisis, onOpenDay
            {[
              { label: 'XP', value: vault.stats?.totalExp || 0, icon: Flame },
              { label: t('nav.nightfall'), value: (vault.sleep?.[0]?.quality || '-') + '/5', icon: MoonIcon },
-             { label: t('nav.architecture'), value: (vault.habitLogs?.filter(l => l.date === todayISO() && l.completed).length || 0), icon: Star }
+             { label: t('nav.architecture'), value: (vault.habitLogs?.filter(l => l.date === today && l.completed).length || 0), icon: Star }
            ].map((stat, i) => (
              <div key={i} className="flex-shrink-0 flex flex-col gap-2 p-6 rounded-3xl border border-ink/5 bg-paper shadow-sm min-w-[140px]">
                 <div className="flex justify-between items-center opacity-40">
@@ -175,13 +240,13 @@ export default function DashboardView({ vault, onUpdate, onOpenCrisis, onOpenDay
           <div className="flex flex-col gap-6 p-10 border border-ink/5 rounded-[3rem] bg-paper shadow-sm">
             <span className="editorial-meta opacity-50 uppercase text-[9px] tracking-[0.2em]">{t('dashboard.resilience_index')}</span>
             <div className="flex items-baseline gap-3">
-               <h3 className="font-serif text-5xl">68</h3>
-               <span className="editorial-meta opacity-30 lowercase tracking-normal italic text-sm">stable</span>
+               <h3 className="font-serif text-5xl">{resilienceIndex ?? '--'}</h3>
+               <span className="editorial-meta opacity-30 lowercase tracking-normal italic text-sm">{resilienceLabel}</span>
             </div>
             <div className="h-[2px] w-full bg-ink/5 rounded-full overflow-hidden mt-4">
                <motion.div 
                 initial={{ width: 0 }}
-                animate={{ width: "68%" }} 
+                animate={{ width: `${resilienceIndex ?? 0}%` }} 
                 transition={{ duration: 1.5, ease: EasingCurves.editorial }}
                 className="h-full bg-ink/60"
               />
@@ -228,16 +293,16 @@ export default function DashboardView({ vault, onUpdate, onOpenCrisis, onOpenDay
       <EditorialModal 
         isOpen={isAddingGrace} 
         onClose={() => setIsAddingGrace(false)}
-        title="Register Grace"
+        title={t('dashboard.grace_modal_title')}
       >
         <div className="flex flex-col gap-8">
           <EditorialTextArea
-            label="What are you grateful for in this absolute present?"
+            label={t('dashboard.grace_modal_prompt')}
             value={graceText}
             onChange={(e) => setGraceText(e.target.value)}
-            placeholder="A moment of silence, the coffee's warmth..."
+            placeholder={t('dashboard.grace_modal_placeholder')}
           />
-          <EditorialButton onClick={handleAddGrace}>Save to Vault</EditorialButton>
+          <EditorialButton onClick={handleAddGrace}>{t('dashboard.grace_modal_save')}</EditorialButton>
         </div>
       </EditorialModal>
     </div>

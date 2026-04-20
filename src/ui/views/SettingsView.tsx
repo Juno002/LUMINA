@@ -3,24 +3,36 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useMemo } from 'react';
-import { Shield, Trash2, Palette, Lock, ShieldAlert, Clock, Key, Download, FileText, Table, Check } from 'lucide-react';
+import React, { useMemo, useRef, useState } from 'react';
+import { Shield, Trash2, Palette, Lock, ShieldAlert, Clock, Key, Download, FileText, Table, Check, Upload } from 'lucide-react';
 import { Vault } from '../../domain/entities';
 import { motion } from 'motion/react';
 import { DataExportService } from '../../infrastructure/services/DataExportService';
-import { 
-  EditorialButton 
+import {
+  ConfirmActionModal,
+  EditorialButton,
+  EditorialInput,
+  EditorialModal
 } from '../components/shared';
 import { cn } from '../../shared/utils/TailwindMerge';
 import { useTranslation } from '../../application/contexts/LanguageContext';
 import { Language } from '../../shared/i18n/translations';
+import { todayISO } from '../../shared/utils/DateFormatter';
 
 interface SettingsViewProps {
   vault: Vault;
   onUpdate: (newVault: Vault) => void;
   onWipe: () => void;
   onLock: () => void;
+  onChangePassphrase: (currentPassword: string, nextPassword: string) => Promise<boolean>;
+  onExportBackup: () => Promise<{ ok: true; backup: string } | { ok: false; error: string }>;
+  onImportBackup: (
+    serializedBackup: string,
+    password: string
+  ) => Promise<{ ok: true } | { ok: false; error: string }>;
   onOpenCrisis: () => void;
+  isSaving: boolean;
+  lastSaveError: string | null;
 }
 
 const AUTO_LOCK_OPTIONS = [1, 3, 5, 10, 30];
@@ -36,8 +48,43 @@ const LANGUAGES = [
   { id: 'es', name: 'Español (ES)' }
 ] as const;
 
-export default function SettingsView({ vault, onUpdate, onWipe, onLock, onOpenCrisis }: SettingsViewProps) {
+export default function SettingsView({
+  vault,
+  onUpdate,
+  onWipe,
+  onLock,
+  onChangePassphrase,
+  onExportBackup,
+  onImportBackup,
+  onOpenCrisis,
+  isSaving,
+  lastSaveError
+}: SettingsViewProps) {
   const { t, language, setLanguage } = useTranslation();
+  const [isPassphraseModalOpen, setIsPassphraseModalOpen] = useState(false);
+  const [isWipeConfirmOpen, setIsWipeConfirmOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [passphraseForm, setPassphraseForm] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const [backupImportPassphrase, setBackupImportPassphrase] = useState('');
+  const [backupImportSource, setBackupImportSource] = useState<{
+    name: string;
+    content: string;
+  } | null>(null);
+  const [passphraseStatus, setPassphraseStatus] = useState<{
+    tone: 'success' | 'error';
+    message: string;
+  } | null>(null);
+  const [backupStatus, setBackupStatus] = useState<{
+    tone: 'success' | 'error';
+    message: string;
+  } | null>(null);
+  const [backupImportError, setBackupImportError] = useState<string | null>(null);
+  const backupInputRef = useRef<HTMLInputElement | null>(null);
+
   const hardwareId = useMemo(() => {
     let id = localStorage.getItem('lumina_hwid');
     if (!id) {
@@ -47,22 +94,115 @@ export default function SettingsView({ vault, onUpdate, onWipe, onLock, onOpenCr
     return id;
   }, []);
 
-  const handleWipe = async () => {
-    if (confirm(t('settings.wipe_vault_desc'))) {
-      onWipe();
-    }
-  };
-
   const handleExportMD = () => {
     const report = DataExportService.exportMarkdownReport(vault);
-    const date = new Date().toISOString().split('T')[0];
+    const date = todayISO();
     DataExportService.downloadFile(report, `lumina-report-${date}.md`, 'text/markdown');
   };
 
   const handleExportCSV = () => {
     const data = DataExportService.exportCSV(vault);
-    const date = new Date().toISOString().split('T')[0];
+    const date = todayISO();
     DataExportService.downloadFile(data, `lumina-data-${date}.csv`, 'text/csv');
+  };
+
+  const handleExportBackup = async () => {
+    const date = todayISO();
+    const result = await onExportBackup();
+
+    if ('error' in result) {
+      setBackupStatus({ tone: 'error', message: result.error });
+      return;
+    }
+
+    DataExportService.downloadFile(
+      result.backup,
+      `lumina-backup-${date}.json`,
+      'application/json'
+    );
+    setBackupStatus({ tone: 'success', message: t('settings.backup_export_success') });
+  };
+
+  const handleBackupFileSelection = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+
+    if (!file) return;
+
+    const content = await file.text();
+    setBackupImportSource({ name: file.name, content });
+    setBackupImportPassphrase('');
+    setBackupImportError(null);
+    setBackupStatus(null);
+    setIsImportModalOpen(true);
+  };
+
+  const resetImportState = () => {
+    setBackupImportPassphrase('');
+    setBackupImportSource(null);
+    setBackupImportError(null);
+  };
+
+  const handleImportBackup = async () => {
+    if (!backupImportSource || !backupImportPassphrase.trim()) {
+      setBackupImportError(t('settings.backup_import_empty'));
+      return;
+    }
+
+    const result = await onImportBackup(backupImportSource.content, backupImportPassphrase.trim());
+    if ('error' in result) {
+      setBackupImportError(result.error);
+      return;
+    }
+
+    setBackupStatus({ tone: 'success', message: t('settings.backup_import_success') });
+    setIsImportModalOpen(false);
+    resetImportState();
+  };
+
+  const resetPassphraseForm = () => {
+    setPassphraseForm({
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: ''
+    });
+  };
+
+  const handlePassphraseSubmit = async () => {
+    if (
+      !passphraseForm.currentPassword.trim() ||
+      !passphraseForm.newPassword.trim() ||
+      !passphraseForm.confirmPassword.trim()
+    ) {
+      setPassphraseStatus({ tone: 'error', message: t('settings.passphrase_empty') });
+      return;
+    }
+
+    if (passphraseForm.newPassword !== passphraseForm.confirmPassword) {
+      setPassphraseStatus({ tone: 'error', message: t('settings.passphrase_mismatch') });
+      return;
+    }
+
+    const changed = await onChangePassphrase(
+      passphraseForm.currentPassword,
+      passphraseForm.newPassword
+    );
+
+    if (!changed) {
+      setPassphraseStatus({
+        tone: 'error',
+        message: lastSaveError
+          ? `${t('settings.passphrase_error_prefix')} ${lastSaveError}`
+          : t('settings.passphrase_incorrect')
+      });
+      return;
+    }
+
+    setPassphraseStatus({ tone: 'success', message: t('settings.passphrase_success') });
+    resetPassphraseForm();
+    setIsPassphraseModalOpen(false);
   };
 
   const currentAutoLock = vault.profile.autoLockMinutes ?? 5;
@@ -113,11 +253,47 @@ export default function SettingsView({ vault, onUpdate, onWipe, onLock, onOpenCr
                   <Key size={16} className="text-accent" />
                   <div className="flex flex-col">
                     <span className="text-[10px] uppercase tracking-wider font-bold">{t('settings.passphrase_management')}</span>
-                    <button className="text-left text-xs text-accent hover:text-ink transition-colors underline underline-offset-4 mt-1">
+                    <button
+                      onClick={() => {
+                        resetPassphraseForm();
+                        setPassphraseStatus(null);
+                        setIsPassphraseModalOpen(true);
+                      }}
+                      className="text-left text-xs text-accent hover:text-ink transition-colors underline underline-offset-4 mt-1"
+                    >
                       {t('settings.change_passphrase')}
                     </button>
                   </div>
                 </div>
+                {passphraseStatus && (
+                  <div
+                    className={cn(
+                      'rounded-2xl border px-4 py-3 text-sm italic',
+                      passphraseStatus.tone === 'success'
+                        ? 'border-emerald-500/20 bg-emerald-500/[0.04] text-emerald-700'
+                        : 'border-red-500/20 bg-red-500/[0.03] text-red-600'
+                    )}
+                  >
+                    {passphraseStatus.message}
+                  </div>
+                )}
+                {backupStatus && (
+                  <div
+                    className={cn(
+                      'rounded-2xl border px-4 py-3 text-sm italic',
+                      backupStatus.tone === 'success'
+                        ? 'border-emerald-500/20 bg-emerald-500/[0.04] text-emerald-700'
+                        : 'border-red-500/20 bg-red-500/[0.03] text-red-600'
+                    )}
+                  >
+                    {backupStatus.message}
+                  </div>
+                )}
+                {!passphraseStatus && lastSaveError && (
+                  <div className="rounded-2xl border border-red-500/20 bg-red-500/[0.03] px-4 py-3 text-sm italic text-red-600">
+                    {t('settings.passphrase_error_prefix')} {lastSaveError}
+                  </div>
+                )}
               </div>
 
               <div className="flex flex-col gap-6">
@@ -126,7 +302,7 @@ export default function SettingsView({ vault, onUpdate, onWipe, onLock, onOpenCr
                   <div className="flex flex-wrap gap-3">
                     <EditorialButton
                       onClick={onLock}
-                      variant="ink"
+                      variant="outline"
                       icon={<Lock size={12} />}
                     >
                       {t('settings.lock_vault')}
@@ -167,7 +343,6 @@ export default function SettingsView({ vault, onUpdate, onWipe, onLock, onOpenCr
           </section>
         </div>
 
-        {/* Data Export Section */}
         <div className="lg:col-span-6">
           <section className="flex flex-col gap-8">
             <div className="flex items-center gap-4">
@@ -182,7 +357,7 @@ export default function SettingsView({ vault, onUpdate, onWipe, onLock, onOpenCr
                   </p>
                </div>
                
-               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <button 
                     onClick={handleExportMD}
                     className="flex flex-col gap-3 p-6 border border-ink/5 rounded-3xl hover:border-ink/20 hover:bg-ink/[0.01] transition-all text-left group"
@@ -202,10 +377,37 @@ export default function SettingsView({ vault, onUpdate, onWipe, onLock, onOpenCr
                         <span className="font-serif italic text-sm">{t('settings.raw_database')}</span>
                         <span className="text-[9px] uppercase tracking-widest opacity-40 mt-1">Spreadsheet (.csv)</span>
                      </div>
-                  </button>
-               </div>
-            </div>
-          </section>
+                   </button>
+                   <button 
+                     onClick={handleExportBackup}
+                     className="flex flex-col gap-3 p-6 border border-ink/5 rounded-3xl hover:border-ink/20 hover:bg-ink/[0.01] transition-all text-left group"
+                   >
+                      <Lock size={20} className="opacity-40 group-hover:text-ink transition-colors" />
+                      <div className="flex flex-col">
+                         <span className="font-serif italic text-sm">{t('settings.encrypted_backup')}</span>
+                         <span className="text-[9px] uppercase tracking-widest opacity-40 mt-1">Portable Archive (.json)</span>
+                      </div>
+                   </button>
+                   <button 
+                     onClick={() => backupInputRef.current?.click()}
+                     className="flex flex-col gap-3 p-6 border border-ink/5 rounded-3xl hover:border-ink/20 hover:bg-ink/[0.01] transition-all text-left group"
+                   >
+                      <Upload size={20} className="opacity-40 group-hover:text-ink transition-colors" />
+                      <div className="flex flex-col">
+                         <span className="font-serif italic text-sm">{t('settings.import_backup')}</span>
+                         <span className="text-[9px] uppercase tracking-widest opacity-40 mt-1">Restore Archive</span>
+                      </div>
+                   </button>
+                </div>
+                <input
+                  ref={backupInputRef}
+                  type="file"
+                  accept="application/json,.json"
+                  className="hidden"
+                  onChange={handleBackupFileSelection}
+                />
+             </div>
+           </section>
         </div>
 
         <div className="lg:col-span-6">
@@ -215,7 +417,6 @@ export default function SettingsView({ vault, onUpdate, onWipe, onLock, onOpenCr
               <div className="editorial-meta uppercase tracking-widest">{t('settings.aesthetic_feedback')}</div>
             </div>
             <div className="flex flex-col gap-4">
-               {/* Audio Feedback Toggle */}
                <button 
                   onClick={() => onUpdate({ ...vault, profile: { ...vault.profile, soundEnabled: !vault.profile.soundEnabled } })}
                   className="flex justify-between items-center py-4 px-6 border border-ink/5 rounded-2xl hover:bg-ink/[0.02] transition-all"
@@ -252,7 +453,6 @@ export default function SettingsView({ vault, onUpdate, onWipe, onLock, onOpenCr
                   ))}
                </div>
 
-               {/* Language Switcher */}
                <div className="flex flex-col gap-4 mt-6">
                  <div className="editorial-meta opacity-40">{t('settings.linguistic_architecture')}</div>
                  <div className="grid grid-cols-2 gap-3">
@@ -292,12 +492,13 @@ export default function SettingsView({ vault, onUpdate, onWipe, onLock, onOpenCr
                    {t('settings.wipe_vault_desc')}
                  </p>
                </div>
-               <button 
-                onClick={handleWipe}
-                className="bg-red-500/10 text-red-500 px-10 py-4 rounded-full font-mono text-[10px] uppercase tracking-widest hover:bg-red-500 hover:text-paper transition-all shrink-0"
+               <EditorialButton
+                 onClick={() => setIsWipeConfirmOpen(true)}
+                 variant="danger"
+                 size="lg"
                >
                  {t('settings.execute_wipe')}
-               </button>
+               </EditorialButton>
             </div>
           </section>
         </div>
@@ -305,8 +506,134 @@ export default function SettingsView({ vault, onUpdate, onWipe, onLock, onOpenCr
       
       <footer className="pt-10 flex border-t border-ink/5 justify-between items-center opacity-30">
         <div className="editorial-meta">Hardware ID: {hardwareId}</div>
-        <div className="editorial-meta">Lumina Core / 0.8.2-R</div>
+        <div className="editorial-meta">Lumina Core / 1.0.0-mvp</div>
       </footer>
+
+      <EditorialModal
+        isOpen={isPassphraseModalOpen}
+        onClose={() => {
+          setIsPassphraseModalOpen(false);
+          resetPassphraseForm();
+        }}
+        title={t('settings.passphrase_modal_title')}
+        subtitle={t('settings.passphrase_modal_subtitle')}
+      >
+        <div className="flex flex-col gap-8">
+          <EditorialInput
+            autoFocus
+            type="password"
+            label={t('settings.current_passphrase')}
+            value={passphraseForm.currentPassword}
+            onChange={(event) =>
+              setPassphraseForm((current) => ({ ...current, currentPassword: event.target.value }))
+            }
+          />
+          <EditorialInput
+            type="password"
+            label={t('settings.new_passphrase')}
+            value={passphraseForm.newPassword}
+            onChange={(event) =>
+              setPassphraseForm((current) => ({ ...current, newPassword: event.target.value }))
+            }
+          />
+          <EditorialInput
+            type="password"
+            label={t('settings.confirm_new_passphrase')}
+            value={passphraseForm.confirmPassword}
+            onChange={(event) =>
+              setPassphraseForm((current) => ({ ...current, confirmPassword: event.target.value }))
+            }
+          />
+
+          {passphraseStatus?.tone === 'error' && (
+            <div className="rounded-2xl border border-red-500/20 bg-red-500/[0.03] px-4 py-3 text-sm italic text-red-600">
+              {passphraseStatus.message}
+            </div>
+          )}
+
+          <div className="flex justify-between items-center pt-4 border-t border-ink/5">
+            <button
+              onClick={() => {
+                setIsPassphraseModalOpen(false);
+                resetPassphraseForm();
+              }}
+              className="editorial-meta text-accent hover:text-ink transition-colors"
+              disabled={isSaving}
+            >
+              {t('common.cancel')}
+            </button>
+            <EditorialButton onClick={handlePassphraseSubmit} disabled={isSaving}>
+              {t('settings.change_passphrase')}
+            </EditorialButton>
+          </div>
+        </div>
+      </EditorialModal>
+
+      <EditorialModal
+        isOpen={isImportModalOpen}
+        onClose={() => {
+          setIsImportModalOpen(false);
+          resetImportState();
+        }}
+        title={t('settings.backup_import_modal_title')}
+        subtitle={t('settings.backup_import_modal_subtitle')}
+      >
+        <div className="flex flex-col gap-8">
+          <div className="flex flex-col gap-3 rounded-3xl border border-ink/5 bg-ink/[0.02] px-6 py-5">
+            <div className="editorial-meta">{t('settings.backup_import_warning')}</div>
+            {backupImportSource && (
+              <div className="text-sm italic text-accent">
+                {t('settings.backup_file_selected')}: {backupImportSource.name}
+              </div>
+            )}
+          </div>
+
+          <EditorialInput
+            autoFocus
+            type="password"
+            label={t('settings.backup_passphrase')}
+            value={backupImportPassphrase}
+            onChange={(event) => setBackupImportPassphrase(event.target.value)}
+          />
+
+          {backupImportError && (
+            <div className="rounded-2xl border border-red-500/20 bg-red-500/[0.03] px-4 py-3 text-sm italic text-red-600">
+              {backupImportError}
+            </div>
+          )}
+
+          <div className="flex justify-between items-center pt-4 border-t border-ink/5">
+            <button
+              onClick={() => {
+                setIsImportModalOpen(false);
+                resetImportState();
+              }}
+              className="editorial-meta text-accent hover:text-ink transition-colors"
+              disabled={isSaving}
+            >
+              {t('common.cancel')}
+            </button>
+            <EditorialButton onClick={handleImportBackup} disabled={isSaving}>
+              {t('settings.import_backup')}
+            </EditorialButton>
+          </div>
+        </div>
+      </EditorialModal>
+
+      <ConfirmActionModal
+        isOpen={isWipeConfirmOpen}
+        onClose={() => setIsWipeConfirmOpen(false)}
+        onConfirm={() => {
+          setIsWipeConfirmOpen(false);
+          onWipe();
+        }}
+        title={t('settings.wipe_vault')}
+        description={t('settings.wipe_vault_desc')}
+        confirmLabel={t('settings.execute_wipe')}
+        cancelLabel={t('common.cancel')}
+        tone="danger"
+        isBusy={isSaving}
+      />
     </div>
   );
 }

@@ -39,7 +39,7 @@ export function getReflejoState(params: {
   }
 
   // Priority 1: ANCHOR (crisis, high intensity, low ICC, rumination)
-  if (params.isCrisis || (params.currentIntensity && params.currentIntensity >= 80)) {
+  if (params.isCrisis || (params.currentIntensity && params.currentIntensity >= 8)) {
     return {
       mode: 'anchor',
       messageKey: 'lambda.anchor_crisis',
@@ -86,7 +86,7 @@ export function getReflejoState(params: {
   }
 
   // Moderate intensity (Effort/Observer mode)
-  if (params.currentIntensity && params.currentIntensity >= 40) {
+  if (params.currentIntensity && params.currentIntensity >= 4) {
     return {
       mode: 'observer',
       messageKey: 'lambda.observer_moderate',

@@ -5,7 +5,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Plus, ShieldAlert, History, LineChart as ChartIcon, ChevronDown, ChevronUp, Zap, Check } from 'lucide-react';
+import { Plus, ShieldAlert, History, LineChart as ChartIcon, ChevronDown, ChevronUp, Check } from 'lucide-react';
 import { FearItem, ExposureLog, ExposureData } from '../../domain/entities';
 import { cn } from '../../shared/utils/TailwindMerge';
 import { todayISO } from '../../shared/utils/DateFormatter';
@@ -13,6 +13,7 @@ import { triggerHaptic } from '../../shared/utils/Haptics';
 import HierarchyItem from '../components/domain/exposure/HierarchyItem';
 import LogItem from '../components/domain/exposure/LogItem';
 import { 
+  ConfirmActionModal,
   EditorialButton, 
   EditorialModal, 
   EditorialInput, 
@@ -48,6 +49,7 @@ export default function ExposureView({ data, onUpdate }: { data: ExposureData, o
   const [activeSession, setActiveSession] = useState<ActiveSession | null>(null);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [expandedChartId, setExpandedChartId] = useState<string | null>(null);
+  const [anchorToDeleteId, setAnchorToDeleteId] = useState<string | null>(null);
 
   const handleAddAnchor = () => {
     if (!newAnchor.text) return;
@@ -63,9 +65,14 @@ export default function ExposureView({ data, onUpdate }: { data: ExposureData, o
   };
 
   const handleDeleteAnchor = (id: string) => {
-    if (!confirm(t('common.confirmDelete'))) return;
+    setAnchorToDeleteId(id);
+  };
+
+  const confirmDeleteAnchor = () => {
+    if (!anchorToDeleteId) return;
     triggerHaptic('heavy');
-    onUpdate({ ...data, hierarchy: data.hierarchy.filter(i => i.id !== id) });
+    onUpdate({ ...data, hierarchy: data.hierarchy.filter(i => i.id !== anchorToDeleteId) });
+    setAnchorToDeleteId(null);
   };
 
   const handleStartExposure = (item: FearItem) => {
@@ -393,6 +400,20 @@ export default function ExposureView({ data, onUpdate }: { data: ExposureData, o
            )}
         </div>
       )}
+
+      <ConfirmActionModal
+        isOpen={!!anchorToDeleteId}
+        onClose={() => setAnchorToDeleteId(null)}
+        onConfirm={confirmDeleteAnchor}
+        title={language === 'es' ? 'Eliminar ancla de miedo.' : 'Delete fear anchor.'}
+        description={
+          language === 'es'
+            ? 'La jerarquía perderá este ancla y su contexto asociado en la vista principal.'
+            : 'This anchor will be removed from the hierarchy and disappear from the main protocol view.'
+        }
+        confirmLabel={t('common.delete')}
+        cancelLabel={t('common.cancel')}
+      />
     </div>
   );
 }

@@ -6,6 +6,7 @@ describe('GamificationEngine', () => {
   const mockVault: Vault = {
     profile: { name: 'User', initialized: true },
     createdAt: '2026-01-01',
+    schemaVersion: 1,
     journal: [],
     exposure: { hierarchy: [], logs: [] },
     activations: [],

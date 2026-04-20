@@ -7,21 +7,12 @@ import React, { useState, lazy, Suspense, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { AnimationSpeeds, EasingCurves } from './domain/constants/Theme';
 import {
-  Settings,
   Menu,
   X,
-  Target,
-  BookOpen,
-  Activity,
-  BarChart3,
-  Moon,
-  Home,
   Shield,
-  Heart,
-  Wind,
-  Flame,
   LayoutGrid
 } from "lucide-react";
+import AppNavItem from "./ui/components/shared/AppNavItem";
 import MobileNavHub from "./ui/components/shared/MobileNavHub";
 import QuickActionFAB from "./ui/components/shared/QuickActionFAB";
 import { cn } from './shared/utils/TailwindMerge';
@@ -30,8 +21,14 @@ import { useVault } from "./application/hooks/useVault";
 import { ThoughtEntry, MoodEntry, ExposureData, ActivationActivity, Goal, SleepEntry, DayClosure } from './domain/entities';
 import { awardXP } from './application/usecases/GamificationEngine';
 import { audioFeedback } from './infrastructure/services/WebAudioFeedbackService';
-import { LanguageProvider, useTranslation } from "./application/contexts/LanguageContext";
+import { LanguageProvider } from "./application/contexts/LanguageContext";
 import { Language } from "./shared/i18n/translations";
+import {
+  AppTab,
+  mainMenuItems,
+  mobilePrimaryNavItems,
+  settingsNavItem
+} from './ui/navigation/menuItems';
 
 // Lazy loaded Views
 const LockScreenView = lazy(() => import('./ui/views/LockScreenView'));
@@ -51,10 +48,8 @@ const HabitsView = lazy(() => import('./ui/views/HabitsView'));
 const DayClosureView = lazy(() => import('./ui/views/DayClosureView'));
 const LevelUpModal = lazy(() => import('./ui/components/shared/LevelUpModal'));
 
-type Tab = 'dashboard' | 'journal' | 'habits' | 'mood' | 'exposure' | 'activation' | 'breathing' | 'analysis' | 'goals' | 'sleep' | 'settings';
-
 export default function App() {
-  const [activeTab, setActiveTab] = useState<Tab>('dashboard');
+  const [activeTab, setActiveTab] = useState<AppTab>('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [showCrisis, setShowCrisis] = useState(false);
   const [showDayClosure, setShowDayClosure] = useState(false);
@@ -64,7 +59,15 @@ export default function App() {
 
   const {
     vault, isReady, isLocked, vaultExists, unlockError,
-    unlockVault, createVault, lockVault, updateVault, wipeAllData
+    isSaving, lastSaveError,
+    unlockVault,
+    createVault,
+    lockVault,
+    updateVault,
+    changePassphrase,
+    wipeAllData,
+    exportBackup,
+    importBackup
   } = useVault();
 
   // Sync audio and theme state
@@ -78,7 +81,7 @@ export default function App() {
     }
   }, [vault]);
 
-  const handleTabChange = (newTab: Tab) => {
+  const handleTabChange = (newTab: AppTab) => {
     if (newTab !== activeTab) {
       triggerHaptic('light');
       setActiveTab(newTab);
@@ -115,48 +118,6 @@ export default function App() {
     triggerHaptic('success');
   };
 
-  const menuItems: { id: Tab; icon: React.ComponentType<{ size?: number | string; className?: string }>; label: string }[] = [
-    { id: 'dashboard', icon: Home, label: 'nav.sanctuary' },
-    { id: 'journal', icon: BookOpen, label: 'nav.chronicle' },
-    { id: 'habits', icon: Flame, label: 'nav.architecture' },
-    { id: 'mood', icon: Heart, label: 'nav.emotional_flux' },
-    { id: 'exposure', icon: Activity, label: 'nav.facing' },
-    { id: 'activation', icon: Target, label: 'nav.momentum' },
-    { id: 'breathing', icon: Wind, label: 'nav.breathe' },
-    { id: 'goals', icon: Shield, label: 'nav.fortress' },
-    { id: 'sleep', icon: Moon, label: 'nav.nightfall' },
-    { id: 'analysis', icon: BarChart3, label: 'nav.resilience' },
-  ];
-
-  function AppNavItem({ item, isActive, isSidebarOpen, onClick }: { 
-    item: { id: string, icon: any, label: string }, 
-    isActive: boolean, 
-    isSidebarOpen: boolean, 
-    onClick: () => void,
-    key?: string
-  }) {
-    const { t } = useTranslation();
-    return (
-      <button
-        onClick={onClick}
-        className={cn(
-          "group flex items-center gap-4 p-3 rounded-2xl transition-all duration-300 relative w-full",
-          isActive ? "bg-ink text-paper" : "text-accent hover:bg-ink/5 hover:text-ink"
-        )}
-      >
-        <item.icon size={18} className="shrink-0" />
-        {isSidebarOpen && (
-          <span className="font-mono text-[9px] uppercase tracking-widest overflow-hidden whitespace-nowrap">
-            {t(item.label)}
-          </span>
-        )}
-        {!isSidebarOpen && isActive && (
-          <motion.div layoutId="activeDot" className="absolute -right-2 w-1 h-4 bg-ink rounded-full" />
-        )}
-      </button>
-    );
-  }
-
   const currentLanguage = (vault?.profile.language || tempLanguage) as Language;
   
   const handleLanguageChange = (lang: Language) => {
@@ -174,7 +135,7 @@ export default function App() {
     if (action === 'crisis') {
       setShowCrisis(true);
     } else {
-      handleTabChange(action as Tab);
+      handleTabChange(action as AppTab);
     }
   };
 
@@ -184,7 +145,7 @@ export default function App() {
         onClose={() => setShowCrisis(false)} 
         isUnlocked={true}
         onNavigate={(tab) => {
-          handleTabChange(tab as Tab);
+          handleTabChange(tab as AppTab);
           setShowCrisis(false);
         }}
       />
@@ -244,7 +205,7 @@ export default function App() {
               </div>
 
               <nav className="flex flex-col gap-2">
-                {menuItems.map((item) => (
+                {mainMenuItems.map((item) => (
                   <AppNavItem 
                     key={item.id}
                     item={item}
@@ -257,7 +218,7 @@ export default function App() {
 
               <div className="mt-auto pt-10">
                 <AppNavItem 
-                  item={{ id: 'settings', icon: Settings, label: 'nav.settings' }}
+                  item={settingsNavItem}
                   isActive={activeTab === 'settings'}
                   isSidebarOpen={isSidebarOpen}
                   onClick={() => handleTabChange('settings')}
@@ -302,7 +263,20 @@ export default function App() {
                     {vault && activeTab === 'analysis' && <AnalysisView vault={vault} />}
                     {vault && activeTab === 'goals' && <GoalsView goals={vault.goals || []} onUpdate={(goals: Goal[]) => updateVault({ ...vault, goals })} />}
                     {vault && activeTab === 'sleep' && <SleepView entries={vault.sleep || []} onUpdate={(entries: SleepEntry[]) => updateVault({ ...vault, sleep: entries })} />}
-                    {vault && activeTab === 'settings' && <SettingsView vault={vault} onUpdate={updateVault} onWipe={wipeAllData} onLock={lockVault} onOpenCrisis={() => setShowCrisis(true)} />}
+                    {vault && activeTab === 'settings' && (
+                      <SettingsView
+                        vault={vault}
+                        onUpdate={updateVault}
+                        onWipe={wipeAllData}
+                        onLock={lockVault}
+                        onChangePassphrase={changePassphrase}
+                        onExportBackup={exportBackup}
+                        onImportBackup={importBackup}
+                        isSaving={isSaving}
+                        lastSaveError={lastSaveError}
+                        onOpenCrisis={() => setShowCrisis(true)}
+                      />
+                    )}
                   </Suspense>
                   </motion.section>
                 </AnimatePresence>
@@ -323,15 +297,10 @@ export default function App() {
 
             {/* Mobile Tab Bar */}
             <nav className="fixed bottom-0 left-0 right-0 bg-paper/80 backdrop-blur-md border-t border-ink/5 px-6 py-4 flex justify-between items-center md:hidden z-50">
-              {[
-                { id: 'dashboard', icon: Home },
-                { id: 'journal', icon: BookOpen },
-                { id: 'activation', icon: Target },
-                { id: 'habits', icon: Flame },
-              ].map((item) => (
+              {mobilePrimaryNavItems.map((item) => (
                 <button
                   key={item.id}
-                  onClick={() => handleTabChange(item.id as Tab)}
+                  onClick={() => handleTabChange(item.id)}
                   className={cn("p-2 transition-all", activeTab === item.id ? "text-ink scale-110" : "text-accent")}
                 >
                   <item.icon size={22} />
@@ -351,7 +320,7 @@ export default function App() {
             <MobileNavHub 
               isOpen={isNavHubOpen}
               onClose={() => setIsNavHubOpen(false)}
-              items={menuItems}
+              items={mainMenuItems}
               activeTab={activeTab}
               onNavigate={handleTabChange}
             />

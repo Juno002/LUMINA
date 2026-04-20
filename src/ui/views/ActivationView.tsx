@@ -4,14 +4,14 @@
  */
 
 import React, { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { AnimationSpeeds, EasingCurves } from '../../domain/constants/Theme';
+import { motion } from 'motion/react';
 import { CheckCircle2, Flame, Sparkles, Plus, Check } from 'lucide-react';
 import { ActivationActivity, Habit, Goal } from '../../domain/entities';
 import { todayISO } from '../../shared/utils/DateFormatter';
 import { triggerHaptic } from '../../shared/utils/Haptics';
 import ActivityItem from '../components/domain/activation/ActivityItem';
 import { 
+  ConfirmActionModal,
   EditorialButton, 
   EditorialModal, 
   EditorialInput 
@@ -31,6 +31,7 @@ export default function ActivationView({ activities, habits = [], goals = [], on
   const [newActivity, setNewActivity] = useState({ title: '', value: 5, difficulty: 5, linkedHabitId: '', linkedGoalId: '' });
   const [feedbackActivityId, setFeedbackActivityId] = useState<string | null>(null);
   const [feedbackData, setFeedbackData] = useState({ actualValue: 5, actualDifficulty: 5 });
+  const [activityToDeleteId, setActivityToDeleteId] = useState<string | null>(null);
 
   const activeActivities = useMemo(() => 
     activities.filter(a => !a.completed).sort((a,b) => b.value - a.value), 
@@ -101,8 +102,14 @@ export default function ActivationView({ activities, habits = [], goals = [], on
   };
 
   const handleDelete = (id: string) => {
+    setActivityToDeleteId(id);
+  };
+
+  const confirmDelete = () => {
+    if (!activityToDeleteId) return;
     triggerHaptic('heavy');
-    onUpdate(activities.filter(a => a.id !== id));
+    onUpdate(activities.filter(a => a.id !== activityToDeleteId));
+    setActivityToDeleteId(null);
   };
 
   return (
@@ -280,6 +287,20 @@ export default function ActivationView({ activities, habits = [], goals = [], on
           </div>
         </div>
       </EditorialModal>
+
+      <ConfirmActionModal
+        isOpen={!!activityToDeleteId}
+        onClose={() => setActivityToDeleteId(null)}
+        onConfirm={confirmDelete}
+        title={language === 'es' ? 'Abandonar intención.' : 'Abandon intention.'}
+        description={
+          language === 'es'
+            ? 'Esta intención saldrá de tu arquitectura activa de momentum.'
+            : 'This intention will be removed from your active momentum architecture.'
+        }
+        confirmLabel={language === 'es' ? 'Abandonar' : 'Abandon'}
+        cancelLabel={t('common.cancel')}
+      />
     </div>
   );
 }

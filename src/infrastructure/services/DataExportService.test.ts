@@ -11,19 +11,20 @@ describe('DataExportService', () => {
   const mockVault: Vault = {
     profile: { name: 'Junior', initialized: true },
     createdAt: '2026-01-01',
+    schemaVersion: 1,
     journal: [
       {
         id: '1',
         date: '2026-04-18',
         level: 3,
         situation: 'Work meeting',
-        primaryEmotion: 'Anxiety',
+        primaryEmotion: 'Anxiety, rising "fast"',
         intensity: 8,
         automaticThought: 'I will fail',
         rationalResponse: 'I have prepared',
-        distortions: ['magnification'],
-        originalIntensity: 80,
-        finalCredibility: 20,
+        distortions: ['magnification', 'jumping_to_conclusions'],
+        originalIntensity: 8,
+        finalCredibility: 2,
         outcomeMood: 'Calm',
         outcomeIntensity: 3,
         tags: []
@@ -57,7 +58,7 @@ describe('DataExportService', () => {
   it('generates a valid CSV', () => {
     const csv = DataExportService.exportCSV(mockVault);
     expect(csv).toContain('date,emotion,intensity,level,distortions');
-    expect(csv).toContain('2026-04-18,"Anxiety",8,3,"magnification",3');
+    expect(csv).toContain('"2026-04-18","Anxiety, rising ""fast""","8","3","magnification; jumping_to_conclusions","3"');
   });
 
   it('handles empty vault gracefully', () => {

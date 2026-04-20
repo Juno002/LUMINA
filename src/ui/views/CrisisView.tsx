@@ -9,7 +9,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion } from 'motion/react';
-import { X, Phone, Heart, Wind, Plus, Trash2, ArrowRight, Check } from 'lucide-react';
+import { X, Phone, Heart, Wind, Plus, Trash2, ArrowRight } from 'lucide-react';
 import { AnimationSpeeds, EasingCurves } from '../../domain/constants/Theme';
 import { CrisisContact } from '../../domain/entities';
 import localforage from 'localforage';
@@ -45,7 +45,7 @@ const BREATH_PHASES: Array<{ phase: 'inhale' | 'hold' | 'exhale'; seconds: numbe
 ];
 
 export default function CrisisView({ onClose, isUnlocked, onNavigate }: CrisisViewProps) {
-  const { t, language } = useTranslation();
+  const { language } = useTranslation();
   const [data, setData] = useState<CrisisData>({ copingPhrase: '', contacts: [] });
   const [isEditing, setIsEditing] = useState(false);
   const [newName, setNewName] = useState('');

@@ -4,92 +4,71 @@
 
 # LUMINA
 
-**LUMINA** is a high-fidelity, local-first clinical operating system for the mind. It bridges the gap between rigorous therapeutic protocols and premium user experience, providing a "digital psychodramatic intervention" space for cognitive and behavioral transformation.
+LUMINA is a local-first cognitive care workspace built on React 19 + Vite. The current product baseline is an encrypted browser vault with journaling, behavioral activation, habits, ERP, sleep tracking, day closure, export, and a rule-based Reflejo state engine.
 
-Built upon the foundational principles of **Cognitive Behavioral Therapy (CBT)**, **Dialectical Behavior Therapy (DBT)**, and **CBT-I (Insomnia)**, LUMINA empowers users to become their own therapists through structured self-observation and evidence-based action.
+## Current Status
 
----
+Validated on April 19, 2026:
 
-## 🧠 Clinical Philosophy: "Think, Act, Be"
+- `npx tsc --noEmit`
+- `npm run lint`
+- `npm test -- --run`
+- `npm run build`
 
-LUMINA's architecture is strictly aligned with the framework presented in:
-> **"Terapia Cognitivo-Conductual Fácil: Principios y Práctica"** by *Seth J. Gillihan*.
+This repository treats `src/` as the only canonical application. `docs/idea 1` and `docs/idea 2` remain as conceptual references for product language and interaction patterns, not as parallel sources of truth.
 
-The application focuses on the three pillars of emotional health:
-1.  **Think (Cognitive):** Identifying and restructuring dysfunctional thought patterns.
-2.  **Act (Behavioral):** Breaking the cycle of avoidance through behavioral activation and exposure.
-3.  **Be (Mindfulness):** Cultivating a non-judgmental "observer" state through the Reflejo Engine.
+## Product Frame
 
----
+LUMINA brings together three operating pillars:
 
-## ✨ Key Clinical Features
+1. Think: CBT journaling with L1/L2/L3 progression, distortion detection, and ICC-based restructuring.
+2. Act: behavioral activation, habits, streak logic, and recovery-aware gamification.
+3. Regulate: Reflejo guidance, breathing, sleep architecture, crisis access, and day closure.
 
-### 1. λ Reflejo Engine (The Clinical Mediator)
-A context-aware avatar that guides the user's journey. It calculates a dynamic state based on clinical markers:
-*   **Anchor (Red):** High-intensity activation (80%+ distress). Triggers immediate grounding protocols.
-*   **Observer (Silver):** Moderate distress. Encourages cognitive distancing and reflection.
-*   **Mentor (Amber):** Stability and growth. Focuses on consistency and momentum.
+Reflejo uses deterministic local rules. Anchor mode now reacts to real high-intensity signals on the current 1-10 scale rather than legacy 0-100 assumptions.
 
-### 2. The Chronicle (3-Level Journaling)
-A progressive disclosure system for cognitive restructuring:
-*   **Level 1 (Capture):** Automatic thoughts and distortion detection.
-*   **Level 2 (Friend Technique):** A specialized UI that externalizes thoughts as dialogue («quoted and italicized»), forcing the brain to overcome cognitive blind spots by "borrowing" a friend's perspective.
-*   **Level 3 (Evidence Lab):** Balanced analysis of evidence for/against a belief, resulting in the **Cognitive Change Index (ICC)**.
+## Technical Baseline
 
-### 3. Behavioral Momentum & Resilience
-*   **Activation Tracker:** Feedback loops comparing *Expected* vs. *Actual* Joy and Effort to break depressive filters.
-*   **Resilience Recovery Bonus:** A gamified system that rewards **returning** to habits after a lapse, explicitly designed to combat "all-or-nothing" thinking.
+- React 19 + Vite
+- Tailwind CSS 4
+- Motion
+- LocalForage + IndexedDB
+- Web Crypto API with AES-GCM
+- Recharts
+- Vitest + ESLint + TypeScript
 
-### 4. Advanced Analysis & Core Beliefs
-*   **The Pattern Cloud:** Automatically detects recurrent cognitive distortions.
-*   **Core Beliefs Inference:** Suggests underlying clinical themes (e.g., *Rigid Perfectionism*, *Interpersonal Hypersensitivity*) by analyzing long-term distortion frequency.
+## Repository Truth
 
-### 5. Ghost Protocol (Absence Care)
-A compassionate protocol that detects 4+ days of inactivity. Instead of "streak-shaming" notifications, it provides a pressure-free, non-judgmental welcome: *"Silence is also information. Your Vault is here when you are ready."*
+```text
+src/                         canonical app
+docs/idea 1/                 concept reference only
+docs/idea 2/                 concept reference only
+scratch/                     experiments and one-off scripts
+```
 
----
-
-## 🛠️ Technical Stack
-
-LUMINA is built with a modern, high-performance stack optimized for smooth, "editorial" interactions:
-
-*   **Core:** React 19 + Vite (Type-safe ESM architecture)
-*   **Styling:** Tailwind CSS 4.0 (Custom design system with tokens for *Paper*, *Ink*, and *Accent*)
-*   **Animations:** Motion (Framer Motion) for fluid, physics-based transitions.
-*   **State & Storage:** Local-first architecture using `LocalForage` (IndexedDB) and the **Web Crypto API** for AES-GCM Zero-Knowledge encryption.
-*   **Visualization:** Recharts for clinical trend analysis.
-*   **Icons:** Lucide-React.
-
----
-
-## 🛡️ Security & Privacy
-
-LUMINA operates on a **Zero-Knowledge** principle.
-*   **Local Encryption:** Your data never leaves your device unencrypted.
-*   **Privacy-First:** No external tracking, no cloud sync (unless manually exported), and no third-party AI APIs. All clinical processing happens on-device.
-
----
-
-## 🚀 Running Locally
+## Local Workflow
 
 ```bash
-# Clone the repository
-git clone https://github.com/your-repo/lumina.git
-
-# Install dependencies
 npm install
-
-# Start the development server
 npm run dev
 ```
 
----
+For a full repository gate:
 
-## 📖 Clinical Reference
-Gillihan, S. J. (2020). *Terapia Cognitivo-Conductual Fácil: Principios y Práctica*. Editorial Sirio.
+```bash
+npm run verify
+```
 
----
+## Core Flow
 
-<div align="center">
-<i>"The discipline is the architecture of the soul. Continue."</i> — <b>Reflejo λ</b>
-</div>
+1. Create encrypted vault
+2. Unlock with in-memory passphrase
+3. Use journal, activation, habits, mood, ERP, goals, sleep, analysis
+4. Export Markdown or CSV locally
+5. Lock, auto-lock, change passphrase, or wipe vault
+
+## Notes
+
+- No backend, sync, or auth is included in this MVP baseline.
+- Dates are handled in local `YYYY-MM-DD` form to avoid UTC rollover bugs.
+- Export is intended for user portability and therapist review, not cloud ingestion.

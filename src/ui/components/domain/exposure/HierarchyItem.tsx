@@ -6,6 +6,7 @@
 import React from 'react';
 import { FearItem } from "../../../../domain/entities";
 import { Trash2, Play } from 'lucide-react';
+import { useTranslation } from '../../../../application/contexts/LanguageContext';
 
 interface HierarchyItemProps {
   item: FearItem;
@@ -14,17 +15,19 @@ interface HierarchyItemProps {
 }
 
 const HierarchyItem: React.FC<HierarchyItemProps> = ({ item, onDelete, onStartExposure }) => {
+  const { t } = useTranslation();
+
   return (
     <div className="p-6 border border-ink/5 rounded-2xl flex justify-between items-center group hover:border-ink/20 hover:bg-ink/[0.01] transition-all">
       <div className="flex flex-col gap-1">
         <h4 className="font-serif text-xl italic text-ink/80">{item.text}</h4>
         <div className="flex gap-4">
-           <span className="editorial-meta text-[8px] uppercase tracking-widest opacity-30">Anchor</span>
+           <span className="editorial-meta text-[8px] uppercase tracking-widest opacity-30">{t('exposure.fearAnchor')}</span>
            <button 
              onClick={onDelete} 
              className="editorial-meta text-[8px] text-red-500/0 md:group-hover:text-red-500/30 hover:!text-red-500 transition-all uppercase flex items-center gap-1"
            >
-             <Trash2 size={10} /> Delete
+             <Trash2 size={10} /> {t('common.delete')}
            </button>
         </div>
       </div>

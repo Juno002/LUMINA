@@ -12,6 +12,7 @@ import { cn } from '../../shared/utils/TailwindMerge';
 import { todayISO, formatDate } from '../../shared/utils/DateFormatter';
 import { triggerHaptic } from '../../shared/utils/Haptics';
 import { useTranslation } from '../../application/contexts/LanguageContext';
+import { ConfirmActionModal } from '../components/shared';
 
 interface MoodViewProps {
   entries: MoodEntry[];
@@ -19,8 +20,9 @@ interface MoodViewProps {
 }
 
 export default function MoodView({ entries, onUpdate }: MoodViewProps) {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const [isAdding, setIsAdding] = useState(false);
+  const [entryToDeleteId, setEntryToDeleteId] = useState<string | null>(null);
   const [newEntry, setNewEntry] = useState<Partial<MoodEntry>>({
     mood: 'Good',
     intensity: 70,
@@ -54,10 +56,10 @@ export default function MoodView({ entries, onUpdate }: MoodViewProps) {
     }
   };
 
-  const handleDelete = (id: string) => {
-    if (confirm(t('common.confirmDelete'))) {
-      onUpdate(entries.filter(e => e.id !== id));
-    }
+  const handleDelete = () => {
+    if (!entryToDeleteId) return;
+    onUpdate(entries.filter(e => e.id !== entryToDeleteId));
+    setEntryToDeleteId(null);
   };
 
   const moodIcons = {
@@ -139,7 +141,7 @@ export default function MoodView({ entries, onUpdate }: MoodViewProps) {
                           newEntry.sensations?.includes(s) ? "bg-ink text-paper border-ink" : "border-ink/5 text-accent hover:border-ink/20"
                         )}
                       >
-                        {t(`mood.sensation_${s}` as any)}
+                        {t(`mood.sensation_${s}`)}
                       </button>
                     ))}
                   </div>
@@ -149,7 +151,7 @@ export default function MoodView({ entries, onUpdate }: MoodViewProps) {
                   <input 
                     type="text"
                     className="bg-transparent border-b border-ink/10 focus:border-ink outline-none py-2 font-serif text-lg italic"
-                    placeholder="Context / Trigger..."
+                    placeholder={language === 'es' ? 'Contexto / Detonante...' : 'Context / Trigger...'}
                     value={newEntry.triggers || ''}
                     onChange={(e) => setNewEntry({...newEntry, triggers: e.target.value})}
                   />
@@ -161,7 +163,7 @@ export default function MoodView({ entries, onUpdate }: MoodViewProps) {
               <input 
                 type="text"
                 className="bg-transparent border-b border-ink/10 focus:border-ink outline-none py-2 font-serif text-lg italic"
-                placeholder="What is your impulse?"
+                placeholder={language === 'es' ? '¿Cuál es tu impulso?' : 'What is your impulse?'}
                 value={newEntry.urges || ''}
                 onChange={(e) => setNewEntry({...newEntry, urges: e.target.value})}
               />
@@ -201,7 +203,7 @@ export default function MoodView({ entries, onUpdate }: MoodViewProps) {
               className="p-8 border border-ink/5 rounded-[2rem] bg-paper shadow-sm hover:shadow-md transition-shadow flex flex-col gap-6 group relative"
             >
               <button 
-                onClick={() => handleDelete(entry.id)}
+                onClick={() => setEntryToDeleteId(entry.id)}
                 className="absolute top-6 right-6 opacity-0 group-hover:opacity-30 hover:opacity-100 transition-opacity text-red-500"
               >
                 <Trash2 size={16} />
@@ -235,14 +237,16 @@ export default function MoodView({ entries, onUpdate }: MoodViewProps) {
                 {entry.urges && (
                   <div className="flex items-center gap-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                    <span className="editorial-meta text-[9px] uppercase opacity-60">Urge: {entry.urges}</span>
+                    <span className="editorial-meta text-[9px] uppercase opacity-60">
+                      {language === 'es' ? 'Impulso' : 'Urge'}: {entry.urges}
+                    </span>
                   </div>
                 )}
                 {entry.sensations && entry.sensations.length > 0 && (
                   <div className="flex flex-wrap gap-2">
                     {entry.sensations.map(s => (
                       <span key={s} className="bg-ink/[0.03] text-[8px] uppercase font-mono px-2 py-0.5 rounded border border-ink/5 text-accent">
-                        {t(`mood.sensation_${s}` as any)}
+                        {t(`mood.sensation_${s}`)}
                       </span>
                     ))}
                   </div>
@@ -260,6 +264,20 @@ export default function MoodView({ entries, onUpdate }: MoodViewProps) {
           ))
         )}
       </div>
+
+      <ConfirmActionModal
+        isOpen={!!entryToDeleteId}
+        onClose={() => setEntryToDeleteId(null)}
+        onConfirm={handleDelete}
+        title={language === 'es' ? 'Eliminar registro emocional.' : 'Delete emotional log.'}
+        description={
+          language === 'es'
+            ? 'Este registro saldrá del historial emocional y no podrá recuperarse desde la interfaz.'
+            : 'This entry will be removed from the emotional history and will not be recoverable from the interface.'
+        }
+        confirmLabel={t('common.delete')}
+        cancelLabel={t('common.cancel')}
+      />
     </div>
   );
 }

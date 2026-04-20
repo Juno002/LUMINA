@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Plus, Heart, BookOpen, ShieldAlert, X, Flame } from 'lucide-react';
+import { Plus, Heart, BookOpen, ShieldAlert, Flame } from 'lucide-react';
 import { triggerHaptic } from '../../../shared/utils/Haptics';
 import { cn } from '../../../shared/utils/TailwindMerge';
 import { useTranslation } from '../../../application/contexts/LanguageContext';

@@ -4,6 +4,7 @@
  */
 
 import { Vault, HabitLog, Habit } from '../../domain/entities';
+import { shiftLocalISODate } from '../../shared/utils/DateFormatter';
 
 /**
  * Toggles the completion status of a habit for a specific date.
@@ -49,10 +50,7 @@ export function calculateStreak(habitLogs: HabitLog[], habits: Habit[], today: s
     
     streak++;
     
-    // Get previous day safely
-    const d = new Date(currentDate + 'T12:00:00');
-    d.setDate(d.getDate() - 1);
-    currentDate = d.toISOString().split('T')[0];
+    currentDate = shiftLocalISODate(currentDate, -1);
     
     if (streak > 365) break; 
   }
@@ -124,9 +122,7 @@ export function getWeeklyHistory(vault: Vault, today: string): { date: string; p
       percentage: stats.percentage
     });
 
-    const d = new Date(currentDate + 'T12:00:00');
-    d.setDate(d.getDate() - 1);
-    currentDate = d.toISOString().split('T')[0];
+    currentDate = shiftLocalISODate(currentDate, -1);
   }
 
   return history.reverse();
@@ -140,9 +136,7 @@ export function isRecoveryDay(vault: Vault, today: string): boolean {
   if (statsToday.completed === 0) return false;
 
   // Check if yesterday was empty
-  const d = new Date(today + 'T12:00:00');
-  d.setDate(d.getDate() - 1);
-  const yesterday = d.toISOString().split('T')[0];
+  const yesterday = shiftLocalISODate(today, -1);
   
   const statsYesterday = getHabitCompletionForDate(vault, yesterday);
   

@@ -8,6 +8,8 @@ import { CheckCircle2, Circle, Trash2, ChevronDown, ChevronUp, Flag, RefreshCcw,
 import { Goal } from "../../../../domain/entities";
 import { cn } from '../../../../shared/utils/TailwindMerge';
 import { motion, AnimatePresence } from 'motion/react';
+import { todayISO } from '../../../../shared/utils/DateFormatter';
+import { useTranslation } from '../../../../application/contexts/LanguageContext';
 
 interface GoalItemProps {
   goal: Goal;
@@ -17,6 +19,7 @@ interface GoalItemProps {
 }
 
 const GoalItem: React.FC<GoalItemProps> = ({ goal, onToggle, onToggleMilestone, onDelete }) => {
+  const { language } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(false);
 
   const getPriorityColor = (p: string) => {
@@ -27,7 +30,7 @@ const GoalItem: React.FC<GoalItemProps> = ({ goal, onToggle, onToggleMilestone, 
     }
   };
 
-  const isOverdue = new Date(goal.targetDate) < new Date() && !goal.completed;
+  const isOverdue = goal.targetDate < todayISO() && !goal.completed;
 
   return (
     <div className={cn(
@@ -67,7 +70,9 @@ const GoalItem: React.FC<GoalItemProps> = ({ goal, onToggle, onToggleMilestone, 
                     </div>
                   )}
                   {isOverdue && (
-                    <span className="editorial-meta text-[8px] uppercase text-red-500 font-bold">Overdue</span>
+                    <span className="editorial-meta text-[8px] uppercase text-red-500 font-bold">
+                      {language === 'es' ? 'Vencido' : 'Overdue'}
+                    </span>
                   )}
                </div>
             </div>
@@ -85,7 +90,7 @@ const GoalItem: React.FC<GoalItemProps> = ({ goal, onToggle, onToggleMilestone, 
           {/* Progress Bar */}
           <div className="flex flex-col gap-2">
              <div className="flex justify-between items-center text-[9px] editorial-meta uppercase opacity-30">
-               <span>Progress</span>
+               <span>{language === 'es' ? 'Progreso' : 'Progress'}</span>
                <span>{goal.progress}%</span>
              </div>
              <div className="h-1 w-full bg-ink/5 rounded-full overflow-hidden">
@@ -106,15 +111,19 @@ const GoalItem: React.FC<GoalItemProps> = ({ goal, onToggle, onToggleMilestone, 
                 className="overflow-hidden flex flex-col gap-6 pt-4"
               >
                 <div className="flex flex-col gap-2">
-                   <span className="editorial-meta text-[9px] uppercase tracking-widest opacity-40">Measurable Criterion</span>
+                   <span className="editorial-meta text-[9px] uppercase tracking-widest opacity-40">
+                     {language === 'es' ? 'Criterio Medible' : 'Measurable Criterion'}
+                   </span>
                    <p className="text-sm font-serif italic opacity-70 leading-relaxed">
-                     {goal.description || "No description established."}
+                     {goal.description || (language === 'es' ? 'Sin descripción definida.' : 'No description established.')}
                    </p>
                 </div>
 
                 {goal.milestones.length > 0 && (
                   <div className="flex flex-col gap-3">
-                    <span className="editorial-meta text-[9px] uppercase tracking-widest opacity-40">Milestones</span>
+                    <span className="editorial-meta text-[9px] uppercase tracking-widest opacity-40">
+                      {language === 'es' ? 'Hitos' : 'Milestones'}
+                    </span>
                     <div className="flex flex-col gap-2">
                        {goal.milestones.map(m => (
                          <button 
@@ -139,13 +148,13 @@ const GoalItem: React.FC<GoalItemProps> = ({ goal, onToggle, onToggleMilestone, 
                 <div className="flex justify-between items-center pt-6 border-t border-ink/5">
                    <div className="flex items-center gap-2 text-[9px] editorial-meta opacity-40">
                       <Flag size={12} />
-                      {goal.measurement || "Direct measurement"}
+                      {goal.measurement || (language === 'es' ? 'Medición directa' : 'Direct measurement')}
                    </div>
                    <button 
                      onClick={onDelete}
                      className="editorial-meta text-[8px] text-red-500/40 hover:text-red-500 transition-colors uppercase flex items-center gap-1"
                    >
-                     <Trash2 size={12} /> Archive Strategic Objective
+                     <Trash2 size={12} /> {language === 'es' ? 'Archivar Objetivo' : 'Archive Objective'}
                    </button>
                 </div>
               </motion.div>

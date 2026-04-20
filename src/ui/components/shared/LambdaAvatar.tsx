@@ -3,10 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ReflejoState } from '../../../domain/services/ReflejoEngine';
-import { AnimationSpeeds, EasingCurves } from '../../../domain/constants/Theme';
 import { cn } from '../../../shared/utils/TailwindMerge';
 import { useTranslation } from '../../../application/contexts/LanguageContext';
 

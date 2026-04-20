@@ -6,22 +6,16 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Settings as SettingsIcon, Shield } from 'lucide-react';
-import { AnimationSpeeds, EasingCurves } from '../../../domain/constants/Theme';
 import { cn } from '../../../shared/utils/TailwindMerge';
 import { useTranslation } from '../../../application/contexts/LanguageContext';
-
-interface NavItem {
-  id: string;
-  icon: React.ComponentType<{ size?: number | string; className?: string }>;
-  label: string;
-}
+import type { AppTab, NavItemConfig } from '../../navigation/menuItems';
 
 interface MobileNavHubProps {
   isOpen: boolean;
   onClose: () => void;
-  items: NavItem[];
-  activeTab: string;
-  onNavigate: (id: any) => void;
+  items: NavItemConfig[];
+  activeTab: AppTab;
+  onNavigate: (id: AppTab) => void;
 }
 
 export default function MobileNavHub({ isOpen, onClose, items, activeTab, onNavigate }: MobileNavHubProps) {
@@ -135,7 +129,9 @@ export default function MobileNavHub({ isOpen, onClose, items, activeTab, onNavi
              
              <div className="flex justify-center items-center gap-2 opacity-20 mt-2">
                 <Shield size={10} />
-                <span className="font-mono text-[8px] uppercase tracking-tighter">Encrypted Clinical Environment</span>
+                <span className="font-mono text-[8px] uppercase tracking-tighter">
+                  {language === 'es' ? 'Entorno Clínico Cifrado' : 'Encrypted Clinical Environment'}
+                </span>
              </div>
           </div>
         </motion.div>

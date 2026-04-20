@@ -1,43 +1,57 @@
-# Walkthrough: Lumina MVP Completado (Fases 1-8)
+# Walkthrough — Lumina MVP Local-First
 
-El proyecto Lumina ha alcanzado un hito monumental: la implementación completa de todas las fases planificadas (1 a 8), consolidándose como un **ecosistema de bienestar cognitivo, privado y gamificado** tal y como fue concebido en la visión original.
+This walkthrough describes the real application currently shipped in `src/`.
 
----
+## 1. Entry and Security
 
-## 1. El Núcleo de Privacidad y Ética (Fases 1-4)
-- **Clean Architecture:** Se eliminó la deuda técnica anterior y se implementó una estricta separación de responsabilidades (Domain, Application, Infrastructure, UI).
-- **Vault Encriptado:** Los datos del usuario (entradas del diario, hábitos, métricas de bienestar) se almacenan localmente y se cifran utilizando AES-GCM. Nadie, excepto el usuario, tiene acceso.
-- **Plan de Crisis:** Una puerta de emergencia silenciosa y siempre disponible, incluso con la aplicación bloqueada, para momentos de vulnerabilidad aguda.
+- New users create a vault locally.
+- Returning users unlock with their passphrase.
+- The passphrase stays in memory while the vault is open.
+- Settings allow lock, auto-lock tuning, passphrase rotation, export, and wipe.
 
-## 2. Herramientas Clínicas CBT y ERP (Fases 5 y 7)
-- **Journal CBT de 3 Niveles:** Un sistema progresivo que guía al usuario desde la autoobservación hasta la reestructuración cognitiva profunda (desafiando evidencias y evaluando el cambio).
-- **Motor de Distorsiones Local:** Identifica automáticamente distorsiones cognitivas usando pattern matching en el dispositivo, sin exponer datos a APIs de IA externas.
-- **Módulo ERP (Exposure and Response Prevention):** Permite al usuario construir una jerarquía de miedos y registrar exposiciones, midiendo los niveles de SUDS antes y después.
-- **Módulo Sleep CBT-I:** Registro detallado de la calidad del sueño, latencia, despertares y cálculo automático de la eficiencia del sueño.
+## 2. Think
 
-## 3. Hábitos y Gamificación "Zen" (Fase 6)
-- **Seguimiento de Hábitos:** Herramienta robusta para rastrear rutinas mediante confirmaciones simples (Yes/No), valores numéricos o temporizadores.
-- **Momentum Store:** Un sistema de progresión determinístico (XP y Niveles) que recompensa la constancia y disciplina sin depender de mecánicas adictivas de "arcade".
-- **Feedback Sensorial Premium:** Uso de la Web Audio API para generar tonos puros ("cristal") y animaciones discretas de confetti que refuerzan positivamente al usuario de manera elegante y sutil.
+- Journal entries move from observation to deeper restructuring.
+- Distortions are detected locally from text.
+- Level 3 entries calculate ICC from 1-10 credibility deltas.
+- Analysis surfaces recent patterns and inferred themes from valid distortion ids only.
 
-## 4. Rituales y Metas (Fases 7 y 8)
-- **Metas SMART:** Planteamiento y seguimiento de objetivos con soporte para sub-metas (Milestones), recurrencia y progreso visual.
-- **Ritual Nocturno (Day Closure):** Una ceremonia guiada para cerrar el día, sintetizando los eventos, practicando la gratitud y asegurando el "vault".
-- **Lambda Avatar:** Un elemento visual reactivo que actúa como un espejo del estado actual, reflejando el Índice de Cambio Cognitivo (ICC) sin antropomorfismos innecesarios.
-- **Exportación de Datos:** Herramienta lista para que los usuarios exporten sus registros con total soberanía sobre sus datos.
+## 3. Act
 
----
+- Activation turns planned intentions into completed behavioral data.
+- Habits track yes/no, numeric, and timer rhythms.
+- Recovery bonus and streak logic reward returning after gaps instead of punishing them.
+- Goals keep a strategic layer over habits and activation.
 
-## Verificación Técnica del MVP
-- **Testing:** Suite de tests unitarios (Vitest) cubriendo casos de uso críticos y motores de cálculo (CBT, Gamificación).
-- **Linting & Build:** 0 errores en ESLint, tipado estricto en TypeScript sin el uso de `any`, y compilación óptima de producción en Vite.
-- **Estética:** Tailwind CSS y Framer Motion proveen transiciones fluidas de 0.3s y una interfaz "editorial" limpia y centrada en el contenido.
+## 4. Regulate
 
----
+- Reflejo reacts to recent journal signals, ICC, rumination, and absence.
+- Crisis access remains available from locked and unlocked flows.
+- Sleep and mood logs support day-to-day regulation.
+- Day closure gives the app a clean daily ending rather than a perpetually open loop.
 
-### Siguiente Paso: Fase 9 (Polishing & Deployment)
-El próximo paso en el roadmap es llevar el MVP a un estado "Production-Ready". Esto incluye:
-- Pruebas exhaustivas (End-to-End).
-- Ajustes de usabilidad en dispositivos reales.
-- Empaquetado como una Progressive Web App (PWA).
-- Configuración y despliegue final.
+## 5. Data Ownership
+
+- Everything remains local-first.
+- Markdown export is designed for therapist or self-review.
+- CSV export is designed for raw portability.
+- No backend, sync, or third-party AI processing is part of this MVP.
+
+## 6. Verification Snapshot
+
+Verified on April 19, 2026:
+
+- `npx tsc --noEmit`
+- `npm run lint`
+- `npm test -- --run`
+- `npm run build`
+
+For repeatable local verification:
+
+```bash
+npm run verify
+```
+
+## 7. Concept Sources
+
+The conceptual DNA of Lumina still comes from `docs/idea 1` and `docs/idea 2`, but the product is now consolidated into one implementation path. Those folders are reference material, not alternate runtime states.

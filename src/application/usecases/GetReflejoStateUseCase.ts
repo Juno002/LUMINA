@@ -6,6 +6,7 @@
 import { Vault } from '../../domain/entities';
 import { getReflejoState, ReflejoState } from '../../domain/services/ReflejoEngine';
 import { calculateICC } from '../../domain/services/ICCCalculator';
+import { todayISO, parseLocalISODate } from '../../shared/utils/DateFormatter';
 
 /**
  * computeReflejoState:
@@ -13,7 +14,7 @@ import { calculateICC } from '../../domain/services/ICCCalculator';
  */
 export function computeReflejoState(vault: Vault): ReflejoState {
   const journal = vault.journal || [];
-  const today = new Date().toISOString().split('T')[0];
+  const today = todayISO();
   
   // Average ICC from last 10 L3 entries
   const l3Entries = journal.filter(e => e.level === 3 && e.originalIntensity !== undefined && e.finalCredibility !== undefined);
@@ -38,7 +39,7 @@ export function computeReflejoState(vault: Vault): ReflejoState {
   // Ghost Protocol: Days since last entry
   let daysSinceLastEntry = 0;
   if (journal.length > 0) {
-    const lastDate = new Date(journal[0].date + 'T12:00:00');
+    const lastDate = parseLocalISODate(journal[0].date);
     const now = new Date();
     const diffTime = Math.abs(now.getTime() - lastDate.getTime());
     daysSinceLastEntry = Math.floor(diffTime / (1000 * 60 * 60 * 24));

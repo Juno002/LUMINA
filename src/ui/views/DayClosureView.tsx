@@ -3,10 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { AnimationSpeeds, EasingCurves } from '../../domain/constants/Theme';
-import { X, ArrowRight, Heart, Star, Flame, BookOpen, Activity, CheckCircle2, ChevronLeft } from 'lucide-react';
+import { X, ArrowRight, Star, Flame, BookOpen, Activity, CheckCircle2, ChevronLeft } from 'lucide-react';
 import { Vault, DayClosure } from '../../domain/entities';
 import { todayISO } from '../../shared/utils/DateFormatter';
 import { triggerHaptic } from '../../shared/utils/Haptics';
@@ -41,8 +40,8 @@ export default function DayClosureView({ vault, onClose, onSave }: DayClosureVie
 
   // Sleep Efficiency calculation
   const sleepEfficiency = useMemo(() => {
-    if (!sleepEntry?.duration || !sleepEntry?.timeInBed) return null;
-    return (sleepEntry.duration / sleepEntry.timeInBed) * 100;
+    if (!sleepEntry?.sleepEfficiencyPct) return null;
+    return sleepEntry.sleepEfficiencyPct;
   }, [sleepEntry]);
 
   const handleFinish = () => {
