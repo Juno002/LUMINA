@@ -24,7 +24,7 @@ export default function HabitValueModal({
   onCancel,
   onSave
 }: HabitValueModalProps) {
-  const { t, language } = useTranslation();
+  const { t } = useTranslation();
   const [value, setValue] = useState(currentValue.toString());
 
   return (
@@ -45,7 +45,7 @@ export default function HabitValueModal({
             onChange={(event) => setValue(event.target.value)}
           />
           <div className="editorial-meta text-center uppercase tracking-widest opacity-40">
-            {habit?.unit || 'Units'} / Target {habit?.targetValue}
+            {habit?.unit || t('habits.units')} / {t('habits.target')} {habit?.targetValue}
           </div>
         </div>
         <div className="flex items-center justify-between gap-4">
@@ -53,7 +53,7 @@ export default function HabitValueModal({
             {t('common.cancel')}
           </button>
           <EditorialButton onClick={() => onSave(Number(value))}>
-            {language === 'es' ? 'Actualizar Registro' : 'Update Log'}
+            {t('habits.update_log')}
           </EditorialButton>
         </div>
       </div>
