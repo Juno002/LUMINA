@@ -134,12 +134,17 @@ export const translations = {
     },
     momentum: {
       title: 'Momentum',
+      breadcrumb: {
+        momentum: 'Momentum',
+        flow: 'Flow'
+      },
       no_tasks: 'The momentum is still. Program an intention to begin.',
       feedback_title: 'Reflection / Outcome',
       actual_joy: 'Actual Joy (0-10)',
       actual_effort: 'Actual Effort (0-10)',
       compare_anticipated: 'Anticipated: ',
       compare_actual: 'Actual: ',
+      modal_subtitle: 'Behavioral / Flow',
       new_task: 'New Intention',
       planned: 'Planned Architecture',
       completed: 'Intentions Realized',
@@ -369,6 +374,10 @@ export const translations = {
     },
     settings: {
       title: 'System Control',
+      breadcrumb: {
+        configurations: 'Configurations',
+        sovereignty: 'Sovereignty'
+      },
       security_protocol: 'Security Protocol',
       data_sovereignty: 'Data Sovereignty',
       data_sovereignty_desc: 'Your data is stored using browser-native IndexedDB via the Lumina Vault protocol. No metrics, observations, or identifiers ever leave your hardware environment.',
@@ -391,6 +400,12 @@ export const translations = {
       data_stewardship: 'Data Stewardship',
       therapeutic_portability: 'Therapeutic Portability',
       therapeutic_portability_desc: 'Generate reports for review or extract your raw history. Your observations belong to you.',
+      export: {
+        markdown: 'MARKDOWN (.MD)',
+        spreadsheet: 'SPREADSHEET (.CSV)',
+        portable_archive: 'PORTABLE ARCHIVE (.JSON)',
+        restore_archive: 'RESTORE ARCHIVE'
+      },
       clinical_report: 'Clinical Report',
       raw_database: 'Raw Database',
       encrypted_backup: 'Encrypted Backup',
@@ -579,12 +594,17 @@ export const translations = {
     },
     momentum: {
       title: 'Momentum',
+      breadcrumb: {
+        momentum: 'Momentum',
+        flow: 'Flujo'
+      },
       no_tasks: 'El momentum está quieto. Programa una intención para comenzar.',
       feedback_title: 'Reflexión / Resultado',
       actual_joy: 'Alegría Real (0-10)',
       actual_effort: 'Esfuerzo Real (0-10)',
       compare_anticipated: 'Anticipado: ',
       compare_actual: 'Real: ',
+      modal_subtitle: 'Conductual / Flujo',
       new_task: 'Nueva Intención',
       planned: 'Arquitectura Planificada',
       completed: 'Intenciones Realizadas',
@@ -814,6 +834,10 @@ export const translations = {
     },
     settings: {
       title: 'Control del Sistema',
+      breadcrumb: {
+        configurations: 'Configuraciones',
+        sovereignty: 'Soberanía'
+      },
       security_protocol: 'Protocolo de Seguridad',
       data_sovereignty: 'Soberanía de Datos',
       data_sovereignty_desc: 'Tus datos se almacenan localmente mediante IndexedDB bajo el protocolo Lumina Vault. Ninguna métrica u observación abandona nunca tu hardware.',
@@ -836,6 +860,12 @@ export const translations = {
       data_stewardship: 'Custodia de Datos',
       therapeutic_portability: 'Portabilidad Terapéutica',
       therapeutic_portability_desc: 'Genera informes para revisión o extrae tu historial bruto. Tus observaciones te pertenecen.',
+      export: {
+        markdown: 'MARKDOWN (.MD)',
+        spreadsheet: 'HOJA DE CÁLCULO (.CSV)',
+        portable_archive: 'ARCHIVO PORTÁTIL (.JSON)',
+        restore_archive: 'RESTAURAR ARCHIVO'
+      },
       clinical_report: 'Informe Clínico',
       raw_database: 'Base de Datos Bruta',
       encrypted_backup: 'Respaldo Cifrado',
