@@ -32,16 +32,16 @@ export default function AddHabitModal({
   const [target, setTarget] = useState('1');
   const [unit, setUnit] = useState('');
   const [linkedGoalId, setLinkedGoalId] = useState('');
-  const { t, language } = useTranslation();
+  const { t } = useTranslation();
 
   const selectTemplate = (template: HabitTemplate) => {
-    setName(template.name);
+    setName(t(`habits.templates_data.${template.id}.name`));
     setType(template.type);
     if (template.targetValue) {
       setTarget(template.targetValue.toString());
     }
     if (template.unit) {
-      setUnit(template.unit);
+      setUnit(t(`habits.templates_data.${template.id}.unit`));
     }
     setShowTemplates(false);
   };
@@ -70,7 +70,7 @@ export default function AddHabitModal({
       isOpen={isOpen}
       onClose={onCancel}
       title={showTemplates ? t('habits.templates') : t('habits.new_habit')}
-      subtitle="Creation / Architecture"
+      subtitle={t('habits.creation_subtitle')}
     >
       {showTemplates ? (
         <div className="flex flex-col gap-6">
@@ -83,12 +83,16 @@ export default function AddHabitModal({
                 className="group flex flex-col gap-2 rounded-2xl border border-ink/5 p-4 text-left transition-all hover:border-ink/20 hover:bg-ink/5"
               >
                 <div className="flex items-start justify-between gap-4">
-                  <span className="font-serif text-lg italic group-hover:text-ink">{template.name}</span>
+                  <span className="font-serif text-lg italic group-hover:text-ink">
+                    {t(`habits.templates_data.${template.id}.name`)}
+                  </span>
                   <span className="rounded-full bg-ink/5 px-2 py-1 font-mono text-[10px] uppercase text-ink/40">
-                    {template.category}
+                    {t(`habits.template_category_${template.category}`)}
                   </span>
                 </div>
-                <span className="text-xs leading-relaxed opacity-50">{template.description}</span>
+                <span className="text-xs leading-relaxed opacity-50">
+                  {t(`habits.templates_data.${template.id}.description`)}
+                </span>
               </button>
             ))}
           </div>
@@ -99,30 +103,30 @@ export default function AddHabitModal({
               onClick={() => setShowTemplates(false)}
               className="border-b border-transparent pb-1 font-mono text-xs uppercase tracking-widest text-accent transition-colors hover:border-ink hover:text-ink"
             >
-              {language === 'es' ? 'O crear desde cero' : 'Or create from scratch'}
+              {t('habits.create_from_scratch')}
             </button>
           </div>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="flex flex-col gap-8">
           <EditorialInput
-            label={language === 'es' ? 'Nombre del Habito' : 'Habit Name'}
+            label={t('habits.name')}
             required
             autoFocus
-            placeholder={language === 'es' ? 'ej. Reflexion Matutina' : 'e.g., Morning Reflection'}
+            placeholder={t('habits.name_placeholder')}
             value={name}
             onChange={(event) => setName(event.target.value)}
           />
 
           <div className="flex flex-col gap-3">
             <label className="editorial-meta">
-              {language === 'es' ? 'Tipo de Medicion' : 'Measurement Type'}
+              {t('habits.measurement_type')}
             </label>
             <div className="flex gap-4">
               {[
-                { id: 'yesno', icon: Check, label: language === 'es' ? 'Si/No' : 'Yes/No' },
-                { id: 'numeric', icon: Hash, label: language === 'es' ? 'Valor' : 'Value' },
-                { id: 'timer', icon: Clock, label: language === 'es' ? 'Reloj' : 'Timer' }
+                { id: 'yesno', icon: Check, label: t('habits.type_yesno') },
+                { id: 'numeric', icon: Hash, label: t('habits.type_numeric') },
+                { id: 'timer', icon: Clock, label: t('habits.type_timer') }
               ].map((option) => (
                 <button
                   key={option.id}
@@ -149,7 +153,7 @@ export default function AddHabitModal({
             >
               <div className="flex flex-col gap-3">
                 <label className="editorial-meta">
-                  {language === 'es' ? 'Meta Objetivo' : 'Target Goal'}
+                  {t('habits.target_goal')}
                 </label>
                 <div className="flex items-end gap-4">
                   <EditorialInput
@@ -162,7 +166,7 @@ export default function AddHabitModal({
                   <EditorialInput
                     className="w-24"
                     variant="mono"
-                    placeholder={language === 'es' ? 'Unidad' : 'Unit'}
+                    placeholder={t('habits.unit')}
                     value={unit}
                     onChange={(event) => setUnit(event.target.value)}
                   />
@@ -174,7 +178,7 @@ export default function AddHabitModal({
           {goals.length > 0 && (
             <div className="flex flex-col gap-3">
               <label className="editorial-meta">
-                {language === 'es' ? 'Anclar a un Objetivo (Opcional)' : 'Anchor to a Goal (Optional)'}
+                {t('habits.anchor_goal_optional')}
               </label>
               <select
                 className="w-full cursor-pointer appearance-none border-b border-ink/20 bg-transparent py-3 font-serif text-lg italic outline-none focus:border-ink"
@@ -182,7 +186,7 @@ export default function AddHabitModal({
                 onChange={(event) => setLinkedGoalId(event.target.value)}
               >
                 <option value="" className="text-sm not-italic">
-                  -- {language === 'es' ? 'Sin objetivo' : 'No goal'} --
+                  -- {t('habits.no_goal')} --
                 </option>
                 {goals.map((goal) => (
                   <option key={goal.id} value={goal.id} className="text-sm not-italic">
@@ -202,7 +206,7 @@ export default function AddHabitModal({
               {t('common.back')}
             </button>
             <EditorialButton type="submit" icon={<Plus size={14} />}>
-              {language === 'es' ? 'Establecer Habito' : 'Establish Habit'}
+              {t('habits.establish_habit')}
             </EditorialButton>
           </div>
         </form>
