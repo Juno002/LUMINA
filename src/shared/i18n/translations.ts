@@ -80,13 +80,44 @@ export const translations = {
     },
     journal: {
       title: 'Cognitive Chronicle',
+      breadcrumb: 'Library / Logs',
       new_entry: 'New Observation',
+      search_placeholder: 'Search archives...',
       placeholder: 'Describe the absolute present...',
       situation: 'Situation',
+      situation_placeholder: 'What happened? (e.g., meeting with boss)',
       thought: 'Automatic Thought',
+      thought_placeholder: 'What did you tell yourself?',
       distortion: 'Cognitive Distortion',
       alternative: 'Linguistic Architecture / Alternative',
+      alternative_placeholder: 'Synthesis: A more realistic, helpful way to view this situation...',
       level: 'Intensity Level',
+      level_word: 'Level',
+      level_1_title: 'Observation & Awareness',
+      level_2_title: 'Displacement & Perspective',
+      level_3_title: 'Evidence-based Restructuring',
+      level_2_cta: 'Level 2 →',
+      level_3_cta: 'Level 3 →',
+      framework: 'CBT Framework',
+      core_emotion: 'Core Emotion',
+      core_emotion_placeholder: 'Anxious, Sad, Frustrated...',
+      observation_date: 'Observation Date',
+      friend_prompt: 'Imagine a friend writes this to you:',
+      compassionate_response: 'Your Compassionate Response',
+      compassionate_response_placeholder: 'If a dear friend told you this, what would you say to them?',
+      go_deeper_cta: 'Distortions detected. Would you like to go deeper?',
+      evidence_cta: 'Ready to challenge this thought with evidence?',
+      evidence_for: 'Evidence FOR',
+      evidence_for_placeholder: 'What facts support this automatic thought?',
+      evidence_against: 'Evidence AGAINST',
+      evidence_against_placeholder: 'What facts contradict or challenge this thought?',
+      initial_belief: 'Initial Belief',
+      final_credibility: 'Final Credibility',
+      cognitive_change_index: 'Cognitive Change Index',
+      update_summary: 'Update Summary',
+      seal_observation: 'Seal Observation',
+      delete_title: 'Delete observation.',
+      delete_description: 'This observation will be removed from the chronicle permanently.',
       save_entry: 'Commit to Vault',
       empty_state: 'The chronicle is silent. Add a thought to begin synthesis.',
       prompts: {
@@ -94,6 +125,7 @@ export const translations = {
         depression: 'Focus on facts, not filters. What is one small achievement you are discounting?',
         ocd: 'Can you tolerate the uncertainty without executing a safety behavior?',
         sleep: 'Break the pressure to sleep. Is this thought helping you rest or keeping you alert?',
+        unspecified: 'What facts support or contradict this perspective?',
         general: 'What facts support or contradict this perspective?'
       },
       filter_all: 'All Entries',
@@ -118,9 +150,35 @@ export const translations = {
     },
     habits: {
       title: 'Behavioral Architecture',
+      breadcrumb: 'Rhythm / Daily Architecture',
       new_habit: 'Define Rhythm',
+      creation_subtitle: 'Creation / Architecture',
       streak: 'Current Rhythm',
       target: 'Objective',
+      goal_fallback: 'Goal',
+      units: 'Units',
+      unit: 'Unit',
+      update_log: 'Update Log',
+      adjust_value: 'Adjust Value',
+      establish_habit: 'Establish Habit',
+      name: 'Habit Name',
+      name_placeholder: 'e.g., Morning Reflection',
+      measurement_type: 'Measurement Type',
+      type_yesno: 'Yes/No',
+      type_numeric: 'Value',
+      type_timer: 'Timer',
+      type_yesno_short: 'yes/no',
+      type_numeric_short: 'numeric',
+      type_timer_short: 'timer',
+      target_goal: 'Target Goal',
+      anchor_goal_optional: 'Anchor to a Goal (Optional)',
+      no_goal: 'No goal',
+      create_from_scratch: 'Or create from scratch',
+      template_category_mind: 'Mind',
+      template_category_body: 'Body',
+      template_category_focus: 'Focus',
+      archive_title: 'Archive rhythm.',
+      archive_description: 'This habit will stop counting toward the active architecture, while past logs remain in the vault.',
       progress: 'Rhythm Consistency',
       templates: 'Inspiration Grid',
       template_meditation: 'Daily Stillness',
@@ -134,7 +192,49 @@ export const translations = {
       consecutive_discipline: 'Consecutive Discipline',
       experience_level: 'Experience Level',
       for_level: 'for Level',
-      linked_aim: 'Aim'
+      linked_aim: 'Aim',
+      templates_data: {
+        tpl_meditation: {
+          name: 'Meditate',
+          description: '10 minutes of mindfulness or breathing to lower baseline anxiety.',
+          unit: 'seconds'
+        },
+        tpl_gratitude: {
+          name: 'Gratitude Log',
+          description: 'Write down 3 things you are grateful for today.',
+          unit: 'entries'
+        },
+        tpl_journal: {
+          name: 'CBT Journal',
+          description: 'Complete at least one Level 1 cognitive journal entry.',
+          unit: 'entries'
+        },
+        tpl_water: {
+          name: 'Hydration',
+          description: 'Drink 8 glasses of water to maintain cognitive clarity.',
+          unit: 'glasses'
+        },
+        tpl_sleep_hygiene: {
+          name: 'No Screens Before Bed',
+          description: 'Avoid screens for 60 minutes before sleeping (CBT-I).',
+          unit: 'sessions'
+        },
+        tpl_exercise: {
+          name: 'Physical Activity',
+          description: 'Engage in moderate physical activity to metabolize cortisol.',
+          unit: 'minutes'
+        },
+        tpl_deep_work: {
+          name: 'Deep Work',
+          description: 'Uninterrupted focus session on a high-leverage task.',
+          unit: 'seconds'
+        },
+        tpl_reading: {
+          name: 'Reading',
+          description: 'Read a non-fiction book to expand mental models.',
+          unit: 'pages'
+        }
+      }
     },
     momentum_active: {
       title: 'Active Momentum',
@@ -151,7 +251,9 @@ export const translations = {
     common: {
       save: 'Save',
       cancel: 'Cancel',
+      edit: 'Edit',
       delete: 'Delete',
+      next: 'Next',
       loading: 'Loading...',
       securing: 'Securing...',
       back: 'Return',
@@ -422,13 +524,44 @@ export const translations = {
     },
     journal: {
       title: 'Crónica Cognitiva',
+      breadcrumb: 'Biblioteca / Registros',
       new_entry: 'Nueva Observación',
+      search_placeholder: 'Buscar en archivos...',
       placeholder: 'Describe el presente absoluto...',
       situation: 'Situación',
+      situation_placeholder: '¿Qué pasó? (ej. reunión con el jefe)',
       thought: 'Pensamiento Automático',
+      thought_placeholder: '¿Qué te dijiste a ti mismo?',
       distortion: 'Distorsión Cognitiva',
       alternative: 'Perspectiva Alternativa',
+      alternative_placeholder: 'Síntesis: una forma más realista y útil de ver esta situación...',
       level: 'Nivel de Intensidad',
+      level_word: 'Nivel',
+      level_1_title: 'Observación y Conciencia',
+      level_2_title: 'Desplazamiento y Perspectiva',
+      level_3_title: 'Reestructuración Basada en Evidencia',
+      level_2_cta: 'Nivel 2 →',
+      level_3_cta: 'Nivel 3 →',
+      framework: 'Marco TCC',
+      core_emotion: 'Emoción Central',
+      core_emotion_placeholder: 'Ansiedad, Tristeza, Frustración...',
+      observation_date: 'Fecha de Observación',
+      friend_prompt: 'Imagina que un amigo te escribe esto:',
+      compassionate_response: 'Tu Respuesta Compasiva',
+      compassionate_response_placeholder: 'Si un buen amigo te dijera esto, ¿qué le dirías?',
+      go_deeper_cta: 'Distorsiones detectadas. ¿Quieres ir más profundo?',
+      evidence_cta: '¿Listo para desafiar este pensamiento con evidencia?',
+      evidence_for: 'Evidencia A FAVOR',
+      evidence_for_placeholder: '¿Qué hechos apoyan este pensamiento automático?',
+      evidence_against: 'Evidencia EN CONTRA',
+      evidence_against_placeholder: '¿Qué hechos contradicen o desafían este pensamiento?',
+      initial_belief: 'Creencia Inicial',
+      final_credibility: 'Credibilidad Final',
+      cognitive_change_index: 'Índice de Cambio Cognitivo',
+      update_summary: 'Actualizar Resumen',
+      seal_observation: 'Sellar Observación',
+      delete_title: 'Eliminar observación.',
+      delete_description: 'Esta observación se eliminará de la crónica de forma permanente.',
       save_entry: 'Guardar en la Bóveda',
       empty_state: 'La crónica espera tu primera observación.',
       prompts: {
@@ -436,6 +569,7 @@ export const translations = {
         depression: 'Concéntrate en los hechos, no en el filtro. ¿Qué pequeño logro estás descartando?',
         ocd: '¿Puedes tolerar la incertidumbre sin realizar una conducta de seguridad?',
         sleep: 'Rompe la presión por dormir. ¿Este pensamiento te ayuda a descansar o te mantiene alerta?',
+        unspecified: '¿Qué hechos apoyan o contradicen esta perspectiva?',
         general: '¿Qué hechos apoyan o contradicen esta perspectiva?'
       },
       filter_all: 'Todas las Entradas',
@@ -472,9 +606,35 @@ export const translations = {
     },
     habits: {
       title: 'Arquitectura Conductual',
+      breadcrumb: 'Ritmo / Arquitectura Diaria',
       new_habit: 'Definir Ritmo',
+      creation_subtitle: 'Creación / Arquitectura',
       streak: 'Ritmo Actual',
       target: 'Objetivo',
+      goal_fallback: 'Objetivo',
+      units: 'Unidades',
+      unit: 'Unidad',
+      update_log: 'Actualizar Registro',
+      adjust_value: 'Ajustar Valor',
+      establish_habit: 'Establecer Hábito',
+      name: 'Nombre del Hábito',
+      name_placeholder: 'ej. Reflexión Matutina',
+      measurement_type: 'Tipo de Medición',
+      type_yesno: 'Sí/No',
+      type_numeric: 'Valor',
+      type_timer: 'Reloj',
+      type_yesno_short: 'sí/no',
+      type_numeric_short: 'valor',
+      type_timer_short: 'reloj',
+      target_goal: 'Meta Objetivo',
+      anchor_goal_optional: 'Anclar a un Objetivo (Opcional)',
+      no_goal: 'Sin objetivo',
+      create_from_scratch: 'O crear desde cero',
+      template_category_mind: 'Mente',
+      template_category_body: 'Cuerpo',
+      template_category_focus: 'Foco',
+      archive_title: 'Archivar ritmo.',
+      archive_description: 'Este hábito dejará de contar en la arquitectura activa y sus registros pasados permanecerán en la bóveda.',
       progress: 'Consistencia de Ritmo',
       templates: 'Rejilla de Inspiración',
       template_meditation: 'Quietud Diaria',
@@ -488,12 +648,56 @@ export const translations = {
       consecutive_discipline: 'Disciplina Consecutiva',
       experience_level: 'Nivel de Experiencia',
       for_level: 'para el Nivel',
-      linked_aim: 'Objetivo'
+      linked_aim: 'Objetivo',
+      templates_data: {
+        tpl_meditation: {
+          name: 'Meditar',
+          description: '10 minutos de mindfulness o respiración para reducir la ansiedad basal.',
+          unit: 'segundos'
+        },
+        tpl_gratitude: {
+          name: 'Registro de Gratitud',
+          description: 'Escribe 3 cosas por las que agradeces hoy.',
+          unit: 'entradas'
+        },
+        tpl_journal: {
+          name: 'Diario TCC',
+          description: 'Completa al menos una entrada cognitiva de Nivel 1.',
+          unit: 'entradas'
+        },
+        tpl_water: {
+          name: 'Hidratación',
+          description: 'Bebe 8 vasos de agua para mantener claridad cognitiva.',
+          unit: 'vasos'
+        },
+        tpl_sleep_hygiene: {
+          name: 'Sin pantallas antes de dormir',
+          description: 'Evita pantallas durante 60 minutos antes de dormir (TCC-I).',
+          unit: 'sesiones'
+        },
+        tpl_exercise: {
+          name: 'Actividad Física',
+          description: 'Realiza actividad física moderada para metabolizar cortisol.',
+          unit: 'minutos'
+        },
+        tpl_deep_work: {
+          name: 'Trabajo Profundo',
+          description: 'Sesión de foco ininterrumpido en una tarea de alto impacto.',
+          unit: 'segundos'
+        },
+        tpl_reading: {
+          name: 'Lectura',
+          description: 'Lee no ficción para ampliar modelos mentales.',
+          unit: 'páginas'
+        }
+      }
     },
     common: {
       save: 'Guardar',
       cancel: 'Cancelar',
+      edit: 'Editar',
       delete: 'Eliminar',
+      next: 'Siguiente',
       loading: 'Cargando...',
       securing: 'Asegurando...',
       back: 'Volver',
