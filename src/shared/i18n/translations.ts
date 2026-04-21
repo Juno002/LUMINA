@@ -76,6 +76,7 @@ export const translations = {
       depression: 'Momentum is built in small steps. Completing one task is a significant victory.',
       ocd: 'Uncertainty is uncomfortable, but not dangerous. Let the thought exist without reaction.',
       sleep: 'The quality of your tomorrow is built tonight. Honor your restorative ritual.',
+      unspecified: 'Emotional sovereignty begins with non-judgmental observation.',
       general: 'Emotional sovereignty begins with non-judgmental observation.'
     },
     journal: {
@@ -520,6 +521,7 @@ export const translations = {
       depression: 'El momentum se construye en pasos pequeños. Completar una tarea es una victoria significativa.',
       ocd: 'La incertidumbre es incómoda, pero no peligrosa. Deja que el pensamiento exista sin reaccionar.',
       sleep: 'La calidad de tu mañana se construye esta noche. Honra tu ritual de restauración.',
+      unspecified: 'La soberanía emocional comienza con la observación sin juicio.',
       general: 'La soberanía emocional comienza con la observación sin juicio.'
     },
     journal: {
