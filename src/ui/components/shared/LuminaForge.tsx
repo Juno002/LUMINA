@@ -169,7 +169,8 @@ export default function LuminaForge({ isOpen, onOpenChange, onSubmit }: LuminaFo
             className="flex h-16 w-16 items-center justify-center rounded-full bg-ink text-paper shadow-2xl shadow-ink/15 transition-colors"
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.94 }}
-            aria-label={language === 'es' ? 'Abrir Forja Lumina' : 'Open Lumina Forge'}
+            aria-label={language === 'es' ? 'Abrir Lumen' : 'Open Lumen'}
+            title="Lumen"
           >
             <Plus size={28} />
           </motion.button>
@@ -192,7 +193,7 @@ export default function LuminaForge({ isOpen, onOpenChange, onSubmit }: LuminaFo
                 >
                   {[
                     { label: language === 'es' ? '* Hábito' : '* Habit', value: '* ' },
-                    { label: 'Meta:', value: 'Meta: ' },
+                    { label: language === 'es' ? 'Meta:' : 'Goal:', value: language === 'es' ? 'Meta: ' : 'Goal: ' },
                     { label: language === 'es' ? '> Diario' : '> Journal', value: '> ' }
                   ].map((chip) => (
                     <button
@@ -218,8 +219,8 @@ export default function LuminaForge({ isOpen, onOpenChange, onSubmit }: LuminaFo
                 onKeyDown={handleKeyDown}
                 placeholder={
                   language === 'es'
-                    ? 'Escribe una intención, * hábito, Meta: objetivo o > diario'
-                    : 'Write an intention, * habit, Meta: goal or > journal'
+                    ? 'Lumen: intención, * hábito, Meta: objetivo o > diario'
+                    : 'Lumen: intention, * habit, Goal: objective or > journal'
                 }
                 className={cn(
                   'min-w-0 flex-1 bg-transparent font-serif text-lg italic outline-none placeholder:opacity-35 md:text-xl',

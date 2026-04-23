@@ -5,12 +5,14 @@
 
 import { describe, expect, it } from 'vitest';
 import {
-  advanceOnboarding,
+  completeGuideStep,
   completeOnboarding,
   createOnboardingState,
   normalizeOnboardingState,
   pauseOnboarding,
   resetOnboarding,
+  shouldShowGuideStep,
+  showGuideStep,
   skipOnboarding,
   startOnboarding
 } from './LuminaGuideUseCase';
@@ -33,14 +35,43 @@ describe('LuminaGuideUseCase', () => {
     expect(state.currentStep).toBe('forge');
   });
 
-  it('advances through steps and completes at the end', () => {
-    const forge = advanceOnboarding({ status: 'active', currentStep: 'sanctuary', completedSteps: [] });
-    expect(forge.currentStep).toBe('forge');
-    expect(forge.completedSteps).toContain('sanctuary');
+  it('marks section tour steps as seen without forcing the next section', () => {
+    const state = completeGuideStep({ status: 'active', currentStep: 'sanctuary', completedSteps: [] });
+    expect(state.status).toBe('not_started');
+    expect(state.currentStep).toBe('chronicle');
+    expect(state.completedSteps).toContain('sanctuary');
+  });
 
-    const done = advanceOnboarding({ status: 'active', currentStep: 'vault', completedSteps: [] });
+  it('shows first-visit steps unless the guide is paused, skipped, completed, or already seen', () => {
+    expect(shouldShowGuideStep(undefined, 'sanctuary')).toBe(true);
+    expect(shouldShowGuideStep({ status: 'not_started', currentStep: 'sanctuary', completedSteps: ['sanctuary'] }, 'sanctuary')).toBe(false);
+    expect(shouldShowGuideStep({ status: 'paused', currentStep: 'sanctuary', completedSteps: [] }, 'sanctuary')).toBe(false);
+
+    const state = showGuideStep(undefined, 'forge');
+    expect(state.status).toBe('active');
+    expect(state.currentStep).toBe('forge');
+  });
+
+  it('completes when every section has been seen', () => {
+    const done = completeGuideStep({
+      status: 'active',
+      currentStep: 'forge',
+      completedSteps: [
+        'sanctuary',
+        'chronicle',
+        'architecture',
+        'emotionalFlux',
+        'facing',
+        'momentum',
+        'breathe',
+        'fortress',
+        'nightfall',
+        'resilience',
+        'vault'
+      ]
+    });
     expect(done.status).toBe('completed');
-    expect(done.completedSteps).toContain('vault');
+    expect(done.completedSteps).toContain('forge');
   });
 
   it('pauses, skips, completes, and resets explicitly', () => {

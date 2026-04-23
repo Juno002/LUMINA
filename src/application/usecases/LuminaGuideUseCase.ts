@@ -5,11 +5,42 @@
 
 import { OnboardingState } from '../../domain/entities';
 
-export const LUMINA_GUIDE_STEPS = ['sanctuary', 'forge', 'architecture', 'chronicle', 'vault'] as const;
+export const LUMINA_GUIDE_STEPS = [
+  'sanctuary',
+  'chronicle',
+  'architecture',
+  'emotionalFlux',
+  'facing',
+  'momentum',
+  'breathe',
+  'fortress',
+  'nightfall',
+  'resilience',
+  'vault',
+  'forge'
+] as const;
 
 export type LuminaGuideStepId = typeof LUMINA_GUIDE_STEPS[number];
 
 export const DEFAULT_ONBOARDING_STEP: LuminaGuideStepId = 'sanctuary';
+
+const terminalStatuses: OnboardingState['status'][] = ['completed', 'skipped', 'paused'];
+
+function uniqueGuideSteps(steps: string[] = []): LuminaGuideStepId[] {
+  return steps.filter((step, index): step is LuminaGuideStepId => (
+    LUMINA_GUIDE_STEPS.includes(step as LuminaGuideStepId) && steps.indexOf(step) === index
+  ));
+}
+
+function getNextUncompletedStep(completedSteps: string[] = []): LuminaGuideStepId {
+  const completed = new Set(uniqueGuideSteps(completedSteps));
+  return LUMINA_GUIDE_STEPS.find((step) => !completed.has(step)) || DEFAULT_ONBOARDING_STEP;
+}
+
+function isGuideComplete(completedSteps: string[] = []): boolean {
+  const completed = new Set(uniqueGuideSteps(completedSteps));
+  return LUMINA_GUIDE_STEPS.every((step) => completed.has(step));
+}
 
 export function createOnboardingState(status: OnboardingState['status'] = 'not_started'): OnboardingState {
   return {
@@ -32,7 +63,7 @@ export function normalizeOnboardingState(state?: OnboardingState): OnboardingSta
   return {
     status: state.status,
     currentStep,
-    completedSteps: state.completedSteps || [],
+    completedSteps: uniqueGuideSteps(state.completedSteps),
     lastShownAt: state.lastShownAt
   };
 }
@@ -41,12 +72,30 @@ export function startOnboarding(state?: OnboardingState): OnboardingState {
   const normalized = normalizeOnboardingState(state);
   const nextStep = normalized.status === 'completed' || normalized.status === 'skipped'
     ? DEFAULT_ONBOARDING_STEP
-    : normalized.currentStep;
+    : normalized.completedSteps.includes(normalized.currentStep)
+      ? getNextUncompletedStep(normalized.completedSteps)
+      : normalized.currentStep;
 
   return {
     ...normalized,
     status: 'active',
     currentStep: nextStep,
+    completedSteps: normalized.status === 'completed' || normalized.status === 'skipped' ? [] : normalized.completedSteps,
+    lastShownAt: new Date().toISOString()
+  };
+}
+
+export function shouldShowGuideStep(state: OnboardingState | undefined, step: LuminaGuideStepId): boolean {
+  const normalized = normalizeOnboardingState(state);
+  return !terminalStatuses.includes(normalized.status) && !normalized.completedSteps.includes(step);
+}
+
+export function showGuideStep(state: OnboardingState | undefined, step: LuminaGuideStepId): OnboardingState {
+  const normalized = normalizeOnboardingState(state);
+  return {
+    ...normalized,
+    status: 'active',
+    currentStep: step,
     lastShownAt: new Date().toISOString()
   };
 }
@@ -77,24 +126,27 @@ export function completeOnboarding(state?: OnboardingState): OnboardingState {
   };
 }
 
-export function advanceOnboarding(state?: OnboardingState): OnboardingState {
+export function completeGuideStep(state?: OnboardingState): OnboardingState {
   const normalized = normalizeOnboardingState(state);
-  const currentIndex = LUMINA_GUIDE_STEPS.indexOf(normalized.currentStep as LuminaGuideStepId);
   const completedSteps = normalized.completedSteps.includes(normalized.currentStep)
     ? normalized.completedSteps
     : [...normalized.completedSteps, normalized.currentStep];
 
-  if (currentIndex >= LUMINA_GUIDE_STEPS.length - 1) {
+  if (isGuideComplete(completedSteps)) {
     return completeOnboarding({ ...normalized, completedSteps });
   }
 
   return {
     ...normalized,
-    status: 'active',
-    currentStep: LUMINA_GUIDE_STEPS[currentIndex + 1],
+    status: 'not_started',
+    currentStep: getNextUncompletedStep(completedSteps),
     completedSteps,
     lastShownAt: new Date().toISOString()
   };
+}
+
+export function advanceOnboarding(state?: OnboardingState): OnboardingState {
+  return completeGuideStep(state);
 }
 
 export function resetOnboarding(): OnboardingState {

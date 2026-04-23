@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, lazy, Suspense, useEffect } from "react";
+import React, { useState, lazy, Suspense, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { AnimationSpeeds, EasingCurves } from './domain/constants/Theme';
 import {
@@ -28,10 +28,13 @@ import { Language } from "./shared/i18n/translations";
 import { todayISO } from './shared/utils/DateFormatter';
 import { QuickCapturePayload } from './application/usecases/QuickCaptureParser';
 import {
-  advanceOnboarding,
+  completeGuideStep,
   completeOnboarding,
+  LuminaGuideStepId,
   pauseOnboarding,
   resetOnboarding,
+  shouldShowGuideStep,
+  showGuideStep,
   skipOnboarding,
   startOnboarding
 } from './application/usecases/LuminaGuideUseCase';
@@ -41,6 +44,20 @@ import {
   mobilePrimaryNavItems,
   settingsNavItem
 } from './ui/navigation/menuItems';
+
+const GUIDE_STEP_BY_TAB: Record<AppTab, LuminaGuideStepId> = {
+  dashboard: 'sanctuary',
+  journal: 'chronicle',
+  habits: 'architecture',
+  mood: 'emotionalFlux',
+  exposure: 'facing',
+  activation: 'momentum',
+  breathing: 'breathe',
+  goals: 'fortress',
+  sleep: 'nightfall',
+  analysis: 'resilience',
+  settings: 'vault'
+};
 
 // Lazy loaded Views
 const LockScreenView = lazy(() => import('./ui/views/LockScreenView'));
@@ -145,13 +162,36 @@ export default function App() {
     }
   };
 
-  const updateOnboarding = (onboarding: OnboardingState) => {
+  const updateOnboarding = useCallback((onboarding: OnboardingState) => {
     if (!vault) return;
     updateVault({
       ...vault,
       profile: { ...vault.profile, onboarding }
     });
-  };
+  }, [updateVault, vault]);
+
+  useEffect(() => {
+    if (!vault || isLocked) return;
+
+    const guideStep = GUIDE_STEP_BY_TAB[activeTab];
+    const onboarding = vault.profile.onboarding;
+    const isSameVisibleStep = onboarding?.status === 'active' && onboarding.currentStep === guideStep;
+
+    if (!isSameVisibleStep && shouldShowGuideStep(onboarding, guideStep)) {
+      updateOnboarding(showGuideStep(onboarding, guideStep));
+    }
+  }, [activeTab, isLocked, updateOnboarding, vault]);
+
+  useEffect(() => {
+    if (!vault || isLocked || !isForgeOpen) return;
+
+    const onboarding = vault.profile.onboarding;
+    const isForgeGuideVisible = onboarding?.status === 'active' && onboarding.currentStep === 'forge';
+
+    if (!isForgeGuideVisible && shouldShowGuideStep(onboarding, 'forge')) {
+      updateOnboarding(showGuideStep(onboarding, 'forge'));
+    }
+  }, [isForgeOpen, isLocked, updateOnboarding, vault]);
 
   const handleForgeSubmit = (payload: QuickCapturePayload) => {
     if (!vault) return;
@@ -428,7 +468,7 @@ export default function App() {
 
             <LuminaGuide
               onboarding={vault?.profile.onboarding}
-              onAdvance={() => updateOnboarding(advanceOnboarding(vault?.profile.onboarding))}
+              onAdvance={() => updateOnboarding(completeGuideStep(vault?.profile.onboarding))}
               onPause={() => updateOnboarding(pauseOnboarding(vault?.profile.onboarding))}
               onSkip={() => updateOnboarding(skipOnboarding(vault?.profile.onboarding))}
               onNavigate={handleTabChange}
