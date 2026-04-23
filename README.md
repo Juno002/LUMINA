@@ -59,6 +59,46 @@ For a full repository gate:
 npm run verify
 ```
 
+## Android Track
+
+LUMINA now includes an Android-first Capacitor wrapper while keeping `src/` as the canonical app.
+
+Current native scope:
+
+- encrypted backup export to Android files
+- native share sheet for encrypted backups
+- native haptics
+- status bar and keyboard polish
+- safe-area aware mobile overlays
+
+First-time Android setup:
+
+```bash
+npm install
+npm run cap:sync:android
+```
+
+Then:
+
+1. Install Android Studio
+2. Open [android](C:/Users/Junior/OneDrive/Documents/GitHub/LUMINA/android)
+3. Let Gradle and SDK components finish installing
+4. Run on an emulator or USB-connected device
+
+Useful commands:
+
+```bash
+npm run cap:sync:android
+npm run cap:open:android
+```
+
+Notes for this phase:
+
+- Android is the current native target
+- iOS is intentionally deferred until storage is hardened beyond WebView persistence
+- native builds use `npm run build:native`, which skips PWA registration inside the wrapper
+- Android automatic app backup is disabled to preserve the local-first privacy model
+
 ## Core Flow
 
 1. Create encrypted vault
