@@ -54,7 +54,7 @@ export default function HabitCard({
         <div className="flex items-center gap-6">
           <button
             onClick={onToggle}
-            className={`flex h-14 w-14 items-center justify-center rounded-full border-2 transition-all duration-500 ${
+            className={`flex h-14 w-14 items-center justify-center rounded-full border-2 transition-all duration-300 ${
               isCompleted
                 ? 'border-ink bg-ink text-paper shadow-lg shadow-ink/10'
                 : 'border-ink/10 text-ink/10 hover:border-ink/30'

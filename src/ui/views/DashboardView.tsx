@@ -154,7 +154,7 @@ export default function DashboardView({ vault, onUpdate, onOpenCrisis, onOpenDay
               {(vault.goals || []).slice(0, 3).map((goal: Goal) => (
                 <div key={goal.id} className="flex items-center gap-5 py-4 border-b border-ink/5 group">
                   <div className={cn(
-                    "w-2.5 h-2.5 rounded-full transition-all duration-500", 
+                    "w-2.5 h-2.5 rounded-full transition-all duration-300", 
                     goal.completed ? "bg-ink" : "border border-ink/20 group-hover:border-ink/40"
                   )}></div>
                   <div className="flex flex-col">
@@ -174,7 +174,7 @@ export default function DashboardView({ vault, onUpdate, onOpenCrisis, onOpenDay
             disabled={isDayClosed}
             onClick={() => onOpenDayClosure?.()}
             className={cn(
-              "w-full p-8 rounded-[3rem] transition-all duration-500 flex flex-col gap-4 items-center text-center group",
+              "w-full p-8 rounded-[3rem] transition-all duration-300 flex flex-col gap-4 items-center text-center group",
               isDayClosed 
                 ? "bg-ink/5 cursor-default" 
                 : "bg-ink text-paper hover:scale-[1.02] shadow-2xl shadow-ink/10"
@@ -190,7 +190,7 @@ export default function DashboardView({ vault, onUpdate, onOpenCrisis, onOpenDay
                </>
              ) : (
                <>
-                 <MoonIcon size={32} className="group-hover:rotate-12 transition-transform duration-700" />
+                 <MoonIcon size={32} className="group-hover:rotate-12 transition-transform duration-300" />
                  <div className="flex flex-col">
                     <span className="editorial-meta opacity-50 text-[9px] uppercase tracking-widest">{t('dashboard.closure_ritual')}</span>
                     <span className="font-serif italic text-paper/80 text-sm">{t('dashboard.begin_synthesis')}</span>
@@ -247,14 +247,14 @@ export default function DashboardView({ vault, onUpdate, onOpenCrisis, onOpenDay
                <motion.div 
                 initial={{ width: 0 }}
                 animate={{ width: `${resilienceIndex ?? 0}%` }} 
-                transition={{ duration: 1.5, ease: EasingCurves.editorial }}
+                transition={{ duration: 0.3, ease: EasingCurves.editorial }}
                 className="h-full bg-ink/60"
               />
             </div>
           </div>
           
           <div className="flex flex-col gap-6 p-10 border border-ink/5 rounded-[3rem] bg-ink text-paper shadow-2xl relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-3xl pointer-events-none group-hover:scale-150 transition-transform duration-1000"></div>
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-3xl pointer-events-none group-hover:scale-150 transition-transform duration-300"></div>
             <span className="editorial-meta opacity-40 uppercase text-[9px] tracking-[0.2em]">{t('dashboard.active_scope')}</span>
             <div className="flex items-baseline gap-4">
               <span className="text-7xl font-light tracking-tighter leading-none">{pendingActions.toString().padStart(2, '0')}</span>
@@ -278,7 +278,7 @@ export default function DashboardView({ vault, onUpdate, onOpenCrisis, onOpenDay
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
             {(vault.wellness?.gratitudeEntries || []).slice(0, 3).map((entry) => (
               <div key={entry.id} className="flex flex-col gap-4 group">
-                <div className="h-[1px] w-8 bg-ink/10 group-hover:w-16 transition-all duration-500"></div>
+                <div className="h-[1px] w-8 bg-ink/10 group-hover:w-16 transition-all duration-300"></div>
                 <p className="text-sm italic leading-relaxed text-accent font-serif group-hover:text-ink transition-colors">"{entry.text}"</p>
               </div>
             ))}

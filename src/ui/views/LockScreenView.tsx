@@ -99,7 +99,7 @@ export default function LockScreenView({ onUnlock, error, onOpenCrisis }: LockSc
             {/* Subtle light sweep animation */}
             <motion.div 
               animate={{ x: ['-100%', '200%'] }}
-              transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+              transition={{ duration: 0.3, repeat: Infinity, ease: 'linear' }}
               className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-12"
             />
           </button>
@@ -120,4 +120,3 @@ export default function LockScreenView({ onUnlock, error, onOpenCrisis }: LockSc
     </div>
   );
 }
-

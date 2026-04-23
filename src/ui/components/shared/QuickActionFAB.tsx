@@ -83,7 +83,7 @@ export default function QuickActionFAB({ onAction }: QuickActionFABProps) {
         onClick={toggleMenu}
         animate={{ rotate: isOpen ? 135 : 0 }}
         className={cn(
-          "w-16 h-16 rounded-full flex items-center justify-center shadow-2xl transition-colors duration-500",
+          "w-16 h-16 rounded-full flex items-center justify-center shadow-2xl transition-colors duration-300",
           isOpen ? "bg-paper text-ink border border-ink/10" : "bg-ink text-paper"
         )}
       >

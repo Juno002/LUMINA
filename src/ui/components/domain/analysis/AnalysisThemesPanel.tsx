@@ -41,7 +41,7 @@ export default function AnalysisThemesPanel({
       <div className="grid grid-cols-1 gap-10 md:grid-cols-3">
         {themes.map((theme, index) => (
           <div key={`${theme.title}-${index}`} className="group flex flex-col gap-4">
-            <div className="h-[1px] w-10 bg-ink/20 transition-all duration-700 group-hover:w-20"></div>
+      <div className="h-[1px] w-10 bg-ink/20 transition-all duration-300 group-hover:w-20"></div>
             <div className="flex flex-col gap-2">
               <span className="font-serif text-xl italic transition-colors group-hover:text-ink">
                 {theme.title}

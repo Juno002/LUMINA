@@ -85,7 +85,7 @@ export default function MobileNavHub({ isOpen, onClose, items, activeTab, onNavi
                     onClose();
                   }}
                   className={cn(
-                    "flex flex-col items-start gap-4 p-6 rounded-[2rem] border transition-all duration-500 text-left group",
+                    "flex flex-col items-start gap-4 p-6 rounded-[2rem] border transition-all duration-300 text-left group",
                     activeTab === item.id 
                       ? "bg-ink text-paper border-ink" 
                       : "bg-paper border-ink/5 hover:border-ink/20"
@@ -94,7 +94,7 @@ export default function MobileNavHub({ isOpen, onClose, items, activeTab, onNavi
                     <item.icon 
                       size={20} 
                       className={cn(
-                        "transition-transform duration-500 group-active:scale-90",
+                      "transition-transform duration-300 group-active:scale-90",
                         activeTab === item.id ? "text-paper" : "text-accent"
                       )} 
                     />

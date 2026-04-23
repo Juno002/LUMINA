@@ -4,10 +4,10 @@
  */
 
 export const AnimationSpeeds = {
-  instant: 0.15, // 150ms
-  micro: 0.2,    // 200ms
+  instant: 0.3,  // 300ms
+  micro: 0.3,    // 300ms
   fluid: 0.3,    // 300ms
-  layered: 0.5   // 500ms
+  layered: 0.3   // 300ms
 };
 
 export const EasingCurves = {

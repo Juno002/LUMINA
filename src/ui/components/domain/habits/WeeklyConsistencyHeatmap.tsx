@@ -54,7 +54,7 @@ export default function WeeklyConsistencyHeatmap({
           return (
             <div key={day.date} className="flex flex-col items-center gap-2">
               <div
-                className={`aspect-square w-full rounded-lg transition-all duration-700 ${
+                  className={`aspect-square w-full rounded-lg transition-all duration-300 ${
                   day.percentage === 100
                     ? 'bg-ink'
                     : day.percentage > 0

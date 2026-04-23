@@ -34,7 +34,7 @@ const GoalItem: React.FC<GoalItemProps> = ({ goal, onToggle, onToggleMilestone, 
 
   return (
     <div className={cn(
-      "group border border-ink/5 rounded-[2.5rem] bg-paper overflow-hidden transition-all duration-500",
+        "group border border-ink/5 rounded-[2.5rem] bg-paper overflow-hidden transition-all duration-300",
       goal.completed ? "opacity-60" : "hover:border-ink/20 hover:shadow-xl hover:shadow-ink/[0.02]",
       isOverdue && "border-red-500/20"
     )}>

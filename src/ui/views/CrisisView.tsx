@@ -128,7 +128,7 @@ export default function CrisisView({ onClose, isUnlocked, onNavigate }: CrisisVi
             <div className="font-mono text-[10px] uppercase tracking-widest text-paper/40 mb-2">{language === 'es' ? 'Protocolo de Seguridad' : 'Safety Protocol'}</div>
             <h1 className="font-serif text-3xl">{language === 'es' ? 'No estás solo.' : 'You are not alone.'}</h1>
           </div>
-          <button onClick={onClose} className="text-paper/40 hover:text-paper transition-colors duration-200">
+          <button onClick={onClose} className="text-paper/40 hover:text-paper transition-colors duration-300">
             <X size={20} />
           </button>
         </div>
@@ -152,7 +152,7 @@ export default function CrisisView({ onClose, isUnlocked, onNavigate }: CrisisVi
           ) : (
             <button
               onClick={() => setIsEditing(true)}
-              className="text-left p-4 border border-paper/10 rounded-2xl hover:border-paper/20 transition-colors duration-200"
+                className="text-left p-4 border border-paper/10 rounded-2xl hover:border-paper/20 transition-colors duration-300"
             >
               <p className="font-serif italic text-lg leading-relaxed">
                 {data.copingPhrase || (language === 'es' ? 'Toca para escribir tu frase de afrontamiento...' : 'Tap to write your coping phrase...')}
@@ -184,7 +184,7 @@ export default function CrisisView({ onClose, isUnlocked, onNavigate }: CrisisVi
                 </EditorialButton>
                 <button
                   onClick={() => removeContact(contact.id)}
-                  className="text-paper/30 hover:text-red-400 transition-colors duration-200"
+                    className="text-paper/30 hover:text-red-400 transition-colors duration-300"
                 >
                   <Trash2 size={14} />
                 </button>
@@ -199,19 +199,19 @@ export default function CrisisView({ onClose, isUnlocked, onNavigate }: CrisisVi
               value={newName}
               onChange={e => setNewName(e.target.value)}
               placeholder={language === 'es' ? 'Nombre' : 'Name'}
-              className="flex-1 bg-transparent border-b border-paper/20 focus:border-paper/50 py-2 text-sm font-serif text-paper placeholder:text-paper/20 outline-none transition-colors duration-200"
+                  className="flex-1 bg-transparent border-b border-paper/20 focus:border-paper/50 py-2 text-sm font-serif text-paper placeholder:text-paper/20 outline-none transition-colors duration-300"
             />
             <input
               type="tel"
               value={newPhone}
               onChange={e => setNewPhone(e.target.value)}
               placeholder={language === 'es' ? 'Teléfono' : 'Phone'}
-              className="flex-1 bg-transparent border-b border-paper/20 focus:border-paper/50 py-2 text-sm font-mono text-paper placeholder:text-paper/20 outline-none transition-colors duration-200"
+                  className="flex-1 bg-transparent border-b border-paper/20 focus:border-paper/50 py-2 text-sm font-mono text-paper placeholder:text-paper/20 outline-none transition-colors duration-300"
             />
             <button
               onClick={addContact}
               disabled={!newName.trim() || !newPhone.trim()}
-              className="text-paper/40 hover:text-paper disabled:opacity-20 transition-all duration-200"
+                  className="text-paper/40 hover:text-paper disabled:opacity-20 transition-all duration-300"
             >
               <Plus size={18} />
             </button>
@@ -256,7 +256,7 @@ export default function CrisisView({ onClose, isUnlocked, onNavigate }: CrisisVi
                 animate={{
                   scale: breathPhase === 'inhale' ? 1.3 : breathPhase === 'exhale' ? 0.8 : 1.1,
                 }}
-                transition={{ duration: 1, ease: EasingCurves.editorial }}
+              transition={{ duration: 0.3, ease: EasingCurves.editorial }}
                 className="w-24 h-24 rounded-full border-2 border-paper/30 flex items-center justify-center"
               >
                 <span className="font-mono text-3xl">{breathCount}</span>
@@ -264,7 +264,7 @@ export default function CrisisView({ onClose, isUnlocked, onNavigate }: CrisisVi
               <span className="font-serif italic text-paper/60 capitalize">{breathPhase}</span>
               <button
                 onClick={() => setBreathingActive(false)}
-                className="text-paper/30 text-xs font-mono hover:text-paper/60 transition-colors duration-200 mt-2"
+              className="text-paper/30 text-xs font-mono hover:text-paper/60 transition-colors duration-300 mt-2"
               >
                 {language === 'es' ? 'Detener' : 'Stop'}
               </button>
@@ -281,7 +281,7 @@ export default function CrisisView({ onClose, isUnlocked, onNavigate }: CrisisVi
               {isUnlocked && onNavigate && (
                 <button
                   onClick={() => onNavigate('breathing')}
-                  className="flex items-center justify-center gap-2 py-3 text-paper/40 hover:text-paper transition-colors duration-200 text-xs font-mono uppercase tracking-widest"
+              className="flex items-center justify-center gap-2 py-3 text-paper/40 hover:text-paper transition-colors duration-300 text-xs font-mono uppercase tracking-widest"
                 >
                   {language === 'es' ? 'Abrir Vista Completa de Respiración' : 'Open Full Breathing View'}
                   <ArrowRight size={12} />

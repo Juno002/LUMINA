@@ -42,18 +42,18 @@ const LambdaAvatar: React.FC<LambdaAvatarProps> = ({ state, onLongPress }) => {
       case 'float':
         return {
           animate: { y: [0, -6, 0] },
-          transition: { repeat: Infinity, duration: 4, ease: "easeInOut" }
+          transition: { repeat: Infinity, duration: 0.3, ease: "easeInOut" }
         };
       case 'pulse-slow':
         return {
           animate: { scale: [1, 1.05, 1], opacity: [0.8, 1, 0.8] },
-          transition: { repeat: Infinity, duration: 2.5, ease: "easeInOut" }
+          transition: { repeat: Infinity, duration: 0.3, ease: "easeInOut" }
         };
       case 'neutral':
       default:
         return {
           animate: { opacity: [0.6, 1, 0.6] },
-          transition: { repeat: Infinity, duration: 5, ease: "easeInOut" }
+          transition: { repeat: Infinity, duration: 0.3, ease: "easeInOut" }
         };
     }
   };
@@ -80,7 +80,7 @@ const LambdaAvatar: React.FC<LambdaAvatarProps> = ({ state, onLongPress }) => {
         <motion.div 
           {...getAnimationProps()}
           className={cn(
-            "w-24 h-24 rounded-full border border-ink/5 flex items-center justify-center transition-colors duration-1000",
+        "w-24 h-24 rounded-full border border-ink/5 flex items-center justify-center transition-colors duration-300",
             state.mode === 'anchor' && "bg-red-500/5 border-red-500/20",
             state.mode === 'mentor' && "bg-amber-500/5 border-amber-500/20",
             state.mode === 'observer' && "bg-slate-400/5 border-slate-400/20",
@@ -106,7 +106,7 @@ const LambdaAvatar: React.FC<LambdaAvatarProps> = ({ state, onLongPress }) => {
                   className="text-ink/10"
                   initial={{ pathLength: 0 }}
                   animate={{ pathLength: 1 }}
-                  transition={{ duration: 0.8, ease: "linear" }}
+          transition={{ duration: 0.3, ease: "linear" }}
                 />
               </motion.svg>
             )}
@@ -114,7 +114,7 @@ const LambdaAvatar: React.FC<LambdaAvatarProps> = ({ state, onLongPress }) => {
 
           {/* Central Symbol */}
           <span className={cn(
-            "font-serif text-3xl font-light transition-colors duration-1000",
+          "font-serif text-3xl font-light transition-colors duration-300",
             state.color
           )}>
             λ
@@ -138,7 +138,7 @@ const LambdaAvatar: React.FC<LambdaAvatarProps> = ({ state, onLongPress }) => {
                 <div 
                   key={m} 
                   className={cn(
-                    "w-1.5 h-1.5 rounded-full transition-all duration-700",
+          "w-1.5 h-1.5 rounded-full transition-all duration-300",
                     state.mode === m ? "bg-ink scale-110" : "bg-ink/10"
                   )} 
                 />

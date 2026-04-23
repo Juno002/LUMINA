@@ -186,7 +186,7 @@ export default function BreathingView() {
                 ease: "linear"
               }}
               className={cn(
-                "w-32 h-32 rounded-full shadow-[0_0_60px_rgba(0,0,0,0.1)] transition-colors duration-1000",
+                "w-32 h-32 rounded-full shadow-[0_0_60px_rgba(0,0,0,0.1)] transition-colors duration-300",
                 activeExercise.id === 'anchor' ? "bg-blue-900 shadow-blue-900/40" : "bg-ink"
               )}
             />

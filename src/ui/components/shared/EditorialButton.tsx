@@ -52,7 +52,7 @@ export const EditorialButton: React.FC<EditorialButtonProps> = ({
       {variant === 'primary' && !props.disabled && (
         <motion.div 
           animate={{ x: ['-100%', '200%'] }}
-          transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+          transition={{ duration: 0.3, repeat: Infinity, ease: 'linear' }}
           className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent skew-x-12"
         />
       )}

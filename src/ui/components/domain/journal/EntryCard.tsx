@@ -64,7 +64,7 @@ const EntryCard: React.FC<EntryCardProps> = ({ entry, onDelete, onEdit }) => {
           </div>
         </div>
         
-        <h3 className="font-serif text-xl md:text-2xl italic leading-tight group-hover:translate-x-2 transition-transform duration-200">
+          <h3 className="font-serif text-xl md:text-2xl italic leading-tight group-hover:translate-x-2 transition-transform duration-300">
           {entry.automaticThought}
         </h3>
         

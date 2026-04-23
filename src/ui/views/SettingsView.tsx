@@ -333,7 +333,7 @@ export default function SettingsView({
                       <button
                         key={opt}
                         onClick={() => setAutoLock(opt)}
-                        className={`px-3 py-2 rounded-lg text-[10px] font-mono transition-all duration-200 ${
+                        className={`px-3 py-2 rounded-lg text-[10px] font-mono transition-all duration-300 ${
                           currentAutoLock === opt 
                             ? 'bg-ink text-paper border-ink' 
                             : 'bg-paper border border-ink/10 text-accent hover:border-ink/30'

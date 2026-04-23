@@ -273,7 +273,7 @@ export default function App() {
             <motion.aside
               initial={false}
               animate={{ width: isSidebarOpen ? 280 : 80 }}
-              className="relative z-40 bg-paper border-r border-ink/5 hidden md:flex flex-col py-10 px-6 transition-all duration-500 ease-editorial"
+              className="relative z-40 bg-paper border-r border-ink/5 hidden md:flex flex-col py-10 px-6 transition-all duration-300 ease-editorial"
             >
               <div className="flex items-center gap-4 mb-20 px-2 overflow-hidden">
                 <div className="w-8 h-8 rounded-full border border-ink flex items-center justify-center font-serif text-lg">λ</div>
