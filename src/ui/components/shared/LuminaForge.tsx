@@ -145,7 +145,7 @@ export default function LuminaForge({ isOpen, onOpenChange, onSubmit }: LuminaFo
   }[parsed.type];
 
   return (
-    <div data-guide-target="forge" className="fixed bottom-24 right-6 z-[70] md:bottom-8 md:right-8">
+    <div data-guide-target="forge" className="lumina-floating-mobile fixed right-6 z-[70] md:bottom-8 md:right-8">
       <AnimatePresence>
         {isOpen && (
           <motion.div

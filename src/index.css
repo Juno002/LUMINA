@@ -19,6 +19,7 @@
   --ink: #0a0a0a;
   --accent: #666666;
   --paper: #fcfcfc;
+  --lumina-keyboard-offset: 0px;
 }
 
 [data-theme='night'] {
@@ -47,6 +48,18 @@
   button, a, input, select {
     @apply min-h-[44px]; /* Apple HIG minimum touch target */
   }
+}
+
+html[data-native-app='true'] body {
+  overscroll-behavior-y: none;
+}
+
+.lumina-safe-bottom {
+  padding-bottom: calc(env(safe-area-inset-bottom) + 1rem);
+}
+
+.lumina-floating-mobile {
+  bottom: calc(env(safe-area-inset-bottom) + var(--lumina-keyboard-offset, 0px) + 1.5rem);
 }
 
 .editorial-grid {

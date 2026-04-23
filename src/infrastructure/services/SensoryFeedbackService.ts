@@ -4,19 +4,9 @@
  */
 
 import { confetti } from './ConfettiService';
+import { triggerSensoryHaptic } from '../platform/RuntimePlatform';
 
 type SensoryEvent = 'tap' | 'intentShift' | 'complete' | 'success' | 'streak' | 'levelUp' | 'undo' | 'error';
-
-const HAPTIC_PATTERNS: Record<SensoryEvent, number | number[]> = {
-  tap: 8,
-  intentShift: [8, 24, 8],
-  complete: [10, 36, 10],
-  success: [12, 44, 12],
-  streak: [15, 30, 15],
-  levelUp: [18, 34, 18, 34, 24],
-  undo: 18,
-  error: [45, 30, 65]
-};
 
 class SensoryFeedbackService {
   private ctx: AudioContext | null = null;
@@ -49,13 +39,6 @@ class SensoryFeedbackService {
     }
 
     return this.ctx;
-  }
-
-  private vibrate(event: SensoryEvent) {
-    if (typeof navigator === 'undefined' || !navigator.vibrate) {
-      return;
-    }
-    navigator.vibrate(HAPTIC_PATTERNS[event]);
   }
 
   private playTone(ctx: AudioContext, frequency: number, duration: number, gainValue: number, startTime: number, type: OscillatorType = 'sine') {
@@ -112,8 +95,12 @@ class SensoryFeedbackService {
   }
 
   async emit(event: SensoryEvent) {
+    if (!this.enabled) {
+      return;
+    }
+
     if (!this.prefersReducedMotion) {
-      this.vibrate(event);
+      await triggerSensoryHaptic(event);
     }
     await this.play(event);
 

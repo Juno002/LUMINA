@@ -88,14 +88,14 @@ export default function App() {
 
   const {
     vault, isReady, isLocked, vaultExists, unlockError,
-    isSaving, lastSaveError,
+    isSaving, lastSaveError, lastBackupAt,
     unlockVault,
     createVault,
     lockVault,
     updateVault,
     changePassphrase,
     wipeAllData,
-    exportBackup,
+    createBackupArtifact,
     importBackup
   } = useVault();
 
@@ -418,8 +418,9 @@ export default function App() {
                         onWipe={wipeAllData}
                         onLock={lockVault}
                         onChangePassphrase={changePassphrase}
-                        onExportBackup={exportBackup}
+                        onCreateBackupArtifact={createBackupArtifact}
                         onImportBackup={importBackup}
+                        lastBackupAt={lastBackupAt}
                         isSaving={isSaving}
                         lastSaveError={lastSaveError}
                         onOpenCrisis={() => setShowCrisis(true)}
@@ -447,7 +448,7 @@ export default function App() {
             </main>
 
             {/* Mobile Tab Bar */}
-            <nav className="fixed bottom-0 left-0 right-0 bg-paper/80 backdrop-blur-md border-t border-ink/5 px-6 py-4 flex justify-between items-center md:hidden z-50">
+            <nav className="lumina-safe-bottom fixed bottom-0 left-0 right-0 z-50 flex items-center justify-between border-t border-ink/5 bg-paper/80 px-6 py-4 backdrop-blur-md md:hidden">
               {mobilePrimaryNavItems.map((item) => (
                 <button
                   key={item.id}
@@ -497,7 +498,7 @@ export default function App() {
 
             <button
               onClick={() => setShowCrisis(true)}
-              className="fixed bottom-24 left-6 z-[60] flex h-12 w-12 items-center justify-center rounded-full border border-red-500/20 bg-red-500/10 text-red-500 transition-all hover:bg-red-500 hover:text-white md:hidden"
+              className="lumina-floating-mobile fixed left-6 z-[60] flex h-12 w-12 items-center justify-center rounded-full border border-red-500/20 bg-red-500/10 text-red-500 transition-all hover:bg-red-500 hover:text-white md:hidden"
               aria-label={appCommon.emergency_protocol}
               title={appCommon.emergency_protocol}
             >

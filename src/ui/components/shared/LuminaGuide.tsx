@@ -197,7 +197,8 @@ export default function LuminaGuide({
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 24, scale: 0.98 }}
           transition={{ duration: 0.3 }}
-          className="fixed bottom-6 left-4 right-4 z-[65] mx-auto max-w-2xl rounded-[2rem] border border-ink/10 bg-paper/95 p-5 shadow-2xl shadow-ink/10 backdrop-blur-md md:bottom-8 md:p-6"
+          className="fixed left-4 right-4 z-[65] mx-auto max-w-2xl rounded-[2rem] border border-ink/10 bg-paper/95 p-5 shadow-2xl shadow-ink/10 backdrop-blur-md md:bottom-8 md:p-6"
+          style={{ bottom: 'calc(env(safe-area-inset-bottom) + 1.5rem)' }}
           role="dialog"
           aria-label={t('guide.label')}
           aria-live="polite"

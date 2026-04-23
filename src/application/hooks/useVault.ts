@@ -13,7 +13,9 @@ import localforage from 'localforage';
 import { Vault, ClinicalProfile, CrisisContact } from '../../domain/entities';
 import { vaultRepository } from '../../infrastructure/repositories/LocalForageVaultRepository';
 import { cryptoService } from '../../infrastructure/services/CryptoService';
+import { backupMetadataService } from '../../infrastructure/services/BackupMetadataService';
 import { createOnboardingState } from '../usecases/LuminaGuideUseCase';
+import { BackupArtifact, buildBackupFilename } from '../usecases/BackupArtifact';
 
 const CURRENT_SCHEMA_VERSION = 2;
 const DEFAULT_AUTO_LOCK_MS = 5 * 60 * 1000; // 5 minutes
@@ -47,6 +49,10 @@ type BackupExportResult =
 
 type BackupImportResult =
   | { ok: true }
+  | { ok: false; error: string };
+
+type BackupArtifactResult =
+  | { ok: true; artifact: BackupArtifact }
   | { ok: false; error: string };
 
 function arrayBufferToBase64(buffer: ArrayBuffer): string {
@@ -122,6 +128,7 @@ export function useVault() {
   const [unlockError, setUnlockError] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaveError, setLastSaveError] = useState<string | null>(null);
+  const [lastBackupAt, setLastBackupAt] = useState<string | null>(() => backupMetadataService.readLastBackupAt());
 
   // Password stays in memory only while vault is open
   const passwordRef = useRef<string | null>(null);
@@ -266,12 +273,14 @@ export function useVault() {
   const wipeAllData = async () => {
     const success = await vaultRepository.wipe();
     if (success) {
+      backupMetadataService.clear();
+      setLastBackupAt(null);
       lockVault();
       setVaultExists(false);
     }
   };
 
-  const exportBackup = async (): Promise<BackupExportResult> => {
+  const createBackupArtifact = async (): Promise<BackupArtifactResult> => {
     if (!vault || !passwordRef.current) {
       const error = 'Vault must be unlocked before exporting a backup.';
       setLastSaveError(error);
@@ -280,6 +289,7 @@ export function useVault() {
 
     try {
       const crisisData = await localforage.getItem<CrisisBackupData>(CRISIS_KEY);
+      const exportedAt = new Date().toISOString();
       const portablePayload: PortableBackupPayload = {
         vault,
         crisisData: crisisData ?? null,
@@ -294,20 +304,40 @@ export function useVault() {
       const backupEnvelope: PortableBackupEnvelope = {
         format: BACKUP_FORMAT,
         version: BACKUP_VERSION,
-        exportedAt: new Date().toISOString(),
+        exportedAt,
         payload: arrayBufferToBase64(encryptedPayload)
       };
 
+      const serializedBackup = JSON.stringify(backupEnvelope, null, 2);
+      backupMetadataService.rememberBackup(exportedAt);
+      setLastBackupAt(exportedAt);
       setLastSaveError(null);
       return {
         ok: true,
-        backup: JSON.stringify(backupEnvelope, null, 2)
+        artifact: {
+          filename: buildBackupFilename(exportedAt),
+          mimeType: 'application/json',
+          content: serializedBackup,
+          exportedAt
+        }
       };
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unable to generate backup.';
       setLastSaveError(message);
       return { ok: false, error: message };
     }
+  };
+
+  const exportBackup = async (): Promise<BackupExportResult> => {
+    const artifactResult = await createBackupArtifact();
+    if (artifactResult.ok === false) {
+      return { ok: false, error: artifactResult.error };
+    }
+
+    return {
+      ok: true,
+      backup: artifactResult.artifact.content
+    };
   };
 
   const importBackup = async (
@@ -381,12 +411,14 @@ export function useVault() {
     unlockError,
     isSaving,
     lastSaveError,
+    lastBackupAt,
     unlockVault,
     createVault,
     lockVault,
     updateVault,
     changePassphrase,
     wipeAllData,
+    createBackupArtifact,
     exportBackup,
     importBackup
   };

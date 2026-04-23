@@ -76,6 +76,7 @@ vi.mock('../../infrastructure/services/CryptoService', () => ({
 
 describe('useVault', () => {
   beforeEach(() => {
+    window.localStorage.clear();
     localforageState.crisisData = null;
     repositoryState.storedVault = null;
     repositoryState.storedPassword = null;
@@ -168,6 +169,7 @@ describe('useVault', () => {
     expect(result.current.vaultExists).toBe(false);
     expect(result.current.isLocked).toBe(true);
     expect(result.current.vault).toBeNull();
+    expect(result.current.lastBackupAt).toBeNull();
     expect(fakeRepository.wipe).toHaveBeenCalledTimes(1);
   });
 
@@ -226,10 +228,10 @@ describe('useVault', () => {
     let backup: string | null = null;
 
     await act(async () => {
-      const exported = await result.current.exportBackup();
+      const exported = await result.current.createBackupArtifact();
       expect(exported.ok).toBe(true);
       if (exported.ok) {
-        backup = exported.backup;
+        backup = exported.artifact.content;
       }
     });
 
@@ -265,10 +267,10 @@ describe('useVault', () => {
 
     let backup = '';
     await act(async () => {
-      const exported = await result.current.exportBackup();
+      const exported = await result.current.createBackupArtifact();
       expect(exported.ok).toBe(true);
       if (exported.ok) {
-        const envelope = JSON.parse(exported.backup) as { version: number };
+        const envelope = JSON.parse(exported.artifact.content) as { version: number };
         envelope.version = 1;
         backup = JSON.stringify(envelope);
       }
@@ -285,5 +287,30 @@ describe('useVault', () => {
 
     expect(result.current.vault?.profile.name).toBe('Legacy Portable');
     expect(result.current.vault?.schemaVersion).toBe(2);
+  });
+
+  it('creates a reusable backup artifact for local download or native export', async () => {
+    const { result } = renderHook(() => useVault());
+
+    await waitFor(() => expect(result.current.isReady).toBe(true));
+
+    await act(async () => {
+      await result.current.createVault('Artifact User', 'secret-pass', 'unspecified', 'en');
+    });
+
+    let artifact: { filename: string; mimeType: string; content: string; exportedAt: string } | null = null;
+    await act(async () => {
+      const exported = await result.current.createBackupArtifact();
+      expect(exported.ok).toBe(true);
+      if (exported.ok) {
+        artifact = exported.artifact;
+      }
+    });
+
+    expect(artifact?.filename).toMatch(/^lumina-backup-.*\.json$/);
+    expect(artifact?.mimeType).toBe('application/json');
+    expect(artifact?.content).toContain('lumina.portable-backup');
+    expect(result.current.lastBackupAt).toBe(artifact?.exportedAt ?? null);
+    expect(window.localStorage.getItem('lumina_backup_metadata_v1')).toContain('lastBackupAt');
   });
 });

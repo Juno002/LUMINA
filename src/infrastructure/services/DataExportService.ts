@@ -4,6 +4,7 @@
  */
 
 import { Vault } from '../../domain/entities';
+import { BackupArtifact } from '../../application/usecases/BackupArtifact';
 
 function escapeCsvCell(value: unknown): string {
   const normalized = value === null || value === undefined ? '' : String(value);
@@ -105,5 +106,9 @@ export const DataExportService = {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+  },
+
+  downloadArtifact(artifact: BackupArtifact) {
+    this.downloadFile(artifact.content, artifact.filename, artifact.mimeType);
   }
 };

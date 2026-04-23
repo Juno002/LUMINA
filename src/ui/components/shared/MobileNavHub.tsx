@@ -58,10 +58,10 @@ export default function MobileNavHub({ isOpen, onClose, items, activeTab, onNavi
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
-          className="fixed inset-0 z-[100] bg-paper/90 backdrop-blur-xl flex flex-col md:hidden"
+          className="fixed inset-0 z-[100] flex flex-col bg-paper/90 backdrop-blur-xl md:hidden"
         >
           {/* Header */}
-          <div className="flex justify-between items-center px-8 py-10">
+          <div className="flex items-center justify-between px-8 py-10" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 2rem)' }}>
             <div className="flex items-center gap-3">
               <div className="w-6 h-6 rounded-full border border-ink flex items-center justify-center font-serif text-sm">λ</div>
               <span className="font-mono text-[9px] uppercase tracking-[0.3em]">{t('nav.vault_hub')}</span>
@@ -115,7 +115,7 @@ export default function MobileNavHub({ isOpen, onClose, items, activeTab, onNavi
           </div>
 
           {/* Footer Actions */}
-          <div className="p-8 border-t border-ink/5 bg-paper/50 flex flex-col gap-4">
+          <div className="lumina-safe-bottom flex flex-col gap-4 border-t border-ink/5 bg-paper/50 p-8">
              <button 
                 onClick={() => {
                   onNavigate('settings');
