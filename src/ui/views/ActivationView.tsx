@@ -117,7 +117,7 @@ export default function ActivationView({ activities, habits = [], goals = [], on
     <div className="flex flex-col gap-10 pb-20">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div className="flex flex-col gap-2">
-          <div className="editorial-meta">Momentum / Flow</div>
+          <div className="editorial-meta">{t('momentum.breadcrumb.momentum')} / {t('momentum.breadcrumb.flow')}</div>
           <h2 className="font-serif text-3xl md:text-4xl italic">{t('momentum.title')}.</h2>
         </div>
         <EditorialButton 
@@ -199,7 +199,7 @@ export default function ActivationView({ activities, habits = [], goals = [], on
         isOpen={isAdding}
         onClose={() => setIsAdding(false)}
         title={language === 'es' ? 'Programar Intención.' : "Schedule Intention."}
-        subtitle="Behavioral / Flow"
+        subtitle={t('momentum.modal_subtitle')}
       >
         <div className="flex flex-col gap-8">
           <EditorialInput 

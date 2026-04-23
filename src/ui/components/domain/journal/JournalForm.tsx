@@ -33,7 +33,7 @@ export default function JournalForm({
   onSave,
   vault
 }: JournalFormProps) {
-  const { t, language } = useTranslation();
+  const { t } = useTranslation();
   const [level, setLevel] = useState<1 | 2 | 3>(initialData?.level || 1);
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<Partial<ThoughtEntry>>(
@@ -116,15 +116,12 @@ export default function JournalForm({
         <div className="flex items-center justify-between">
           <div className="flex flex-col gap-1">
             <div className="editorial-meta text-[9px] uppercase tracking-widest opacity-40">
-              CBT Framework / Level {level}
+              {t('journal.framework')} / {t('journal.level_word')} {level}
             </div>
             <div className="font-serif text-lg italic">
-              {level === 1 && (language === 'es' ? 'Observacion y Conciencia' : 'Observation & Awareness')}
-              {level === 2 && (language === 'es' ? 'Desplazamiento y Perspectiva' : 'Displacement & Perspective')}
-              {level === 3 &&
-                (language === 'es'
-                  ? 'Reestructuracion Basada en Evidencia'
-                  : 'Evidence-based Restructuring')}
+              {level === 1 && t('journal.level_1_title')}
+              {level === 2 && t('journal.level_2_title')}
+              {level === 3 && t('journal.level_3_title')}
             </div>
           </div>
           <div className="flex gap-2">
@@ -160,7 +157,7 @@ export default function JournalForm({
                 label={t('journal.situation')}
                 required
                 placeholder={
-                  language === 'es' ? '¿Que paso? (ej. reunion con el jefe)' : 'What happened? (e.g., meeting with boss)'
+                  t('journal.situation_placeholder')
                 }
                 value={formData.situation || ''}
                 onChange={(event) => setFormData({ ...formData, situation: event.target.value })}
@@ -169,7 +166,7 @@ export default function JournalForm({
                 <EditorialTextArea
                   label={t('journal.thought')}
                   required
-                  placeholder={language === 'es' ? '¿Que te dijiste a ti mismo?' : 'What did you tell yourself?'}
+                  placeholder={t('journal.thought_placeholder')}
                   value={formData.automaticThought || ''}
                   onChange={(event) => setFormData({ ...formData, automaticThought: event.target.value })}
                 />
@@ -223,10 +220,8 @@ export default function JournalForm({
                     className="mt-4 flex items-center gap-2 text-left font-serif text-sm italic text-accent transition-colors hover:text-ink"
                   >
                     <Sparkles size={14} />
-                    {language === 'es'
-                      ? 'Distorsiones detectadas. ¿Quieres ir mas profundo?'
-                      : 'Distortions detected. Would you like to go deeper?'}
-                    <span className="underline underline-offset-4">Level 2 →</span>
+                    {t('journal.go_deeper_cta')}
+                    <span className="underline underline-offset-4">{t('journal.level_2_cta')}</span>
                   </motion.button>
                 )}
               </div>
@@ -242,9 +237,9 @@ export default function JournalForm({
               className="grid grid-cols-1 gap-10 md:grid-cols-3"
             >
               <EditorialInput
-                label={language === 'es' ? 'Emocion Central' : 'Core Emotion'}
+                label={t('journal.core_emotion')}
                 required
-                placeholder={language === 'es' ? 'Ansiedad, Tristeza, Frustracion...' : 'Anxious, Sad, Frustrated...'}
+                placeholder={t('journal.core_emotion_placeholder')}
                 value={formData.primaryEmotion || ''}
                 onChange={(event) => setFormData({ ...formData, primaryEmotion: event.target.value })}
               />
@@ -265,7 +260,7 @@ export default function JournalForm({
                 />
               </div>
               <EditorialInput
-                label={language === 'es' ? 'Fecha de Observacion' : 'Observation Date'}
+                label={t('journal.observation_date')}
                 type="date"
                 variant="mono"
                 value={formData.date}
@@ -288,9 +283,7 @@ export default function JournalForm({
                 <div className="flex flex-col gap-10">
                   <div className="flex flex-col gap-4">
                     <span className="editorial-meta text-[8px] uppercase tracking-widest opacity-40">
-                      {language === 'es'
-                        ? 'Imagina que un amigo te escribe esto:'
-                        : 'Imagine a friend writes this to you:'}
+                      {t('journal.friend_prompt')}
                     </span>
                     <div className="flex max-w-xl flex-col gap-6">
                       <motion.p
@@ -314,12 +307,8 @@ export default function JournalForm({
                   <div className="flex w-full flex-col md:items-end">
                     <div className="w-full md:max-w-xl">
                       <EditorialTextArea
-                        label={language === 'es' ? 'Tu Respuesta Compasiva' : 'Your Compassionate Response'}
-                        placeholder={
-                          language === 'es'
-                            ? 'Si un buen amigo te dijera esto, ¿que le dirias?'
-                            : 'If a dear friend told you this, what would you say to them?'
-                        }
+                        label={t('journal.compassionate_response')}
+                        placeholder={t('journal.compassionate_response_placeholder')}
                         value={formData.friendResponse || ''}
                         onChange={(event) => setFormData({ ...formData, friendResponse: event.target.value })}
                       />
@@ -339,10 +328,8 @@ export default function JournalForm({
                     className="flex items-center gap-2 text-left font-serif text-sm italic text-accent transition-colors hover:text-ink"
                   >
                     <ArrowRight size={14} />
-                    {language === 'es'
-                      ? '¿Listo para desafiar este pensamiento con evidencia?'
-                      : 'Ready to challenge this thought with evidence?'}
-                    <span className="underline underline-offset-4">Level 3 →</span>
+                    {t('journal.evidence_cta')}
+                    <span className="underline underline-offset-4">{t('journal.level_3_cta')}</span>
                   </motion.button>
                 )}
               </div>
@@ -361,22 +348,14 @@ export default function JournalForm({
               {!isMobile && <div className="h-px w-full bg-ink/5" />}
               <div className="grid grid-cols-1 gap-10 md:grid-cols-2">
                 <EditorialTextArea
-                  label={language === 'es' ? 'Evidencia A FAVOR' : 'Evidence FOR'}
-                  placeholder={
-                    language === 'es'
-                      ? '¿Que hechos apoyan este pensamiento automatico?'
-                      : 'What facts support this automatic thought?'
-                  }
+                  label={t('journal.evidence_for')}
+                  placeholder={t('journal.evidence_for_placeholder')}
                   value={formData.evidenceFor || ''}
                   onChange={(event) => setFormData({ ...formData, evidenceFor: event.target.value })}
                 />
                 <EditorialTextArea
-                  label={language === 'es' ? 'Evidencia EN CONTRA' : 'Evidence AGAINST'}
-                  placeholder={
-                    language === 'es'
-                      ? '¿Que hechos contradicen o desafian este pensamiento?'
-                      : 'What facts contradict or challenge this thought?'
-                  }
+                  label={t('journal.evidence_against')}
+                  placeholder={t('journal.evidence_against_placeholder')}
                   value={formData.evidenceAgainst || ''}
                   onChange={(event) => setFormData({ ...formData, evidenceAgainst: event.target.value })}
                 />
@@ -386,7 +365,7 @@ export default function JournalForm({
                 <div className="flex flex-col gap-6">
                   <div className="flex flex-col gap-3">
                     <label className="editorial-meta">
-                      {language === 'es' ? 'Creencia Inicial' : 'Initial Belief'} ({formData.originalIntensity || 0}/10)
+                      {t('journal.initial_belief')} ({formData.originalIntensity || 0}/10)
                     </label>
                     <input
                       type="range"
@@ -401,7 +380,7 @@ export default function JournalForm({
                   </div>
                   <div className="flex flex-col gap-3">
                     <label className="editorial-meta">
-                      {language === 'es' ? 'Credibilidad Final' : 'Final Credibility'} ({formData.finalCredibility || 0}/10)
+                      {t('journal.final_credibility')} ({formData.finalCredibility || 0}/10)
                     </label>
                     <input
                       type="range"
@@ -431,7 +410,7 @@ export default function JournalForm({
                     </div>
                     <div className="flex flex-col gap-1">
                       <div className="editorial-meta text-[8px] uppercase tracking-widest">
-                        Cognitive Change Index
+                        {t('journal.cognitive_change_index')}
                       </div>
                       <div className="font-serif text-sm italic leading-tight text-accent">
                         {iccResult.message}
@@ -445,9 +424,7 @@ export default function JournalForm({
                 label={t('journal.alternative')}
                 className="h-32"
                 placeholder={
-                  language === 'es'
-                    ? 'Sintesis: Una forma mas realista y util de ver esta situacion...'
-                    : 'Synthesis: A more realistic, helpful way to view this situation...'
+                  t('journal.alternative_placeholder')
                 }
                 value={formData.rationalResponse || ''}
                 onChange={(event) => setFormData({ ...formData, rationalResponse: event.target.value })}
@@ -464,7 +441,7 @@ export default function JournalForm({
                 onClick={handlePrev}
                 className="editorial-meta flex items-center gap-2 transition-colors hover:text-ink"
               >
-                ← {language === 'es' ? 'Atras' : 'Back'}
+                ← {t('common.back')}
               </button>
             )}
             <button type="button" onClick={onCancel} className="editorial-meta transition-colors hover:text-ink">
@@ -475,18 +452,14 @@ export default function JournalForm({
           <div className="flex gap-4">
             {isMobile && canGoNext && (
               <EditorialButton type="button" onClick={handleNext}>
-                {language === 'es' ? 'Siguiente' : 'Next'} →
+                {t('common.next')} →
               </EditorialButton>
             )}
             {(!isMobile || !canGoNext) && (
               <EditorialButton type="submit" icon={<Check size={14} />}>
                 {initialData
-                  ? language === 'es'
-                    ? 'Actualizar Resumen'
-                    : 'Update Summary'
-                  : language === 'es'
-                    ? 'Sellar Observacion'
-                    : 'Seal Observation'}
+                  ? t('journal.update_summary')
+                  : t('journal.seal_observation')}
               </EditorialButton>
             )}
           </div>

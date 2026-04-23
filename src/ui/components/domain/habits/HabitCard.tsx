@@ -36,7 +36,7 @@ export default function HabitCard({
   onDelete,
   onToggle
 }: HabitCardProps) {
-  const { t, language } = useTranslation();
+  const { t } = useTranslation();
   const progress = habit.targetValue ? Math.min(100, (currentValue / habit.targetValue) * 100) : 0;
   const TypeIcon = habit.type === 'numeric' ? Hash : habit.type === 'timer' ? Clock : Check;
 
@@ -83,7 +83,7 @@ export default function HabitCard({
             <div className="mb-1 flex items-center gap-2">
               <TypeIcon size={12} className="text-accent" />
               <span className="editorial-meta text-[9px] uppercase tracking-tighter opacity-50">
-                {habit.type}
+                {t(`habits.type_${habit.type}`)}
               </span>
             </div>
             <h3
@@ -95,7 +95,7 @@ export default function HabitCard({
             </h3>
             {habit.linkedGoalId && (
               <span className="mt-2 w-fit rounded-full bg-ink/5 px-2 py-0.5 font-mono text-[9px] uppercase tracking-widest text-ink/50">
-                {t('habits.linked_aim')}: {linkedGoalTitle || 'Goal'}
+                {t('habits.linked_aim')}: {linkedGoalTitle || t('habits.goal_fallback')}
               </span>
             )}
           </div>
@@ -127,7 +127,7 @@ export default function HabitCard({
               onClick={onAdjustValue}
               className="font-mono text-[9px] uppercase tracking-widest text-accent transition-colors hover:text-ink"
             >
-              {language === 'es' ? 'Ajustar Valor' : 'Adjust Value'}
+              {t('habits.adjust_value')}
             </button>
           </div>
           <div className="h-1 w-full overflow-hidden rounded-full bg-ink/5">

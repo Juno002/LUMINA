@@ -21,7 +21,7 @@ interface EntryCardProps {
  * Displays a summary of a thought entry with level and ICC badges.
  */
 const EntryCard: React.FC<EntryCardProps> = ({ entry, onDelete, onEdit }) => {
-  const { t, language } = useTranslation();
+  const { t } = useTranslation();
   const icc = useMemo(() => {
     if (entry.level === 3 && entry.originalIntensity !== undefined && entry.finalCredibility !== undefined) {
       return calculateICC(entry.originalIntensity, entry.finalCredibility);
@@ -56,7 +56,7 @@ const EntryCard: React.FC<EntryCardProps> = ({ entry, onDelete, onEdit }) => {
           </div>
           <div className="flex items-center gap-4 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
             <button onClick={onEdit} className="editorial-meta text-[9px] uppercase hover:text-ink">
-              {language === 'es' ? 'Editar' : 'Edit'}
+              {t('common.edit')}
             </button>
             <button onClick={onDelete} className="editorial-meta text-[9px] uppercase text-red-500/50 hover:text-red-500">
               {t('common.delete')}

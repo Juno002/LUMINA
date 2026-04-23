@@ -237,7 +237,7 @@ export default function SettingsView({
   return (
     <div className="flex flex-col gap-16">
       <div className="flex flex-col gap-2">
-        <div className="editorial-meta">Configurations / Sovereignty</div>
+        <div className="editorial-meta">{t('settings.breadcrumb.configurations')} / {t('settings.breadcrumb.sovereignty')}</div>
         <h2 className="font-serif text-4xl">{t('settings.title')}.</h2>
       </div>
 
@@ -371,7 +371,7 @@ export default function SettingsView({
                      <FileText size={20} className="opacity-40 group-hover:text-ink transition-colors" />
                      <div className="flex flex-col">
                         <span className="font-serif italic text-sm">{t('settings.clinical_report')}</span>
-                        <span className="text-[9px] uppercase tracking-widest opacity-40 mt-1">Markdown (.md)</span>
+                        <span className="text-[9px] uppercase tracking-widest opacity-40 mt-1">{t('settings.export.markdown')}</span>
                      </div>
                   </button>
                   <button 
@@ -381,7 +381,7 @@ export default function SettingsView({
                      <Table size={20} className="opacity-40 group-hover:text-ink transition-colors" />
                      <div className="flex flex-col">
                         <span className="font-serif italic text-sm">{t('settings.raw_database')}</span>
-                        <span className="text-[9px] uppercase tracking-widest opacity-40 mt-1">Spreadsheet (.csv)</span>
+                        <span className="text-[9px] uppercase tracking-widest opacity-40 mt-1">{t('settings.export.spreadsheet')}</span>
                      </div>
                    </button>
                    <button 
@@ -391,7 +391,7 @@ export default function SettingsView({
                       <Lock size={20} className="opacity-40 group-hover:text-ink transition-colors" />
                       <div className="flex flex-col">
                          <span className="font-serif italic text-sm">{t('settings.encrypted_backup')}</span>
-                         <span className="text-[9px] uppercase tracking-widest opacity-40 mt-1">Portable Archive (.json)</span>
+                         <span className="text-[9px] uppercase tracking-widest opacity-40 mt-1">{t('settings.export.portable_archive')}</span>
                       </div>
                    </button>
                    <button 
@@ -401,7 +401,7 @@ export default function SettingsView({
                       <Upload size={20} className="opacity-40 group-hover:text-ink transition-colors" />
                       <div className="flex flex-col">
                          <span className="font-serif italic text-sm">{t('settings.import_backup')}</span>
-                         <span className="text-[9px] uppercase tracking-widest opacity-40 mt-1">Restore Archive</span>
+                         <span className="text-[9px] uppercase tracking-widest opacity-40 mt-1">{t('settings.export.restore_archive')}</span>
                       </div>
                    </button>
                 </div>

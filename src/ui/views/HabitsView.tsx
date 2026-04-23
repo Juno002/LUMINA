@@ -38,7 +38,7 @@ interface HabitsViewProps {
 }
 
 export default function HabitsView({ vault, onUpdate, onLevelUp }: HabitsViewProps) {
-  const { t, language } = useTranslation();
+  const { t } = useTranslation();
   const [isAdding, setIsAdding] = useState(false);
   const [addModalKey, setAddModalKey] = useState(0);
   const [editingValueId, setEditingValueId] = useState<string | null>(null);
@@ -134,7 +134,7 @@ export default function HabitsView({ vault, onUpdate, onLevelUp }: HabitsViewPro
     <div className="flex flex-col gap-12">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div className="flex flex-col gap-2">
-          <div className="editorial-meta">Rhythm / Daily Architecture</div>
+          <div className="editorial-meta">{t('habits.breadcrumb')}</div>
           <h2 className="font-serif text-3xl md:text-4xl">{t('habits.title')}.</h2>
         </div>
         <EditorialButton 
@@ -219,12 +219,8 @@ export default function HabitsView({ vault, onUpdate, onLevelUp }: HabitsViewPro
         isOpen={!!habitToDeleteId}
         onClose={() => setHabitToDeleteId(null)}
         onConfirm={handleDelete}
-        title={language === 'es' ? 'Archivar ritmo.' : 'Archive rhythm.'}
-        description={
-          language === 'es'
-            ? 'Este hábito dejará de contar en la arquitectura activa y sus registros pasados permanecerán en la bóveda.'
-            : 'This habit will stop counting toward the active architecture, while past logs remain in the vault.'
-        }
+        title={t('habits.archive_title')}
+        description={t('habits.archive_description')}
         confirmLabel={t('common.archive')}
         cancelLabel={t('common.cancel')}
       />

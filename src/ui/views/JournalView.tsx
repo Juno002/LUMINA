@@ -25,7 +25,7 @@ interface JournalViewProps {
 }
 
 export default function JournalView({ entries, onUpdate, clinicalProfile, initialDraft, onDraftConsumed }: JournalViewProps) {
-  const { t, language } = useTranslation();
+  const { t } = useTranslation();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [editingEntry, setEditingEntry] = useState<ThoughtEntry | null>(null);
@@ -59,7 +59,7 @@ export default function JournalView({ entries, onUpdate, clinicalProfile, initia
     <div className="flex flex-col gap-10">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div className="flex flex-col gap-2">
-          <div className="editorial-meta">Library / Logs</div>
+          <div className="editorial-meta">{t('journal.breadcrumb')}</div>
           <h2 className="font-serif text-3xl md:text-4xl">{t('journal.title')}.</h2>
         </div>
         <div className="flex flex-wrap gap-4 w-full md:w-auto">
@@ -76,7 +76,7 @@ export default function JournalView({ entries, onUpdate, clinicalProfile, initia
         <Search className="absolute left-0 top-1/2 -translate-y-1/2 text-accent opacity-30 group-focus-within:opacity-100 transition-opacity" size={14} />
         <input 
           type="text"
-          placeholder="Search archives..."
+          placeholder={t('journal.search_placeholder')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="w-full bg-transparent border-b border-ink/5 focus:border-ink rounded-none py-4 pl-6 pr-4 transition-all outline-none text-sm italic font-serif"
@@ -125,12 +125,8 @@ export default function JournalView({ entries, onUpdate, clinicalProfile, initia
         isOpen={!!entryToDeleteId}
         onClose={() => setEntryToDeleteId(null)}
         onConfirm={handleDelete}
-        title={language === 'es' ? 'Eliminar observación.' : 'Delete observation.'}
-        description={
-          language === 'es'
-            ? 'Esta observación se eliminará de la crónica de forma permanente.'
-            : 'This observation will be removed from the chronicle permanently.'
-        }
+        title={t('journal.delete_title')}
+        description={t('journal.delete_description')}
         confirmLabel={t('common.delete')}
         cancelLabel={t('common.cancel')}
       />
