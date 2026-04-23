@@ -51,6 +51,15 @@ function resolveTranslationNode(language: Language, path: string): TranslationVa
   return result;
 }
 
+function humanizeMissingPath(path: string): string {
+  const fallbackToken = path.split('.').filter(Boolean).pop() || path;
+  return fallbackToken
+    .replace(/[_-]+/g, ' ')
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .toLowerCase()
+    .replace(/\b\w/g, char => char.toUpperCase());
+}
+
 export function LanguageProvider({
   children,
   language,
@@ -63,12 +72,18 @@ export function LanguageProvider({
   const t = (path: string): string => {
     const result = resolveTranslationNode(language, path);
 
-    if (typeof result !== 'string') {
-      warnMissingTranslation(language, path, result === undefined ? 'missing' : 'expected-string');
-      return path;
+    if (typeof result === 'string') {
+      return result;
     }
 
-    return result;
+    const englishFallback = language === 'en' ? undefined : resolveTranslationNode('en', path);
+    if (typeof englishFallback === 'string') {
+      warnMissingTranslation(language, path, result === undefined ? 'missing' : 'expected-string');
+      return englishFallback;
+    }
+
+    warnMissingTranslation(language, path, result === undefined ? 'missing' : 'expected-string');
+    return humanizeMissingPath(path);
   };
 
   const tGroup = <T extends TranslationGroup = TranslationGroup>(path: string): T => {

@@ -266,10 +266,105 @@ export const translations = {
       back: 'Return',
       confirmDelete: 'Are you sure?',
       archive: 'Archive',
+      close: 'Close',
+      collapse_navigation: 'Collapse navigation',
+      expand_navigation: 'Expand navigation',
+      open_navigation: 'Open navigation',
+      emergency_protocol: 'Emergency Protocol',
+      confirmation: 'Confirmation / Editorial',
       peace: 'Peace',
       panic: 'Panic',
       cycle: 'Cycle',
       removedAnchor: 'Removed Anchor'
+    },
+    lumen: {
+      open: 'Open Lumen',
+      close: 'Close Lumen',
+      placeholder: 'Lumen: intention, * habit, Goal: objective or > journal',
+      chip_habit: '* Habit',
+      chip_goal: 'Goal:',
+      chip_journal: '> Journal',
+      helper_intention: 'Save intention for today',
+      helper_habit: 'Create daily habit',
+      helper_goal: 'Create active goal',
+      helper_journal: 'Open prefilled Chronicle',
+      notes_placeholder: 'Soft notes around this intention...',
+      tags_placeholder: 'Comma-separated tags'
+    },
+    guide: {
+      label: 'Lumina Guide',
+      of: 'of',
+      pause: 'Pause',
+      skip: 'Skip',
+      got_it: 'Got it',
+      steps: {
+        sanctuary: {
+          title: 'Your Sanctuary responds to the day.',
+          body: 'Reflejo watches real signals: intensity, habits, sleep, day closure, and resilience. You do not need to learn everything now; just notice what the space asks from you.',
+          action: 'View Sanctuary'
+        },
+        chronicle: {
+          title: 'Chronicle helps you think with evidence.',
+          body: 'L1 observes, L2 takes perspective, and L3 restructures. It complements therapy: useful, private, and never framed as a replacement for clinical support.',
+          action: 'Open Chronicle'
+        },
+        architecture: {
+          title: 'Architecture is learned by touch.',
+          body: 'Completing a habit should feel clear: micro-sound, haptic touch, progress, and a quiet reward when you sustain the streak.',
+          action: 'Go to Habits'
+        },
+        emotionalFlux: {
+          title: 'Emotional Flux records the inner weather.',
+          body: 'Log intensity, sensations, triggers, and urges. The point is to detect patterns without turning every emotion into an emergency.',
+          action: 'View Flux'
+        },
+        facing: {
+          title: 'Exposure works through gradual approach.',
+          body: 'Build hierarchies, track SUDs, and compare predictions against outcomes. It is a practice log, not a command to force yourself all at once.',
+          action: 'View Exposure'
+        },
+        momentum: {
+          title: 'Momentum turns intention into motion.',
+          body: 'Small tasks planned for today live here. Completing an intention opens real feedback so you can compare expectation, effort, and joy.',
+          action: 'View Momentum'
+        },
+        breathe: {
+          title: 'Breathing is the landing control.',
+          body: 'Use this space when the system feels loaded. The visual rhythm keeps guidance simple so intensity can drop without more noise.',
+          action: 'Breathe'
+        },
+        fortress: {
+          title: 'Fortress holds your active goals.',
+          body: 'Define clear goals, priority, and progress. Lumen can create a quick goal with Goal: when an idea needs structure.',
+          action: 'View Goals'
+        },
+        nightfall: {
+          title: 'Sleep protects the night architecture.',
+          body: 'Log duration, quality, and notes. LUMINA connects rest with resilience so the day is read with more context.',
+          action: 'View Sleep'
+        },
+        resilience: {
+          title: 'Resilience reveals patterns, not judgments.',
+          body: 'This panel summarizes intensity, momentum, and cognitive change. It is for spotting trends, not grading yourself.',
+          action: 'View Resilience'
+        },
+        vault: {
+          title: 'The Vault is your control.',
+          body: 'From Settings you can lock, export, restore, change sound/theme, and repeat this guide whenever you want.',
+          action: 'Go to Vault'
+        },
+        forge: {
+          title: 'Lumen turns thought into action.',
+          body: 'Write a phrase to create an intention. Use * for habits, Goal: for goals, or > to open a Chronicle reflection.',
+          action: 'Open Lumen'
+        }
+      }
+    },
+    level_up: {
+      eyebrow: 'Transcendence Achieved',
+      title: 'Level Up.',
+      body: 'Your discipline has evolved. A new chapter of clarity begins.',
+      continue: 'Click anywhere to continue'
     },
     exposure: {
       title: 'Facing the Storm',
@@ -467,7 +562,10 @@ export const translations = {
       calibrating: 'Calibrating Engine...',
       create_vault: 'Create Secure Vault',
       welcome_back: 'Welcome back.',
-      secure_vault_desc: 'Enter your passphrase to access your sanctuary.'
+      secure_vault_desc: 'Enter your passphrase to access your sanctuary.',
+      core_initialize: 'Lumina Core / Initialize',
+      language_title: 'Linguistic Architecture.',
+      language_desc: 'Choose your primary linguistic environment.'
     }
   },
   es: {
@@ -732,10 +830,105 @@ export const translations = {
       back: 'Volver',
       confirmDelete: '¿Estás seguro?',
       archive: 'Archivar',
+      close: 'Cerrar',
+      collapse_navigation: 'Contraer navegación',
+      expand_navigation: 'Expandir navegación',
+      open_navigation: 'Abrir navegación',
+      emergency_protocol: 'Protocolo de emergencia',
+      confirmation: 'Confirmación / Editorial',
       peace: 'Paz',
       panic: 'Pánico',
       cycle: 'Ciclo',
       removedAnchor: 'Ancla Eliminada'
+    },
+    lumen: {
+      open: 'Abrir Lumen',
+      close: 'Cerrar Lumen',
+      placeholder: 'Lumen: intención, * hábito, Meta: objetivo o > diario',
+      chip_habit: '* Hábito',
+      chip_goal: 'Meta:',
+      chip_journal: '> Diario',
+      helper_intention: 'Guardar intención para hoy',
+      helper_habit: 'Crear hábito diario',
+      helper_goal: 'Crear objetivo activo',
+      helper_journal: 'Abrir Crónica prellenada',
+      notes_placeholder: 'Notas suaves sobre esta intención...',
+      tags_placeholder: 'Etiquetas separadas por comas'
+    },
+    guide: {
+      label: 'Guía de Lumina',
+      of: 'de',
+      pause: 'Pausar',
+      skip: 'Saltar',
+      got_it: 'Entendido',
+      steps: {
+        sanctuary: {
+          title: 'Tu Santuario responde al día.',
+          body: 'Reflejo observa señales reales: intensidad, hábitos, sueño, cierre del día y resiliencia. No tienes que aprender todo ahora; solo nota qué te pide el espacio.',
+          action: 'Ver Santuario'
+        },
+        chronicle: {
+          title: 'Crónica te ayuda a pensar con evidencia.',
+          body: 'L1 observa, L2 toma perspectiva y L3 reestructura. Es un complemento para terapia: útil, privado y sin prometer reemplazar acompañamiento clínico.',
+          action: 'Abrir Crónica'
+        },
+        architecture: {
+          title: 'Arquitectura se aprende tocando.',
+          body: 'Completar un hábito debe sentirse claro: microsonido, vibración, progreso y una recompensa tranquila cuando sostienes la racha.',
+          action: 'Ir a Hábitos'
+        },
+        emotionalFlux: {
+          title: 'Flujo emocional registra el clima interno.',
+          body: 'Marca intensidad, sensaciones, detonantes e impulsos. La idea es detectar patrones sin convertir cada emoción en una emergencia.',
+          action: 'Ver Flujo'
+        },
+        facing: {
+          title: 'Afrontamiento trabaja con aproximaciones graduales.',
+          body: 'Construye jerarquías, registra SUDs y observa predicciones contra resultados. Es una bitácora de práctica, no una orden de empujarte de golpe.',
+          action: 'Ver Afrontamiento'
+        },
+        momentum: {
+          title: 'Momentum convierte intención en movimiento.',
+          body: 'Aquí viven las tareas pequeñas, planificadas para hoy. Completar una intención abre feedback real para comparar expectativa, esfuerzo y alegría.',
+          action: 'Ver Momentum'
+        },
+        breathe: {
+          title: 'Respirar es el botón de aterrizaje.',
+          body: 'Usa este espacio cuando el sistema esté cargado. El ritmo visual mantiene la guía simple para bajar intensidad sin añadir ruido.',
+          action: 'Respirar'
+        },
+        fortress: {
+          title: 'Fortaleza guarda tus metas activas.',
+          body: 'Define objetivos claros, prioridad y progreso. Lumen puede crear una meta rápida con Meta: cuando una idea pide estructura.',
+          action: 'Ver Metas'
+        },
+        nightfall: {
+          title: 'Sueño cuida la arquitectura nocturna.',
+          body: 'Registra duración, calidad y notas. LUMINA cruza descanso con resiliencia para leer el día con más contexto.',
+          action: 'Ver Sueño'
+        },
+        resilience: {
+          title: 'Resiliencia revela patrones, no juicios.',
+          body: 'Este panel resume intensidad, momentum y cambio cognitivo. Sirve para mirar tendencias, no para calificarte.',
+          action: 'Ver Resiliencia'
+        },
+        vault: {
+          title: 'La Bóveda es tu control.',
+          body: 'Desde Configuración puedes bloquear, exportar, restaurar, cambiar sonido/tema y repetir esta guía cuando quieras.',
+          action: 'Ir a Bóveda'
+        },
+        forge: {
+          title: 'Lumen convierte pensamiento en acción.',
+          body: 'Escribe una frase para crear una intención. Usa * para hábitos, Meta: para objetivos o > para abrir una reflexión en Crónica.',
+          action: 'Abrir Lumen'
+        }
+      }
+    },
+    level_up: {
+      eyebrow: 'Trascendencia alcanzada',
+      title: 'Nivel superior.',
+      body: 'Tu disciplina evolucionó. Empieza un nuevo capítulo de claridad.',
+      continue: 'Haz clic en cualquier lugar para continuar'
     },
     exposure: {
       title: 'Enfrentando la Tormenta',
@@ -933,7 +1126,10 @@ export const translations = {
       calibrating: 'Calibrando Motor...',
       create_vault: 'Crear Bóveda Segura',
       welcome_back: 'Bienvenido de nuevo.',
-      secure_vault_desc: 'Introduce tu contraseña para acceder a tu santuario.'
+      secure_vault_desc: 'Introduce tu contraseña para acceder a tu santuario.',
+      core_initialize: 'Núcleo Lumina / Inicializar',
+      language_title: 'Arquitectura lingüística.',
+      language_desc: 'Elige tu entorno lingüístico principal.'
     }
   }
 };

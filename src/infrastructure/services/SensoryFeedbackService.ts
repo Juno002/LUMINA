@@ -112,7 +112,9 @@ class SensoryFeedbackService {
   }
 
   async emit(event: SensoryEvent) {
-    this.vibrate(event);
+    if (!this.prefersReducedMotion) {
+      this.vibrate(event);
+    }
     await this.play(event);
 
     if (this.prefersReducedMotion) {

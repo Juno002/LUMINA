@@ -56,10 +56,10 @@ export default function WelcomeView({ onCreateVault }: WelcomeViewProps) {
             className="max-w-xl w-full flex flex-col gap-12 text-center"
           >
             <div className="flex flex-col gap-4">
-              <div className="editorial-meta">Lumina Core / Initialize</div>
-              <h1 className="font-serif text-5xl md:text-6xl font-light">Linguistic Architecture.</h1>
+              <div className="editorial-meta">{t('welcome.core_initialize')}</div>
+              <h1 className="font-serif text-5xl md:text-6xl font-light">{t('welcome.language_title')}</h1>
               <p className="font-serif italic text-lg text-accent max-w-xs mx-auto opacity-60">
-                Choose your primary linguistic environment.
+                {t('welcome.language_desc')}
               </p>
             </div>
 
@@ -92,7 +92,7 @@ export default function WelcomeView({ onCreateVault }: WelcomeViewProps) {
                 onClick={() => setStep('disclaimer')}
                 className="mt-8 flex items-center gap-4 bg-ink text-paper px-12 py-5 rounded-full font-mono text-[10px] uppercase tracking-[0.3em] hover:opacity-80 transition-all hover:scale-105"
               >
-                {language === 'es' ? 'Continuar' : 'Continue'} <ArrowRight size={14} />
+                {t('common.continue')} <ArrowRight size={14} />
               </button>
             </div>
           </motion.div>

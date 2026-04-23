@@ -22,7 +22,7 @@ import { ThoughtEntry, MoodEntry, ExposureData, ActivationActivity, Goal, SleepE
 import { awardXP } from './application/usecases/GamificationEngine';
 import { sensoryFeedback } from './infrastructure/services/SensoryFeedbackService';
 import { LanguageProvider } from "./application/contexts/LanguageContext";
-import { Language } from "./shared/i18n/translations";
+import { Language, translations } from "./shared/i18n/translations";
 import { todayISO } from './shared/utils/DateFormatter';
 import { QuickCapturePayload } from './application/usecases/QuickCaptureParser';
 import {
@@ -148,6 +148,11 @@ export default function App() {
   };
 
   const currentLanguage = (vault?.profile.language || tempLanguage) as Language;
+  const appCommon = translations[currentLanguage].common;
+  const getNavLabel = (label: string) => {
+    const key = label.split('.')[1] as keyof typeof translations.en.nav;
+    return translations[currentLanguage].nav[key] || label;
+  };
   
   const handleLanguageChange = (lang: Language) => {
     if (vault) {
@@ -358,16 +363,8 @@ export default function App() {
                   setIsSidebarOpen(!isSidebarOpen);
                 }}
                 className="group/sidebar-toggle absolute -right-2 top-12 flex h-16 w-4 items-center justify-center rounded-full border border-ink/5 bg-paper/70 text-ink/30 opacity-50 backdrop-blur-sm transition-all hover:w-5 hover:border-ink/15 hover:bg-paper hover:text-ink hover:opacity-100 focus-visible:w-5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/20"
-                aria-label={
-                  isSidebarOpen
-                    ? currentLanguage === 'es' ? 'Contraer navegación' : 'Collapse navigation'
-                    : currentLanguage === 'es' ? 'Expandir navegación' : 'Expand navigation'
-                }
-                title={
-                  isSidebarOpen
-                    ? currentLanguage === 'es' ? 'Contraer navegación' : 'Collapse navigation'
-                    : currentLanguage === 'es' ? 'Expandir navegación' : 'Expand navigation'
-                }
+                aria-label={isSidebarOpen ? appCommon.collapse_navigation : appCommon.expand_navigation}
+                title={isSidebarOpen ? appCommon.collapse_navigation : appCommon.expand_navigation}
               >
                 <span
                   aria-hidden="true"
@@ -455,6 +452,8 @@ export default function App() {
                 <button
                   key={item.id}
                   onClick={() => handleTabChange(item.id)}
+                  aria-label={getNavLabel(item.label)}
+                  title={getNavLabel(item.label)}
                   className={cn("p-2 transition-all", activeTab === item.id ? "text-ink scale-110" : "text-accent")}
                 >
                   <item.icon size={22} />
@@ -465,6 +464,8 @@ export default function App() {
                   triggerHaptic('medium');
                   setIsNavHubOpen(true);
                 }}
+                aria-label={appCommon.open_navigation}
+                title={appCommon.open_navigation}
                 className="p-2 text-accent hover:text-ink transition-all"
               >
                 <LayoutGrid size={22} />
@@ -497,7 +498,8 @@ export default function App() {
             <button
               onClick={() => setShowCrisis(true)}
               className="fixed bottom-24 left-6 z-[60] flex h-12 w-12 items-center justify-center rounded-full border border-red-500/20 bg-red-500/10 text-red-500 transition-all hover:bg-red-500 hover:text-white md:hidden"
-              title="Emergency Protocol"
+              aria-label={appCommon.emergency_protocol}
+              title={appCommon.emergency_protocol}
             >
               <ShieldAlert size={18} />
             </button>
@@ -506,7 +508,8 @@ export default function App() {
             <button 
               onClick={() => setShowCrisis(true)}
               className="fixed bottom-10 right-10 w-12 h-12 bg-red-500/10 text-red-500 rounded-full border border-red-500/20 hidden md:flex items-center justify-center hover:bg-red-500 hover:text-white transition-all z-40 group"
-              title="Emergency Protocol"
+              aria-label={appCommon.emergency_protocol}
+              title={appCommon.emergency_protocol}
             >
               <Shield size={20} className="group-hover:scale-110 transition-transform" />
             </button>

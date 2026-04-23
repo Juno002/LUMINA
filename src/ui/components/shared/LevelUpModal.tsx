@@ -6,9 +6,8 @@
 import React, { useEffect } from 'react';
 import { motion } from 'motion/react';
 import { AnimationSpeeds } from '../../../domain/constants/Theme';
-import { triggerHaptic } from '../../../shared/utils/Haptics';
-import { audioFeedback } from '../../../infrastructure/services/WebAudioFeedbackService';
-import { confetti } from '../../../infrastructure/services/ConfettiService';
+import { sensoryFeedback } from '../../../infrastructure/services/SensoryFeedbackService';
+import { useTranslation } from '../../../application/contexts/LanguageContext';
 
 interface LevelUpModalProps {
   level: number;
@@ -16,15 +15,10 @@ interface LevelUpModalProps {
 }
 
 export default function LevelUpModal({ level, onClose }: LevelUpModalProps) {
+  const { t } = useTranslation();
+
   useEffect(() => {
-    // Initial celebration
-    triggerHaptic('success');
-    audioFeedback.playLevelUp();
-    confetti.trigger({
-      particleCount: 30,
-      spread: 80,
-      origin: { x: 0.5, y: 0.4 }
-    });
+    sensoryFeedback.levelUp();
 
     // Auto-close after celebration
     const timer = setTimeout(onClose, 4000);
@@ -36,6 +30,7 @@ export default function LevelUpModal({ level, onClose }: LevelUpModalProps) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
+      transition={{ duration: AnimationSpeeds.fluid }}
       className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-ink/90 backdrop-blur-md cursor-pointer"
       onClick={onClose}
     >
@@ -54,15 +49,17 @@ export default function LevelUpModal({ level, onClose }: LevelUpModalProps) {
         <motion.div 
           initial={{ opacity: 0, letterSpacing: '0.1em' }}
           animate={{ opacity: 0.5, letterSpacing: '0.4em' }}
+          transition={{ duration: AnimationSpeeds.fluid }}
           className="font-mono text-[10px] uppercase text-paper tracking-[0.4em] mb-4"
         >
-          Transcendence Achieved
+          {t('level_up.eyebrow')}
         </motion.div>
 
         <div className="relative">
           <motion.div 
             initial={{ scale: 0.5, opacity: 0 }}
             animate={{ scale: 1.5, opacity: 0.1 }}
+            transition={{ duration: AnimationSpeeds.fluid }}
             className="absolute inset-0 bg-paper rounded-full blur-3xl"
           />
           <h1 className="font-serif text-[12rem] leading-none text-paper font-light select-none relative z-10">
@@ -71,19 +68,19 @@ export default function LevelUpModal({ level, onClose }: LevelUpModalProps) {
         </div>
 
         <div className="flex flex-col gap-2 relative z-10">
-          <div className="font-serif text-2xl text-paper italic">Level Up.</div>
+          <div className="font-serif text-2xl text-paper italic">{t('level_up.title')}</div>
           <p className="font-serif text-sm text-paper/40 max-w-[240px]">
-            Your discipline has evolved. A new chapter of clarity begins.
+            {t('level_up.body')}
           </p>
         </div>
 
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 2 }}
+          transition={{ delay: 2, duration: AnimationSpeeds.fluid }}
           className="mt-10 font-mono text-[9px] uppercase text-paper/30 tracking-widest"
         >
-          Click anywhere to continue
+          {t('level_up.continue')}
         </motion.div>
       </motion.div>
     </motion.div>

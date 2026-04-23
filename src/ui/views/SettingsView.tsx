@@ -544,6 +544,7 @@ export default function SettingsView({
         }}
         title={t('settings.passphrase_modal_title')}
         subtitle={t('settings.passphrase_modal_subtitle')}
+        closeLabel={t('common.close')}
       >
         <div className="flex flex-col gap-8">
           <EditorialInput
@@ -604,6 +605,7 @@ export default function SettingsView({
         }}
         title={t('settings.backup_import_modal_title')}
         subtitle={t('settings.backup_import_modal_subtitle')}
+        closeLabel={t('common.close')}
       >
         <div className="flex flex-col gap-8">
           <div className="flex flex-col gap-3 rounded-3xl border border-ink/5 bg-ink/[0.02] px-6 py-5">

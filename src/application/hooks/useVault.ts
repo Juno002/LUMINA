@@ -15,12 +15,13 @@ import { vaultRepository } from '../../infrastructure/repositories/LocalForageVa
 import { cryptoService } from '../../infrastructure/services/CryptoService';
 import { createOnboardingState } from '../usecases/LuminaGuideUseCase';
 
-const CURRENT_SCHEMA_VERSION = 1;
+const CURRENT_SCHEMA_VERSION = 2;
 const DEFAULT_AUTO_LOCK_MS = 5 * 60 * 1000; // 5 minutes
 const ACTIVITY_EVENTS = ['mousemove', 'keypress', 'touchstart', 'click'] as const;
 const CRISIS_KEY = 'lumina_crisis_config';
 const BACKUP_FORMAT = 'lumina.portable-backup';
-const BACKUP_VERSION = 1;
+const BACKUP_VERSION = 2;
+const SUPPORTED_BACKUP_VERSIONS = [1, 2] as const;
 
 interface CrisisBackupData {
   copingPhrase: string;
@@ -35,7 +36,7 @@ interface PortableBackupPayload {
 
 interface PortableBackupEnvelope {
   format: typeof BACKUP_FORMAT;
-  version: typeof BACKUP_VERSION;
+  version: typeof SUPPORTED_BACKUP_VERSIONS[number];
   exportedAt: string;
   payload: string;
 }
@@ -75,7 +76,7 @@ function isPortableBackupEnvelope(value: unknown): value is PortableBackupEnvelo
   const candidate = value as Partial<PortableBackupEnvelope>;
   return (
     candidate.format === BACKUP_FORMAT &&
-    candidate.version === BACKUP_VERSION &&
+    SUPPORTED_BACKUP_VERSIONS.includes(candidate.version as typeof SUPPORTED_BACKUP_VERSIONS[number]) &&
     typeof candidate.exportedAt === 'string' &&
     typeof candidate.payload === 'string'
   );
@@ -85,12 +86,31 @@ function isPortableBackupEnvelope(value: unknown): value is PortableBackupEnvelo
  * Applies any necessary schema migrations to a loaded vault.
  */
 function migrateVault(vault: Vault): Vault {
-  const migrated = { ...vault };
+  let migrated = {
+    ...vault,
+    profile: {
+      ...vault.profile,
+      soundEnabled: vault.profile.soundEnabled ?? true,
+      language: vault.profile.language ?? 'en',
+      onboarding: vault.profile.onboarding ?? createOnboardingState('not_started')
+    }
+  };
+
   if (!migrated.schemaVersion) {
-    migrated.schemaVersion = CURRENT_SCHEMA_VERSION;
+    migrated = { ...migrated, schemaVersion: 1 };
   }
-  // Future migrations go here:
-  // if (migrated.schemaVersion < 2) { ... migrated.schemaVersion = 2; }
+
+  if (migrated.schemaVersion < 2) {
+    migrated = {
+      ...migrated,
+      schemaVersion: 2,
+      profile: {
+        ...migrated.profile,
+        onboarding: migrated.profile.onboarding ?? createOnboardingState('not_started')
+      }
+    };
+  }
+
   return migrated;
 }
 
@@ -210,7 +230,10 @@ export function useVault() {
       setIsSaving(true);
       setLastSaveError(null);
       try {
-        await vaultRepository.save(newVault, passwordRef.current);
+        const saved = await vaultRepository.save(newVault, passwordRef.current);
+        if (!saved) {
+          throw new Error('Unable to write the encrypted vault to local storage.');
+        }
       } catch (e) {
         setLastSaveError(e instanceof Error ? e.message : String(e));
       } finally {

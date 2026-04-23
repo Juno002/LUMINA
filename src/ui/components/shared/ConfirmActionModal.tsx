@@ -32,15 +32,16 @@ export const ConfirmActionModal: React.FC<ConfirmActionModalProps> = ({
   tone = 'danger',
   isBusy = false
 }) => {
-  const { language } = useTranslation();
+  const { t } = useTranslation();
 
   return (
     <EditorialModal
       isOpen={isOpen}
       onClose={onClose}
       title={title}
-      subtitle={language === 'es' ? 'Confirmación / Editorial' : 'Confirmation / Editorial'}
+      subtitle={t('common.confirmation')}
       maxWidth="sm"
+      closeLabel={t('common.close')}
     >
       <div className="flex flex-col gap-8">
         <div className="flex items-start gap-4 rounded-[2rem] border border-ink/5 bg-ink/[0.02] p-6">

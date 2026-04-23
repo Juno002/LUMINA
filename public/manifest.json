@@ -1,7 +1,7 @@
 {
   "name": "Lumina",
   "short_name": "Lumina",
-  "description": "Cognitive wellness companion with local-first encryption.",
+  "description": "Private local-first clarity companion with encrypted offline storage.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0E0E0C",

@@ -34,6 +34,10 @@ describe('parseQuickCapture', () => {
       type: 'goal',
       cleanText: 'complete exposure'
     });
+    expect(parseQuickCapture('META: sostener rutina')).toEqual({
+      type: 'goal',
+      cleanText: 'sostener rutina'
+    });
   });
 
   it('parses greater-than text as a journal draft', () => {

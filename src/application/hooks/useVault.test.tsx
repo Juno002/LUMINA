@@ -104,7 +104,7 @@ describe('useVault', () => {
 
     expect(result.current.isLocked).toBe(false);
     expect(result.current.vaultExists).toBe(true);
-    expect(result.current.vault?.schemaVersion).toBe(1);
+    expect(result.current.vault?.schemaVersion).toBe(2);
     expect(result.current.vault?.profile.name).toBe('Junior');
     expect(result.current.vault?.profile.language).toBe('es');
     expect(fakeRepository.save).toHaveBeenCalledTimes(1);
@@ -205,7 +205,7 @@ describe('useVault', () => {
       expect(unlocked).toBe(true);
     });
 
-    expect(result.current.vault?.schemaVersion).toBe(1);
+    expect(result.current.vault?.schemaVersion).toBe(2);
     expect(fakeRepository.save).toHaveBeenCalled();
   });
 
@@ -234,6 +234,7 @@ describe('useVault', () => {
     });
 
     expect(backup).toContain('lumina.portable-backup');
+    expect(JSON.parse(backup!).version).toBe(2);
 
     await act(async () => {
       await result.current.wipeAllData();
@@ -251,5 +252,38 @@ describe('useVault', () => {
     expect(result.current.vault?.profile.language).toBe('es');
     expect(localforageState.crisisData?.copingPhrase).toBe('Stay here. One breath at a time.');
     expect(fakeLocalforage.setItem).toHaveBeenCalledWith('lumina_crisis_config', expect.any(Object));
+  });
+
+  it('accepts portable backup v1 envelopes for compatibility', async () => {
+    const { result } = renderHook(() => useVault());
+
+    await waitFor(() => expect(result.current.isReady).toBe(true));
+
+    await act(async () => {
+      await result.current.createVault('Legacy Portable', 'secret-pass', 'unspecified', 'en');
+    });
+
+    let backup = '';
+    await act(async () => {
+      const exported = await result.current.exportBackup();
+      expect(exported.ok).toBe(true);
+      if (exported.ok) {
+        const envelope = JSON.parse(exported.backup) as { version: number };
+        envelope.version = 1;
+        backup = JSON.stringify(envelope);
+      }
+    });
+
+    await act(async () => {
+      await result.current.wipeAllData();
+    });
+
+    await act(async () => {
+      const imported = await result.current.importBackup(backup, 'secret-pass');
+      expect(imported.ok).toBe(true);
+    });
+
+    expect(result.current.vault?.profile.name).toBe('Legacy Portable');
+    expect(result.current.vault?.schemaVersion).toBe(2);
   });
 });

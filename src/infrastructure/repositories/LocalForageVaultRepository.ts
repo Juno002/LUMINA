@@ -13,9 +13,15 @@ import { IVaultRepository } from '../../domain/repositories/IVaultRepository';
 import { cryptoService } from '../services/CryptoService';
 
 const DEFAULT_VAULT: Vault = {
-  profile: { name: '', initialized: false, soundEnabled: true },
+  profile: {
+    name: '',
+    initialized: false,
+    soundEnabled: true,
+    language: 'en',
+    onboarding: { status: 'not_started', currentStep: 'sanctuary', completedSteps: [] }
+  },
   createdAt: new Date().toISOString(),
-  schemaVersion: 1,
+  schemaVersion: 2,
   journal: [],
   exposure: { hierarchy: [], logs: [] },
   activations: [],

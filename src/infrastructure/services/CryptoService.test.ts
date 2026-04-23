@@ -14,8 +14,8 @@ describe('CryptoService', () => {
     const original = JSON.stringify({ name: 'test', data: [1, 2, 3] });
     const encrypted = await service.encrypt(original, password);
 
-    expect(encrypted).toBeInstanceOf(ArrayBuffer);
     expect(encrypted.byteLength).toBeGreaterThan(0);
+    expect(new TextDecoder().decode(encrypted)).toContain('lumina.crypto-envelope');
 
     const decrypted = await service.decrypt(encrypted, password);
     expect(decrypted).toBe(original);

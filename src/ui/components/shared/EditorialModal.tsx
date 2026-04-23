@@ -17,6 +17,7 @@ interface EditorialModalProps {
   children: React.ReactNode;
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
   className?: string;
+  closeLabel?: string;
 }
 
 export const EditorialModal: React.FC<EditorialModalProps> = ({
@@ -26,7 +27,8 @@ export const EditorialModal: React.FC<EditorialModalProps> = ({
   subtitle,
   children,
   maxWidth = 'md',
-  className
+  className,
+  closeLabel = 'Close'
 }) => {
   const widths = {
     sm: 'max-w-sm',
@@ -57,8 +59,10 @@ export const EditorialModal: React.FC<EditorialModalProps> = ({
             )}
           >
             <button 
+              type="button"
               onClick={onClose}
               className="absolute top-8 right-8 text-accent hover:text-ink transition-colors"
+              aria-label={closeLabel}
             >
               <X size={20} />
             </button>

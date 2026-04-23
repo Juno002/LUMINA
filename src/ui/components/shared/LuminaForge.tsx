@@ -45,7 +45,7 @@ const INTENT_STYLES = {
 } as const;
 
 export default function LuminaForge({ isOpen, onOpenChange, onSubmit }: LuminaForgeProps) {
-  const { language } = useTranslation();
+  const { t } = useTranslation();
   const [text, setText] = useState('');
   const [notes, setNotes] = useState('');
   const [tagText, setTagText] = useState('');
@@ -138,10 +138,10 @@ export default function LuminaForge({ isOpen, onOpenChange, onSubmit }: LuminaFo
   };
 
   const helperText = {
-    intention: language === 'es' ? 'Guardar intención para hoy' : 'Save intention for today',
-    habit: language === 'es' ? 'Crear hábito diario' : 'Create daily habit',
-    goal: language === 'es' ? 'Crear objetivo activo' : 'Create active goal',
-    journal: language === 'es' ? 'Abrir Crónica prellenada' : 'Open prefilled Chronicle'
+    intention: t('lumen.helper_intention'),
+    habit: t('lumen.helper_habit'),
+    goal: t('lumen.helper_goal'),
+    journal: t('lumen.helper_journal')
   }[parsed.type];
 
   return (
@@ -152,6 +152,7 @@ export default function LuminaForge({ isOpen, onOpenChange, onSubmit }: LuminaFo
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
             className="fixed inset-0 z-[-1] bg-ink/10 backdrop-blur-[2px]"
             onClick={close}
           />
@@ -170,7 +171,8 @@ export default function LuminaForge({ isOpen, onOpenChange, onSubmit }: LuminaFo
             className="flex h-16 w-16 items-center justify-center rounded-full bg-ink text-paper shadow-2xl shadow-ink/15 transition-colors"
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.94 }}
-            aria-label={language === 'es' ? 'Abrir Lumen' : 'Open Lumen'}
+            transition={{ duration: 0.3 }}
+            aria-label={t('lumen.open')}
             title="Lumen"
           >
             <Plus size={28} />
@@ -183,6 +185,7 @@ export default function LuminaForge({ isOpen, onOpenChange, onSubmit }: LuminaFo
               'w-[calc(100vw-3rem)] max-w-xl overflow-hidden rounded-[2rem] border p-4 transition-colors md:w-[32rem]',
               styles.shell
             )}
+            transition={{ duration: 0.3 }}
           >
             <AnimatePresence>
               {!text.trim() && (
@@ -190,12 +193,13 @@ export default function LuminaForge({ isOpen, onOpenChange, onSubmit }: LuminaFo
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 8 }}
+                  transition={{ duration: 0.3 }}
                   className="mb-4 flex flex-wrap gap-2"
                 >
                   {[
-                    { label: language === 'es' ? '* Hábito' : '* Habit', value: '* ' },
-                    { label: language === 'es' ? 'Meta:' : 'Goal:', value: language === 'es' ? 'Meta: ' : 'Goal: ' },
-                    { label: language === 'es' ? '> Diario' : '> Journal', value: '> ' }
+                    { label: t('lumen.chip_habit'), value: '* ' },
+                    { label: t('lumen.chip_goal'), value: `${t('lumen.chip_goal')} ` },
+                    { label: t('lumen.chip_journal'), value: '> ' }
                   ].map((chip) => (
                     <button
                       key={chip.value}
@@ -219,9 +223,7 @@ export default function LuminaForge({ isOpen, onOpenChange, onSubmit }: LuminaFo
                 onChange={(event) => setText(event.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder={
-                  language === 'es'
-                    ? 'Lumen: intención, * hábito, Meta: objetivo o > diario'
-                    : 'Lumen: intention, * habit, Goal: objective or > journal'
+                  t('lumen.placeholder')
                 }
                 className={cn(
                   'min-w-0 flex-1 bg-transparent font-serif text-lg italic outline-none md:text-xl',
@@ -237,7 +239,7 @@ export default function LuminaForge({ isOpen, onOpenChange, onSubmit }: LuminaFo
                   'flex h-10 w-10 items-center justify-center rounded-full transition-opacity hover:opacity-100',
                   isJournalIntent ? 'text-paper/70 hover:text-paper' : 'text-ink/50 hover:text-ink'
                 )}
-                aria-label={language === 'es' ? 'Cerrar' : 'Close'}
+                aria-label={t('lumen.close')}
               >
                 <X size={16} />
               </button>
@@ -263,7 +265,7 @@ export default function LuminaForge({ isOpen, onOpenChange, onSubmit }: LuminaFo
                 )}
               >
                 <Check size={12} />
-                {language === 'es' ? 'Guardar' : 'Save'}
+                {t('common.save')}
               </button>
             </div>
 
@@ -273,13 +275,14 @@ export default function LuminaForge({ isOpen, onOpenChange, onSubmit }: LuminaFo
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.3 }}
                   className="mt-4 flex flex-col gap-4 overflow-hidden border-t border-current/10 pt-4"
                 >
                   <textarea
                     value={notes}
                     onChange={(event) => setNotes(event.target.value)}
                     onKeyDown={handleKeyDown}
-                    placeholder={language === 'es' ? 'Notas suaves sobre esta intención...' : 'Soft notes around this intention...'}
+                    placeholder={t('lumen.notes_placeholder')}
                     className={cn(
                       'min-h-16 resize-none bg-transparent text-sm outline-none',
                       isJournalIntent ? 'text-paper placeholder:text-paper/60' : 'text-ink placeholder:text-ink/40'
@@ -289,7 +292,7 @@ export default function LuminaForge({ isOpen, onOpenChange, onSubmit }: LuminaFo
                     value={tagText}
                     onChange={(event) => setTagText(event.target.value)}
                     onKeyDown={handleKeyDown}
-                    placeholder={language === 'es' ? 'Etiquetas separadas por comas' : 'Comma-separated tags'}
+                    placeholder={t('lumen.tags_placeholder')}
                     className={cn(
                       'bg-transparent font-mono text-xs outline-none',
                       isJournalIntent ? 'text-paper placeholder:text-paper/60' : 'text-ink placeholder:text-ink/40'
