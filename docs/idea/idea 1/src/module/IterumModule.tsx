@@ -8,7 +8,7 @@ import { useDayClosure } from '../hooks/useDayClosure';
 import { useGamification } from '../hooks/useGamification';
 import { useJournalStore } from '../store/useJournalStore';
 import { useUIStore } from '../store/useUIStore';
-import { useTheme } from '../context/ThemeContext';
+import { useTheme } from '../context/useTheme';
 import { Habit, Objective, Task, ViewMode } from '../types';
 import { cn } from '../utils';
 import { calculateObjectiveProgress, shouldHabitOccurOnDate } from '../utils/habitUtils';
@@ -94,34 +94,6 @@ export default function IterumModule({
   useEffect(() => {
     onEvent?.({ type: 'view_changed', view: viewMode });
   }, [onEvent, viewMode]);
-
-  const handleToggleMilestone = (objectiveId: string, milestoneId: string) => {
-    const objective = objectives.find((item) => item.id === objectiveId);
-    if (!objective?.milestones) return;
-
-    const updatedMilestones = objective.milestones.map((milestone) =>
-      milestone.id === milestoneId
-        ? {
-            ...milestone,
-            completed: !milestone.completed,
-            completedAt: !milestone.completed ? new Date() : undefined,
-          }
-        : milestone,
-    );
-
-    void updateObjective(objectiveId, { milestones: updatedMilestones });
-
-    const milestone = objective.milestones.find((item) => item.id === milestoneId);
-    if (milestone && !milestone.completed) {
-      addExp(25, 'discipline');
-      feedback.celebrate();
-      setToast({
-        isOpen: true,
-        title: '¡Hito Alcanzado!',
-        message: `Has completado: ${milestone.title}`,
-      });
-    }
-  };
 
   const toggleHabitLog = (habitId: string, date: Date, value?: number, note?: string) => {
     const dateStr = format(date, 'yyyy-MM-dd');
@@ -356,13 +328,11 @@ export default function IterumModule({
                 todayHabits={todayHabits}
                 habits={habits}
                 logs={logs}
-                tasks={tasks}
                 weeklyInsights={weeklyInsights}
                 stats={stats}
                 toggleHabitLog={toggleHabitLog}
                 handleEditHabit={handleEditHabit}
                 handleEditObjective={handleEditObjective}
-                handleToggleMilestone={handleToggleMilestone}
                 handleEditTask={handleEditTask}
                 toggleTask={toggleTask}
                 deleteTask={deleteTask}

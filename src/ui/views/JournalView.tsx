@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { BookOpen, Plus, Search } from 'lucide-react';
 import { ClinicalProfile, ThoughtEntry, Vault } from '../../domain/entities';
@@ -20,9 +20,11 @@ interface JournalViewProps {
   entries: ThoughtEntry[];
   onUpdate: (e: ThoughtEntry[]) => void;
   clinicalProfile?: ClinicalProfile;
+  initialDraft?: Partial<ThoughtEntry>;
+  onDraftConsumed?: () => void;
 }
 
-export default function JournalView({ entries, onUpdate, clinicalProfile }: JournalViewProps) {
+export default function JournalView({ entries, onUpdate, clinicalProfile, initialDraft, onDraftConsumed }: JournalViewProps) {
   const { t, language } = useTranslation();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -43,6 +45,7 @@ export default function JournalView({ entries, onUpdate, clinicalProfile }: Jour
     }
     setIsFormOpen(false);
     setEditingEntry(null);
+    onDraftConsumed?.();
   };
 
   const handleDelete = () => {
@@ -61,7 +64,7 @@ export default function JournalView({ entries, onUpdate, clinicalProfile }: Jour
         </div>
         <div className="flex flex-wrap gap-4 w-full md:w-auto">
           <EditorialButton 
-            onClick={() => { setEditingEntry(null); setIsFormOpen(true); }}
+            onClick={() => { setEditingEntry(null); onDraftConsumed?.(); setIsFormOpen(true); }}
             icon={<Plus size={14} />}
           >
             {t('journal.new_entry')}
@@ -81,14 +84,16 @@ export default function JournalView({ entries, onUpdate, clinicalProfile }: Jour
       </div>
 
       <AnimatePresence mode="wait">
-        {isFormOpen ? (
-          <JournalForm 
-            clinicalProfile={clinicalProfile}
-            initialData={editingEntry || undefined}
-            onCancel={() => { setIsFormOpen(false); setEditingEntry(null); }} 
-            onSave={handleSave} 
-            vault={{ habits: [], habitLogs: [], journal: entries, profile: { clinicalProfile } } as Vault}
-          />
+        {(isFormOpen || initialDraft) ? (
+          <div key={editingEntry?.id || initialDraft?.situation || 'new-entry'}>
+            <JournalForm
+              clinicalProfile={clinicalProfile}
+              initialData={editingEntry || initialDraft || undefined}
+              onCancel={() => { setIsFormOpen(false); setEditingEntry(null); onDraftConsumed?.(); }}
+              onSave={handleSave}
+              vault={{ habits: [], habitLogs: [], journal: entries, profile: { clinicalProfile } } as Vault}
+            />
+          </div>
         ) : (
           <motion.div 
             key="list"
@@ -108,7 +113,7 @@ export default function JournalView({ entries, onUpdate, clinicalProfile }: Jour
                   key={entry.id} 
                   entry={entry} 
                   onDelete={() => setEntryToDeleteId(entry.id)} 
-                  onEdit={() => { setEditingEntry(entry); setIsFormOpen(true); }}
+                  onEdit={() => { onDraftConsumed?.(); setEditingEntry(entry); setIsFormOpen(true); }}
                 />
               ))
             )}

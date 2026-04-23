@@ -4,7 +4,7 @@
  */
 
 import React, { useMemo, useRef, useState } from 'react';
-import { Shield, Trash2, Palette, Lock, ShieldAlert, Clock, Key, Download, FileText, Table, Check, Upload } from 'lucide-react';
+import { Shield, Trash2, Palette, Lock, ShieldAlert, Clock, Key, Download, FileText, Table, Check, Upload, Compass } from 'lucide-react';
 import { Vault } from '../../domain/entities';
 import { motion } from 'motion/react';
 import { DataExportService } from '../../infrastructure/services/DataExportService';
@@ -33,6 +33,9 @@ interface SettingsViewProps {
   onOpenCrisis: () => void;
   isSaving: boolean;
   lastSaveError: string | null;
+  onGuideResume: () => void;
+  onGuideRestart: () => void;
+  onGuideComplete: () => void;
 }
 
 const AUTO_LOCK_OPTIONS = [1, 3, 5, 10, 30];
@@ -58,7 +61,10 @@ export default function SettingsView({
   onImportBackup,
   onOpenCrisis,
   isSaving,
-  lastSaveError
+  lastSaveError,
+  onGuideResume,
+  onGuideRestart,
+  onGuideComplete
 }: SettingsViewProps) {
   const { t, language, setLanguage } = useTranslation();
   const [isPassphraseModalOpen, setIsPassphraseModalOpen] = useState(false);
@@ -473,6 +479,27 @@ export default function SettingsView({
                           {language === lang.id && <Check size={14} className="text-ink" />}
                       </button>
                     ))}
+                 </div>
+               </div>
+
+               <div className="flex flex-col gap-4 mt-6 rounded-[2rem] border border-ink/5 p-6">
+                 <div className="flex items-center gap-3">
+                   <Compass size={16} className="text-accent" />
+                   <div className="flex flex-col items-start">
+                     <span className="font-serif italic">{t('settings.lumina_guide')}</span>
+                     <span className="text-[9px] editorial-meta opacity-50 mt-1">{t('settings.lumina_guide_desc')}</span>
+                   </div>
+                 </div>
+                 <div className="flex flex-wrap gap-3">
+                   <EditorialButton type="button" variant="outline" size="sm" onClick={onGuideResume}>
+                     {t('settings.guide_resume')}
+                   </EditorialButton>
+                   <EditorialButton type="button" variant="outline" size="sm" onClick={onGuideRestart}>
+                     {t('settings.guide_restart')}
+                   </EditorialButton>
+                   <EditorialButton type="button" variant="ghost" size="sm" onClick={onGuideComplete}>
+                     {t('settings.guide_complete')}
+                   </EditorialButton>
                  </div>
                </div>
             </div>

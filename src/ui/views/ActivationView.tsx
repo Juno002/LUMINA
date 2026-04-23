@@ -9,6 +9,7 @@ import { CheckCircle2, Flame, Sparkles, Plus, Check } from 'lucide-react';
 import { ActivationActivity, Habit, Goal } from '../../domain/entities';
 import { todayISO } from '../../shared/utils/DateFormatter';
 import { triggerHaptic } from '../../shared/utils/Haptics';
+import { sensoryFeedback } from '../../infrastructure/services/SensoryFeedbackService';
 import ActivityItem from '../components/domain/activation/ActivityItem';
 import { 
   ConfirmActionModal,
@@ -68,7 +69,7 @@ export default function ActivationView({ activities, habits = [], goals = [], on
 
     if (!activity.completed) {
       // Opening feedback modal before completion
-      triggerHaptic('medium');
+      sensoryFeedback.tap();
       setFeedbackActivityId(id);
       setFeedbackData({ 
         actualValue: activity.value, 
@@ -76,7 +77,7 @@ export default function ActivationView({ activities, habits = [], goals = [], on
       });
     } else {
       // Un-completing
-      triggerHaptic('light');
+      sensoryFeedback.undo();
       onUpdate(activities.map(a => 
         a.id === id ? { ...a, completed: false, completedDate: undefined } : a
       ));
@@ -85,7 +86,7 @@ export default function ActivationView({ activities, habits = [], goals = [], on
 
   const handleFeedbackSubmit = () => {
     if (!feedbackActivityId) return;
-    triggerHaptic('success');
+    sensoryFeedback.complete();
     onUpdate(activities.map(a => 
       a.id === feedbackActivityId 
         ? { 

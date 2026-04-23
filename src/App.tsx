@@ -10,19 +10,31 @@ import {
   Menu,
   X,
   Shield,
+  ShieldAlert,
   LayoutGrid
 } from "lucide-react";
 import AppNavItem from "./ui/components/shared/AppNavItem";
 import MobileNavHub from "./ui/components/shared/MobileNavHub";
-import QuickActionFAB from "./ui/components/shared/QuickActionFAB";
+import LuminaForge from "./ui/components/shared/LuminaForge";
+import LuminaGuide from "./ui/components/shared/LuminaGuide";
 import { cn } from './shared/utils/TailwindMerge';
 import { triggerHaptic } from './shared/utils/Haptics';
 import { useVault } from "./application/hooks/useVault";
-import { ThoughtEntry, MoodEntry, ExposureData, ActivationActivity, Goal, SleepEntry, DayClosure } from './domain/entities';
+import { ThoughtEntry, MoodEntry, ExposureData, ActivationActivity, Goal, SleepEntry, DayClosure, Habit, OnboardingState } from './domain/entities';
 import { awardXP } from './application/usecases/GamificationEngine';
-import { audioFeedback } from './infrastructure/services/WebAudioFeedbackService';
+import { sensoryFeedback } from './infrastructure/services/SensoryFeedbackService';
 import { LanguageProvider } from "./application/contexts/LanguageContext";
 import { Language } from "./shared/i18n/translations";
+import { todayISO } from './shared/utils/DateFormatter';
+import { QuickCapturePayload } from './application/usecases/QuickCaptureParser';
+import {
+  advanceOnboarding,
+  completeOnboarding,
+  pauseOnboarding,
+  resetOnboarding,
+  skipOnboarding,
+  startOnboarding
+} from './application/usecases/LuminaGuideUseCase';
 import {
   AppTab,
   mainMenuItems,
@@ -55,6 +67,8 @@ export default function App() {
   const [showDayClosure, setShowDayClosure] = useState(false);
   const [newLevel, setNewLevel] = useState<number | null>(null);
   const [isNavHubOpen, setIsNavHubOpen] = useState(false);
+  const [isForgeOpen, setIsForgeOpen] = useState(false);
+  const [journalDraft, setJournalDraft] = useState<Partial<ThoughtEntry> | undefined>();
   const [tempLanguage, setTempLanguage] = useState<Language>('en');
 
   const {
@@ -73,7 +87,7 @@ export default function App() {
   // Sync audio and theme state
   useEffect(() => {
     if (vault) {
-      audioFeedback.setEnabled(vault.profile.soundEnabled !== false);
+      sensoryFeedback.setEnabled(vault.profile.soundEnabled !== false);
       
       // Apply theme
       const theme = vault.profile.theme || 'default';
@@ -131,12 +145,82 @@ export default function App() {
     }
   };
 
-  const handleQuickAction = (action: 'journal' | 'mood' | 'habits' | 'crisis') => {
-    if (action === 'crisis') {
-      setShowCrisis(true);
-    } else {
-      handleTabChange(action as AppTab);
+  const updateOnboarding = (onboarding: OnboardingState) => {
+    if (!vault) return;
+    updateVault({
+      ...vault,
+      profile: { ...vault.profile, onboarding }
+    });
+  };
+
+  const handleForgeSubmit = (payload: QuickCapturePayload) => {
+    if (!vault) return;
+
+    const now = new Date().toISOString();
+    const today = todayISO();
+
+    if (payload.type === 'journal') {
+      setJournalDraft({
+        date: today,
+        level: 1,
+        situation: payload.cleanText,
+        automaticThought: '',
+        intensity: 5,
+        distortions: [],
+        tags: payload.tags || []
+      });
+      handleTabChange('journal');
+      return;
     }
+
+    if (payload.type === 'habit') {
+      const habit: Habit = {
+        id: crypto.randomUUID(),
+        name: payload.cleanText,
+        description: payload.notes,
+        type: 'yesno',
+        frequency: 'daily',
+        isActive: true,
+        createdAt: now
+      };
+      updateVault({ ...vault, habits: [habit, ...(vault.habits || [])] });
+      handleTabChange('habits');
+      return;
+    }
+
+    if (payload.type === 'goal') {
+      const goal: Goal = {
+        id: crypto.randomUUID(),
+        title: payload.cleanText,
+        description: payload.notes || '',
+        targetDate: today,
+        completed: false,
+        isSmart: true,
+        recurrence: 'none',
+        measurement: payload.notes || '',
+        progress: 0,
+        priority: 'medium',
+        status: 'active',
+        milestones: []
+      };
+      updateVault({ ...vault, goals: [goal, ...(vault.goals || [])] });
+      handleTabChange('goals');
+      return;
+    }
+
+    const activity: ActivationActivity = {
+      id: crypto.randomUUID(),
+      title: payload.cleanText,
+      description: payload.notes,
+      value: 5,
+      difficulty: 5,
+      plannedDate: today,
+      completed: false,
+      subtasks: [],
+      tags: payload.tags
+    };
+    updateVault({ ...vault, activations: [activity, ...(vault.activations || [])] });
+    handleTabChange('activation');
   };
 
   const crisisOverlay = showCrisis ? (
@@ -254,7 +338,15 @@ export default function App() {
                         onOpenDayClosure={() => setShowDayClosure(true)}
                       />
                     )}
-                    {vault && activeTab === 'journal' && <JournalView clinicalProfile={vault.profile.clinicalProfile} entries={vault.journal || []} onUpdate={handleJournalUpdate} />}
+                    {vault && activeTab === 'journal' && (
+                      <JournalView
+                        clinicalProfile={vault.profile.clinicalProfile}
+                        entries={vault.journal || []}
+                        initialDraft={journalDraft}
+                        onDraftConsumed={() => setJournalDraft(undefined)}
+                        onUpdate={handleJournalUpdate}
+                      />
+                    )}
                     {vault && activeTab === 'habits' && <HabitsView vault={vault} onUpdate={updateVault} onLevelUp={setNewLevel} />}
                     {vault && activeTab === 'mood' && <MoodView entries={vault.wellness.moodEntries || []} onUpdate={(m: MoodEntry[]) => updateVault({ ...vault, wellness: { ...vault.wellness, moodEntries: m } })} />}
                     {vault && activeTab === 'exposure' && <ExposureView data={vault.exposure || { hierarchy: [], logs: [] }} onUpdate={(data: ExposureData) => updateVault({ ...vault, exposure: data })} />}
@@ -275,6 +367,9 @@ export default function App() {
                         isSaving={isSaving}
                         lastSaveError={lastSaveError}
                         onOpenCrisis={() => setShowCrisis(true)}
+                        onGuideResume={() => updateOnboarding(startOnboarding(vault.profile.onboarding))}
+                        onGuideRestart={() => updateOnboarding(resetOnboarding())}
+                        onGuideComplete={() => updateOnboarding(completeOnboarding(vault.profile.onboarding))}
                       />
                     )}
                   </Suspense>
@@ -325,7 +420,28 @@ export default function App() {
               onNavigate={handleTabChange}
             />
 
-            <QuickActionFAB onAction={handleQuickAction} />
+            <LuminaForge
+              isOpen={isForgeOpen}
+              onOpenChange={setIsForgeOpen}
+              onSubmit={handleForgeSubmit}
+            />
+
+            <LuminaGuide
+              onboarding={vault?.profile.onboarding}
+              onAdvance={() => updateOnboarding(advanceOnboarding(vault?.profile.onboarding))}
+              onPause={() => updateOnboarding(pauseOnboarding(vault?.profile.onboarding))}
+              onSkip={() => updateOnboarding(skipOnboarding(vault?.profile.onboarding))}
+              onNavigate={handleTabChange}
+              onOpenForge={() => setIsForgeOpen(true)}
+            />
+
+            <button
+              onClick={() => setShowCrisis(true)}
+              className="fixed bottom-24 left-6 z-[60] flex h-12 w-12 items-center justify-center rounded-full border border-red-500/20 bg-red-500/10 text-red-500 transition-all hover:bg-red-500 hover:text-white md:hidden"
+              title="Emergency Protocol"
+            >
+              <ShieldAlert size={18} />
+            </button>
 
             {/* SOS Global Trigger - Desktop Only */}
             <button 

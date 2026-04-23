@@ -24,7 +24,7 @@ interface CalendarViewProps {
   onEdit: (task: Task) => void;
 }
 
-export function CalendarView({ tasks, onDateSelect, onToggle, onEdit }: CalendarViewProps) {
+export function CalendarView({ tasks, onDateSelect, onToggle: _onToggle, onEdit }: CalendarViewProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
 
   const nextMonth = () => setCurrentDate(addMonths(currentDate, 1));

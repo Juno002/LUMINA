@@ -84,11 +84,11 @@ export const EnclaveStore = {
     // For this prototype, we store the phrase in IDB to simulate device-persistence
     return new Promise((resolve) => {
       const request = indexedDB.open("IterumEnclave", 1);
-      request.onupgradeneeded = (e: any) => {
-        e.target.result.createObjectStore("keys");
+      request.onupgradeneeded = () => {
+        request.result.createObjectStore("keys");
       };
-      request.onsuccess = (e: any) => {
-        const db = e.target.result;
+      request.onsuccess = () => {
+        const db = request.result;
         const tx = db.transaction("keys", "readwrite");
         tx.objectStore("keys").put(phrase, "master_phrase");
         resolve(true);
@@ -98,11 +98,11 @@ export const EnclaveStore = {
   async loadKeyReference(): Promise<string | null> {
     return new Promise((resolve) => {
       const request = indexedDB.open("IterumEnclave", 1);
-      request.onupgradeneeded = (e: any) => {
-        e.target.result.createObjectStore("keys");
+      request.onupgradeneeded = () => {
+        request.result.createObjectStore("keys");
       };
-      request.onsuccess = (e: any) => {
-        const db = e.target.result;
+      request.onsuccess = () => {
+        const db = request.result;
         const tx = db.transaction("keys", "readonly");
         const getReq = tx.objectStore("keys").get("master_phrase");
         getReq.onsuccess = () => resolve(getReq.result || null);

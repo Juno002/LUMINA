@@ -13,6 +13,7 @@ import localforage from 'localforage';
 import { Vault, ClinicalProfile, CrisisContact } from '../../domain/entities';
 import { vaultRepository } from '../../infrastructure/repositories/LocalForageVaultRepository';
 import { cryptoService } from '../../infrastructure/services/CryptoService';
+import { createOnboardingState } from '../usecases/LuminaGuideUseCase';
 
 const CURRENT_SCHEMA_VERSION = 1;
 const DEFAULT_AUTO_LOCK_MS = 5 * 60 * 1000; // 5 minutes
@@ -172,7 +173,7 @@ export function useVault() {
 
   const createVault = async (name: string, password: string, clinicalProfile: ClinicalProfile = 'unspecified', language: 'en' | 'es' = 'en'): Promise<boolean> => {
     const newVault: Vault = {
-      profile: { name, initialized: true, clinicalProfile, soundEnabled: true, language },
+      profile: { name, initialized: true, clinicalProfile, soundEnabled: true, language, onboarding: createOnboardingState('active') },
       createdAt: new Date().toISOString(),
       schemaVersion: CURRENT_SCHEMA_VERSION,
       journal: [],

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ViewMode, Habit, HabitLog, Objective, Task, WeeklyInsight, UserStats } from '../types';
+import { ViewMode, Habit, HabitLog, Objective, Task, WeeklyInsight, AppStats } from '../types';
 import { HabitCard } from './HabitCard';
 import { ObjectiveCard } from './ObjectiveCard';
 import { JournalView } from './JournalView';
@@ -14,13 +14,11 @@ interface ViewManagerProps {
   todayHabits: Habit[];
   habits: Habit[];
   logs: HabitLog[];
-  tasks: Task[];
   weeklyInsights: WeeklyInsight[];
-  stats: UserStats;
+  stats: AppStats;
   toggleHabitLog: (id: string, date: Date, value?: number, note?: string) => void;
   handleEditHabit: (habit: Habit) => void;
   handleEditObjective: (objective: Objective) => void;
-  handleToggleMilestone: (objectiveId: string, milestoneId: string) => void;
   handleEditTask: (task: Task) => void;
   toggleTask: (id: string) => void;
   deleteTask: (id: string) => void;
@@ -35,13 +33,11 @@ export const ViewManager: React.FC<ViewManagerProps> = ({
   todayHabits,
   habits,
   logs,
-  tasks,
   weeklyInsights,
   stats,
   toggleHabitLog,
   handleEditHabit,
   handleEditObjective,
-  handleToggleMilestone,
   handleEditTask,
   toggleTask,
   deleteTask,
@@ -71,7 +67,7 @@ export const ViewManager: React.FC<ViewManagerProps> = ({
         <div className="columns-1 md:columns-2 gap-6 space-y-6">
           {[...filteredObjectives]
             .sort((a, b) => b.progress - a.progress)
-            .map((objective, idx) => (
+            .map((objective) => (
             <div key={objective.id} className="break-inside-avoid">
               <ObjectiveCard
                 objective={objective}
@@ -131,7 +127,7 @@ export const ViewManager: React.FC<ViewManagerProps> = ({
               </p>
             </div>
           </div>
-          <WeekView habits={habits} logs={logs} userLevel={stats.level} />
+          <WeekView habits={habits} logs={logs} appLevel={stats.level} />
         </div>
       ) : (
         <CalendarView

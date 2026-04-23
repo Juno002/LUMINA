@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { motion } from "motion/react";
+import { motion, useMotionValue, useTransform } from "motion/react";
 import { Circle, CheckCircle2 } from "lucide-react";
 import { ActivationActivity, Habit, Goal } from "../../../../domain/entities";
 import { useTranslation } from '../../../../application/contexts/LanguageContext';
@@ -23,10 +23,21 @@ interface ActivityItemProps {
  */
 const ActivityItem: React.FC<ActivityItemProps> = ({ activity, linkedHabit, linkedGoal, onToggle, onDelete }) => {
   const { t, language } = useTranslation();
+  const x = useMotionValue(0);
+  const backgroundColor = useTransform(x, [0, 120], ['rgba(0,0,0,0)', 'rgba(10,10,10,0.07)']);
 
   return (
     <motion.div 
       layout
+      drag={activity.completed ? false : 'x'}
+      dragConstraints={{ left: 0, right: 0 }}
+      dragElastic={0.32}
+      onDragEnd={(_, info) => {
+        if (!activity.completed && info.offset.x > 96) {
+          onToggle();
+        }
+      }}
+      style={{ x, backgroundColor }}
       className="p-6 border border-ink/10 rounded-2xl flex items-center justify-between group hover:border-ink/20 transition-all bg-paper"
     >
       <div className="flex flex-col gap-1">

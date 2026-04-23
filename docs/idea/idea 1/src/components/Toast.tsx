@@ -10,7 +10,7 @@ interface ToastProps {
   type?: 'success' | 'info' | 'level-up';
 }
 
-export function Toast({ isOpen, onClose, title, message, type = 'info' }: ToastProps) {
+export function Toast({ isOpen, onClose, title, message, type: _type = 'info' }: ToastProps) {
   useEffect(() => {
     if (isOpen) {
       const timer = setTimeout(onClose, 5000);

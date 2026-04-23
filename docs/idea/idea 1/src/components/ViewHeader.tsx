@@ -10,7 +10,7 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { ViewMode, Task, DayClosure } from '../types';
+import { ViewMode, Task, DayClosure, Objective } from '../types';
 import { cn } from '../utils';
 
 interface ViewHeaderProps {
@@ -21,7 +21,7 @@ interface ViewHeaderProps {
   filteredTasks: Task[];
   closedDays: DayClosure[];
   setIsObjectiveModalOpen: (open: boolean) => void;
-  setObjectiveToEdit: (obj: any) => void;
+  setObjectiveToEdit: (obj: Objective | undefined) => void;
 }
 
 export const ViewHeader: React.FC<ViewHeaderProps> = ({

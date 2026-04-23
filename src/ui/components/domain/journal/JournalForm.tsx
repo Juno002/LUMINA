@@ -20,7 +20,7 @@ import { EditorialButton, EditorialInput, EditorialTextArea } from '../../shared
 
 interface JournalFormProps {
   clinicalProfile?: ClinicalProfile;
-  initialData?: ThoughtEntry;
+  initialData?: Partial<ThoughtEntry>;
   onCancel: () => void;
   onSave: (entry: ThoughtEntry) => void;
   vault?: Vault;

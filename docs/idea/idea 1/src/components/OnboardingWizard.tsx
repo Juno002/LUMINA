@@ -10,7 +10,6 @@ import {
   ChevronLeft,
   CheckCircle2,
   Trophy,
-  ArrowRight,
 } from 'lucide-react';
 import { cn } from '../utils';
 

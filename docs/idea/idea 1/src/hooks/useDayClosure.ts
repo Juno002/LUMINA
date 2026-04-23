@@ -6,7 +6,6 @@ export function useDayClosure() {
   const {
     closedDays,
     setClosedDays,
-    addClosedDay,
     weeklyInsights,
     setWeeklyInsights,
     addWeeklyInsight: addWeeklyInsightToStore,
@@ -39,21 +38,20 @@ export function useDayClosure() {
     logs: HabitLog[],
     tasks: Task[],
     updateTask: (id: string, updates: Partial<Task>) => void,
-    addTask: (task: Omit<Task, 'id' | 'completed'>) => void,
+    _addTask: (task: Omit<Task, 'id' | 'completed'>) => void,
   ) => {
     const dateStr = format(date, 'yyyy-MM-dd');
     if (isDayClosed(date)) return null;
 
     const summary = 'Día cerrado con éxito.';
 
-    // 1. Migrate uncompleted tasks
+    // Move open tasks forward so the next day starts with a clean, local queue.
     const todayTasks = tasks.filter(
       (t) => format(t.date, 'yyyy-MM-dd') === dateStr && !t.completed,
     );
     todayTasks.forEach((t) => {
       updateTask(t.id, {
         date: addDays(t.date, 1),
-        migrated: true,
       });
     });
 

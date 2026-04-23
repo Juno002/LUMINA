@@ -46,6 +46,8 @@ export default function HabitCard({
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
+      whileHover={{ y: -2 }}
+      whileTap={{ scale: 0.985 }}
       className="group flex flex-col gap-6 rounded-[2rem] border border-ink/10 bg-paper p-8 transition-all hover:shadow-xl hover:shadow-ink/[0.02]"
     >
       <div className="flex items-center justify-between">
@@ -54,13 +56,19 @@ export default function HabitCard({
             onClick={onToggle}
             className={`flex h-14 w-14 items-center justify-center rounded-full border-2 transition-all duration-500 ${
               isCompleted
-                ? 'border-ink bg-ink text-paper'
+                ? 'border-ink bg-ink text-paper shadow-lg shadow-ink/10'
                 : 'border-ink/10 text-ink/10 hover:border-ink/30'
             }`}
           >
             <AnimatePresence mode="wait">
               {isCompleted ? (
-                <motion.div key="check" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}>
+                <motion.div
+                  key="check"
+                  initial={{ scale: 0, rotate: -24 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  exit={{ scale: 0 }}
+                  transition={{ type: 'spring', stiffness: 420, damping: 18 }}
+                >
                   <Check size={24} strokeWidth={3} />
                 </motion.div>
               ) : (

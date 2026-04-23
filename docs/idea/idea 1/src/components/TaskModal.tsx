@@ -1,13 +1,18 @@
 import React, { useState, useEffect, FormEvent } from 'react';
-import { X, Zap, Target, BookOpen, Repeat } from 'lucide-react';
+import { X, type LucideIcon, Zap, Target, BookOpen, Repeat } from 'lucide-react';
 import { format } from 'date-fns';
-import { Task, EntityType } from '../types';
+import { Habit, Objective, Task, EntityType } from '../types';
 import { cn } from '../utils';
+
+type TaskDraft = Omit<Task, 'id' | 'completed' | 'createdAt'> & {
+  habitData?: Partial<Pick<Habit, 'frequency' | 'type' | 'targetValue' | 'unit'>>;
+  objectiveData?: Partial<Pick<Objective, 'targetValue' | 'unit' | 'deadline'>>;
+};
 
 interface TaskModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (task: Omit<Task, 'id' | 'completed'>) => void;
+  onSave: (task: TaskDraft) => void;
   initialDate?: Date;
   initialType?: EntityType;
   taskToEdit?: Task;
@@ -23,7 +28,7 @@ const COLORS = [
   '#64748b', // slate
 ];
 
-const ENTITY_TYPES: { type: EntityType; label: string; icon: any }[] = [
+const ENTITY_TYPES: { type: EntityType; label: string; icon: LucideIcon }[] = [
   { type: 'task', label: 'Tarea', icon: Zap },
   { type: 'habit', label: 'Hábito', icon: Repeat },
   { type: 'objective', label: 'Objetivo', icon: Target },
@@ -108,7 +113,7 @@ export function TaskModal({
 
     const combinedDate = dateStr && timeStr ? new Date(`${dateStr}T${timeStr}`) : new Date();
 
-    onSave({
+    const payload: TaskDraft = {
       title: title.trim(),
       description: description.trim(),
       date: combinedDate,
@@ -130,7 +135,9 @@ export function TaskModal({
           deadline: objDeadline ? new Date(objDeadline) : undefined,
         },
       }),
-    } as any);
+    };
+
+    onSave(payload);
     onClose();
   };
 

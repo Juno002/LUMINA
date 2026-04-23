@@ -19,8 +19,7 @@ import {
 } from '../../application/usecases/TrackHabitUseCase';
 import { awardXP, checkStreakBonuses } from '../../application/usecases/GamificationEngine';
 import { getXPForNextLevel } from '../../domain/constants/Gamification';
-import { audioFeedback } from '../../infrastructure/services/WebAudioFeedbackService';
-import { confetti } from '../../infrastructure/services/ConfettiService';
+import { sensoryFeedback } from '../../infrastructure/services/SensoryFeedbackService';
 import { 
   ConfirmActionModal,
   EditorialButton
@@ -79,7 +78,7 @@ export default function HabitsView({ vault, onUpdate, onLevelUp }: HabitsViewPro
   };
 
   const processCompletion = (updatedVault: Vault) => {
-    audioFeedback.playComplete();
+    sensoryFeedback.complete();
     
     // Award XP
     const { vault: xpVault, event } = awardXP(updatedVault, 'HABIT_COMPLETE');
@@ -102,7 +101,7 @@ export default function HabitsView({ vault, onUpdate, onLevelUp }: HabitsViewPro
     if (stats.completed === stats.total && stats.total > 0) {
       const { vault: bonusVault, event: bonusEvent } = awardXP(finalVault, 'ALL_HABITS_DAILY');
       finalVault = bonusVault;
-      audioFeedback.playSuccess();
+      sensoryFeedback.success();
       
       // Recalculate streak to see if we hit a milestone
       const newStreak = calculateStreak(finalVault.habitLogs, finalVault.habits, today);
@@ -110,8 +109,7 @@ export default function HabitsView({ vault, onUpdate, onLevelUp }: HabitsViewPro
       finalVault = streakVault;
 
       if (streakEvents.length > 0) {
-        confetti.trigger({ particleCount: 40, spread: 70 });
-        audioFeedback.playLevelUp(); // Use level up sound for big streak milestones
+        sensoryFeedback.levelUp();
       }
 
       if (bonusEvent.didLevelUp && onLevelUp) {

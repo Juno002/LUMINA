@@ -67,6 +67,7 @@ export interface ExposureLog {
 export interface ActivationActivity {
   id: string;
   title: string;
+  description?: string;
   value: number; // Importance/Joy (0-10)
   difficulty: number;
   plannedDate: string;
@@ -78,6 +79,7 @@ export interface ActivationActivity {
   completedDate?: string; // YYYY-MM-DD for daily filtering
   actualValue?: number; // Actual Joy experienced
   actualDifficulty?: number; // Actual Effort required
+  tags?: string[];
 }
 
 export type RecurrencePattern = 'none' | 'daily' | 'weekly' | 'monthly';
@@ -153,6 +155,15 @@ export interface CrisisConfig {
   contacts: CrisisContact[];
 }
 
+export type OnboardingStatus = 'not_started' | 'active' | 'paused' | 'completed' | 'skipped';
+
+export interface OnboardingState {
+  status: OnboardingStatus;
+  currentStep: string;
+  completedSteps: string[];
+  lastShownAt?: string;
+}
+
 export interface UserProfile {
   name: string;
   initialized: boolean;
@@ -163,6 +174,7 @@ export interface UserProfile {
   soundEnabled?: boolean; // NEW: Audio feedback preference
   theme?: 'default' | 'night' | 'ink-deep'; // NEW: Visual theme preference
   language?: 'en' | 'es'; // NEW: Language preference
+  onboarding?: OnboardingState;
 }
 
 // --- Habits ---
