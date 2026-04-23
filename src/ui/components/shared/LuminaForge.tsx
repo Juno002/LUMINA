@@ -56,6 +56,7 @@ export default function LuminaForge({ isOpen, onOpenChange, onSubmit }: LuminaFo
   const parsed = useMemo(() => parseQuickCapture(text), [text]);
   const styles = INTENT_STYLES[parsed.type];
   const IntentIcon = styles.icon;
+  const isJournalIntent = parsed.type === 'journal';
 
   useEffect(() => {
     if (isOpen) {
@@ -223,8 +224,8 @@ export default function LuminaForge({ isOpen, onOpenChange, onSubmit }: LuminaFo
                     : 'Lumen: intention, * habit, Goal: objective or > journal'
                 }
                 className={cn(
-                  'min-w-0 flex-1 bg-transparent font-serif text-lg italic outline-none placeholder:opacity-35 md:text-xl',
-                  parsed.type === 'journal' ? 'text-paper placeholder:text-paper' : 'text-ink'
+                  'min-w-0 flex-1 bg-transparent font-serif text-lg italic outline-none md:text-xl',
+                  isJournalIntent ? 'text-paper placeholder:text-paper/65' : 'text-ink placeholder:text-ink/40'
                 )}
                 spellCheck={false}
                 autoComplete="off"
@@ -232,7 +233,10 @@ export default function LuminaForge({ isOpen, onOpenChange, onSubmit }: LuminaFo
               <button
                 type="button"
                 onClick={close}
-                className="flex h-10 w-10 items-center justify-center rounded-full opacity-50 transition-opacity hover:opacity-100"
+                className={cn(
+                  'flex h-10 w-10 items-center justify-center rounded-full transition-opacity hover:opacity-100',
+                  isJournalIntent ? 'text-paper/70 hover:text-paper' : 'text-ink/50 hover:text-ink'
+                )}
                 aria-label={language === 'es' ? 'Cerrar' : 'Close'}
               >
                 <X size={16} />
@@ -240,7 +244,12 @@ export default function LuminaForge({ isOpen, onOpenChange, onSubmit }: LuminaFo
             </div>
 
             <div className="mt-2 flex items-center justify-between gap-4">
-              <div className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-widest opacity-45">
+              <div
+                className={cn(
+                  'flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest',
+                  isJournalIntent ? 'text-paper/70' : 'text-ink/55'
+                )}
+              >
                 <IntentIcon size={12} />
                 <span>{helperText}</span>
               </div>
@@ -248,7 +257,10 @@ export default function LuminaForge({ isOpen, onOpenChange, onSubmit }: LuminaFo
                 type="button"
                 disabled={!parsed.cleanText.trim()}
                 onClick={submit}
-                className="flex items-center gap-2 rounded-full bg-ink px-4 py-2 font-mono text-[9px] uppercase tracking-widest text-paper transition-all disabled:opacity-30 active:scale-95"
+                className={cn(
+                  'flex items-center gap-2 rounded-full px-4 py-2 font-mono text-[9px] uppercase tracking-widest transition-all disabled:opacity-30 active:scale-95',
+                  isJournalIntent ? 'bg-paper text-ink' : 'bg-ink text-paper'
+                )}
               >
                 <Check size={12} />
                 {language === 'es' ? 'Guardar' : 'Save'}
@@ -268,14 +280,20 @@ export default function LuminaForge({ isOpen, onOpenChange, onSubmit }: LuminaFo
                     onChange={(event) => setNotes(event.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder={language === 'es' ? 'Notas suaves sobre esta intención...' : 'Soft notes around this intention...'}
-                    className="min-h-16 resize-none bg-transparent text-sm outline-none placeholder:opacity-35"
+                    className={cn(
+                      'min-h-16 resize-none bg-transparent text-sm outline-none',
+                      isJournalIntent ? 'text-paper placeholder:text-paper/60' : 'text-ink placeholder:text-ink/40'
+                    )}
                   />
                   <input
                     value={tagText}
                     onChange={(event) => setTagText(event.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder={language === 'es' ? 'Etiquetas separadas por comas' : 'Comma-separated tags'}
-                    className="bg-transparent font-mono text-xs outline-none placeholder:opacity-35"
+                    className={cn(
+                      'bg-transparent font-mono text-xs outline-none',
+                      isJournalIntent ? 'text-paper placeholder:text-paper/60' : 'text-ink placeholder:text-ink/40'
+                    )}
                   />
                 </motion.div>
               )}

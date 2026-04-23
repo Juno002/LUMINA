@@ -12,23 +12,29 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
+      includeAssets: ['lumina-icon.svg', 'icon-192.png', 'icon-512.png'],
       manifest: {
         name: 'Lumina',
         short_name: 'Lumina',
-        description: 'Cognitive Sanctuary & Action Forging',
-        theme_color: '#fcfcfc',
-        background_color: '#fcfcfc',
+        description: 'Cognitive Sanctuary & Local Clarity',
+        theme_color: '#0E0E0C',
+        background_color: '#0E0E0C',
         display: 'standalone',
         orientation: 'portrait',
         icons: [
           {
-            src: '/pwa-192x192.png',
-            sizes: '192x192',
-            type: 'image/png'
+            src: '/lumina-icon.svg',
+            sizes: 'any',
+            type: 'image/svg+xml'
           },
           {
-            src: '/pwa-512x512.png',
+            src: '/icon-192.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'any maskable'
+          },
+          {
+            src: '/icon-512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any maskable'

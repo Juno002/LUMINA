@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title description">
+  <title id="title">Lumina Icon</title>
+  <desc id="description">A dark rounded square with a luminous iris, vertical light aperture, and a small blue signal point.</desc>
+  <rect width="512" height="512" rx="112" fill="#0E0E0C"/>
+  <rect x="22" y="22" width="468" height="468" rx="94" fill="none" stroke="#FAF8F5" stroke-opacity=".12" stroke-width="4"/>
+  <circle cx="256" cy="256" r="116" fill="none" stroke="#F7F1E8" stroke-width="26"/>
+  <path d="M256 142C286 184 286 328 256 370C226 328 226 184 256 142Z" fill="#F7F1E8"/>
+  <path d="M308 308L375 375" fill="none" stroke="#F7F1E8" stroke-linecap="round" stroke-width="24" stroke-opacity=".86"/>
+  <circle cx="172" cy="152" r="13" fill="#08A8E8"/>
+</svg>

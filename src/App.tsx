@@ -7,8 +7,6 @@ import React, { useState, lazy, Suspense, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { AnimationSpeeds, EasingCurves } from './domain/constants/Theme';
 import {
-  Menu,
-  X,
   Shield,
   ShieldAlert,
   LayoutGrid
@@ -316,7 +314,11 @@ export default function App() {
               className="relative z-40 bg-paper border-r border-ink/5 hidden md:flex flex-col py-10 px-6 transition-all duration-300 ease-editorial"
             >
               <div className="flex items-center gap-4 mb-20 px-2 overflow-hidden">
-                <div className="w-8 h-8 rounded-full border border-ink flex items-center justify-center font-serif text-lg">λ</div>
+                <img
+                  src="/lumina-icon.svg"
+                  alt="Lumina"
+                  className="h-8 w-8 shrink-0 rounded-[0.7rem] shadow-sm"
+                />
                 {isSidebarOpen && (
                   <motion.h1 
                     initial={{ opacity: 0 }} 
@@ -350,10 +352,27 @@ export default function App() {
               </div>
 
               <button
-                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className="absolute -right-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-paper border border-ink/5 rounded-full flex items-center justify-center shadow-sm hover:bg-ink hover:text-paper transition-all"
+                type="button"
+                onClick={() => {
+                  triggerHaptic('light');
+                  setIsSidebarOpen(!isSidebarOpen);
+                }}
+                className="group/sidebar-toggle absolute -right-2 top-12 flex h-16 w-4 items-center justify-center rounded-full border border-ink/5 bg-paper/70 text-ink/30 opacity-50 backdrop-blur-sm transition-all hover:w-5 hover:border-ink/15 hover:bg-paper hover:text-ink hover:opacity-100 focus-visible:w-5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/20"
+                aria-label={
+                  isSidebarOpen
+                    ? currentLanguage === 'es' ? 'Contraer navegación' : 'Collapse navigation'
+                    : currentLanguage === 'es' ? 'Expandir navegación' : 'Expand navigation'
+                }
+                title={
+                  isSidebarOpen
+                    ? currentLanguage === 'es' ? 'Contraer navegación' : 'Collapse navigation'
+                    : currentLanguage === 'es' ? 'Expandir navegación' : 'Expand navigation'
+                }
               >
-                {isSidebarOpen ? <X size={12} /> : <Menu size={12} />}
+                <span
+                  aria-hidden="true"
+                  className="h-8 w-[3px] rounded-full bg-current transition-all group-hover/sidebar-toggle:h-9"
+                />
               </button>
             </motion.aside>
 
