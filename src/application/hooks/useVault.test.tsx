@@ -62,6 +62,9 @@ const fakeCryptoService = vi.hoisted(() => ({
   decrypt: vi.fn(async (cipherData: ArrayBuffer) => new TextDecoder().decode(cipherData))
 }));
 
+const enableBiometricUnlockWithPassphraseMock = vi.hoisted(() => vi.fn(async () => ({ ok: true as const })));
+const clearBiometricUnlockMock = vi.hoisted(() => vi.fn(async () => undefined));
+
 vi.mock('localforage', () => ({
   default: fakeLocalforage
 }));
@@ -72,6 +75,11 @@ vi.mock('../../infrastructure/repositories/LocalForageVaultRepository', () => ({
 
 vi.mock('../../infrastructure/services/CryptoService', () => ({
   cryptoService: fakeCryptoService
+}));
+
+vi.mock('../../infrastructure/platform/RuntimePlatform', () => ({
+  enableBiometricUnlockWithPassphrase: enableBiometricUnlockWithPassphraseMock,
+  clearBiometricUnlock: clearBiometricUnlockMock
 }));
 
 describe('useVault', () => {
@@ -89,6 +97,8 @@ describe('useVault', () => {
     fakeRepository.wipe.mockClear();
     fakeCryptoService.encrypt.mockClear();
     fakeCryptoService.decrypt.mockClear();
+    enableBiometricUnlockWithPassphraseMock.mockClear();
+    clearBiometricUnlockMock.mockClear();
   });
 
   it('creates a vault and unlocks it immediately', async () => {
@@ -105,7 +115,7 @@ describe('useVault', () => {
 
     expect(result.current.isLocked).toBe(false);
     expect(result.current.vaultExists).toBe(true);
-    expect(result.current.vault?.schemaVersion).toBe(2);
+    expect(result.current.vault?.schemaVersion).toBe(3);
     expect(result.current.vault?.profile.name).toBe('Junior');
     expect(result.current.vault?.profile.language).toBe('es');
     expect(fakeRepository.save).toHaveBeenCalledTimes(1);
@@ -148,6 +158,8 @@ describe('useVault', () => {
       expect(changed).toBe(true);
     });
 
+    expect(clearBiometricUnlockMock).toHaveBeenCalledTimes(1);
+
     act(() => {
       result.current.lockVault();
     });
@@ -171,6 +183,24 @@ describe('useVault', () => {
     expect(result.current.vault).toBeNull();
     expect(result.current.lastBackupAt).toBeNull();
     expect(fakeRepository.wipe).toHaveBeenCalledTimes(1);
+    expect(clearBiometricUnlockMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('can enable biometric unlock using the in-memory passphrase', async () => {
+    const { result } = renderHook(() => useVault());
+
+    await waitFor(() => expect(result.current.isReady).toBe(true));
+
+    await act(async () => {
+      await result.current.createVault('Junior', 'secret-pass');
+    });
+
+    await act(async () => {
+      const enabled = await result.current.enableBiometricUnlock();
+      expect(enabled).toEqual({ ok: true });
+    });
+
+    expect(enableBiometricUnlockWithPassphraseMock).toHaveBeenCalledWith('secret-pass');
   });
 
   it('migrates legacy vaults without schemaVersion on unlock', async () => {
@@ -207,7 +237,7 @@ describe('useVault', () => {
       expect(unlocked).toBe(true);
     });
 
-    expect(result.current.vault?.schemaVersion).toBe(2);
+    expect(result.current.vault?.schemaVersion).toBe(3);
     expect(fakeRepository.save).toHaveBeenCalled();
   });
 
@@ -226,9 +256,10 @@ describe('useVault', () => {
     });
 
     let backup: string | null = null;
+    const backupPassword = 'backup-pass';
 
     await act(async () => {
-      const exported = await result.current.createBackupArtifact();
+      const exported = await result.current.createBackupArtifact(backupPassword);
       expect(exported.ok).toBe(true);
       if (exported.ok) {
         backup = exported.artifact.content;
@@ -237,6 +268,7 @@ describe('useVault', () => {
 
     expect(backup).toContain('lumina.portable-backup');
     expect(JSON.parse(backup!).version).toBe(2);
+    expect(fakeCryptoService.encrypt).toHaveBeenLastCalledWith(expect.any(String), backupPassword);
 
     await act(async () => {
       await result.current.wipeAllData();
@@ -245,7 +277,7 @@ describe('useVault', () => {
     localforageState.crisisData = null;
 
     await act(async () => {
-      const imported = await result.current.importBackup(backup!, 'secret-pass');
+      const imported = await result.current.importBackup(backup!, backupPassword);
       expect(imported.ok).toBe(true);
     });
 
@@ -254,6 +286,8 @@ describe('useVault', () => {
     expect(result.current.vault?.profile.language).toBe('es');
     expect(localforageState.crisisData?.copingPhrase).toBe('Stay here. One breath at a time.');
     expect(fakeLocalforage.setItem).toHaveBeenCalledWith('lumina_crisis_config', expect.any(Object));
+    expect(repositoryState.storedPassword).toBe(backupPassword);
+    expect(clearBiometricUnlockMock).toHaveBeenCalled();
   });
 
   it('accepts portable backup v1 envelopes for compatibility', async () => {
@@ -286,7 +320,7 @@ describe('useVault', () => {
     });
 
     expect(result.current.vault?.profile.name).toBe('Legacy Portable');
-    expect(result.current.vault?.schemaVersion).toBe(2);
+    expect(result.current.vault?.schemaVersion).toBe(3);
   });
 
   it('creates a reusable backup artifact for local download or native export', async () => {

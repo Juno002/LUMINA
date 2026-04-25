@@ -179,6 +179,14 @@ export interface UserProfile {
 
 // --- Habits ---
 export type HabitType = 'yesno' | 'numeric' | 'timer';
+export type HabitReminderCadence = 'daily' | 'weekly' | 'custom';
+
+export interface HabitReminder {
+  enabled: boolean;
+  cadence: HabitReminderCadence;
+  time: string; // HH:mm
+  weekdays?: number[]; // JS weekday indexes (0-6), Sunday-first
+}
 
 export interface Habit {
   id: string;
@@ -193,6 +201,7 @@ export interface Habit {
   createdAt: string;
   archivedAt?: string;
   linkedGoalId?: string;
+  reminder?: HabitReminder;
 }
 
 export interface HabitLog {

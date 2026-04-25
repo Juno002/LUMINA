@@ -21,7 +21,7 @@ const DEFAULT_VAULT: Vault = {
     onboarding: { status: 'not_started', currentStep: 'sanctuary', completedSteps: [] }
   },
   createdAt: new Date().toISOString(),
-  schemaVersion: 2,
+  schemaVersion: 3,
   journal: [],
   exposure: { hierarchy: [], logs: [] },
   activations: [],
@@ -82,6 +82,19 @@ export class LocalForageVaultRepository implements IVaultRepository {
         goals: (data.goals || []).map(g => ({
           recurrence: 'none' as RecurrencePattern,
           ...g
+        })),
+        habits: (data.habits || []).map(habit => ({
+          ...habit,
+          reminder: habit.reminder?.enabled ? {
+            enabled: true,
+            cadence: habit.reminder.cadence ?? 'daily',
+            time: habit.reminder.time ?? '08:00',
+            weekdays: Array.isArray(habit.reminder.weekdays)
+              ? habit.reminder.weekdays.filter((day, index, source) =>
+                Number.isInteger(day) && day >= 0 && day <= 6 && source.indexOf(day) === index
+              )
+              : []
+          } : undefined
         })),
         journal: (data.journal || []).map(entry => ({
           ...entry,

@@ -20,6 +20,10 @@ class SensoryFeedbackService {
     return typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   }
 
+  private get isPageVisible() {
+    return typeof document === 'undefined' || document.visibilityState !== 'hidden';
+  }
+
   private async ensureContext(): Promise<AudioContext | null> {
     if (typeof window === 'undefined') {
       return null;
@@ -95,7 +99,7 @@ class SensoryFeedbackService {
   }
 
   async emit(event: SensoryEvent) {
-    if (!this.enabled) {
+    if (!this.enabled || !this.isPageVisible) {
       return;
     }
 

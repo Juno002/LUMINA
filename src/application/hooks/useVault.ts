@@ -8,16 +8,20 @@
  * Password lives in memory only while vault is open.
  */
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import localforage from 'localforage';
-import { Vault, ClinicalProfile, CrisisContact } from '../../domain/entities';
+import { Vault, ClinicalProfile, CrisisContact, HabitReminder } from '../../domain/entities';
 import { vaultRepository } from '../../infrastructure/repositories/LocalForageVaultRepository';
 import { cryptoService } from '../../infrastructure/services/CryptoService';
 import { backupMetadataService } from '../../infrastructure/services/BackupMetadataService';
+import {
+  clearBiometricUnlock,
+  enableBiometricUnlockWithPassphrase
+} from '../../infrastructure/platform/RuntimePlatform';
 import { createOnboardingState } from '../usecases/LuminaGuideUseCase';
 import { BackupArtifact, buildBackupFilename } from '../usecases/BackupArtifact';
 
-const CURRENT_SCHEMA_VERSION = 2;
+const CURRENT_SCHEMA_VERSION = 3;
 const DEFAULT_AUTO_LOCK_MS = 5 * 60 * 1000; // 5 minutes
 const ACTIVITY_EVENTS = ['mousemove', 'keypress', 'touchstart', 'click'] as const;
 const CRISIS_KEY = 'lumina_crisis_config';
@@ -91,6 +95,25 @@ function isPortableBackupEnvelope(value: unknown): value is PortableBackupEnvelo
 /**
  * Applies any necessary schema migrations to a loaded vault.
  */
+function normalizeHabitReminder(reminder: HabitReminder | undefined): HabitReminder | undefined {
+  if (!reminder || reminder.enabled !== true) {
+    return undefined;
+  }
+
+  const weekdays = Array.isArray(reminder.weekdays)
+    ? reminder.weekdays.filter((day, index, source) =>
+      Number.isInteger(day) && day >= 0 && day <= 6 && source.indexOf(day) === index
+    )
+    : [];
+
+  return {
+    enabled: true,
+    cadence: reminder.cadence ?? 'daily',
+    time: reminder.time ?? '08:00',
+    weekdays
+  };
+}
+
 function migrateVault(vault: Vault): Vault {
   let migrated = {
     ...vault,
@@ -99,7 +122,11 @@ function migrateVault(vault: Vault): Vault {
       soundEnabled: vault.profile.soundEnabled ?? true,
       language: vault.profile.language ?? 'en',
       onboarding: vault.profile.onboarding ?? createOnboardingState('not_started')
-    }
+    },
+    habits: (vault.habits || []).map((habit) => ({
+      ...habit,
+      reminder: normalizeHabitReminder(habit.reminder)
+    }))
   };
 
   if (!migrated.schemaVersion) {
@@ -114,6 +141,17 @@ function migrateVault(vault: Vault): Vault {
         ...migrated.profile,
         onboarding: migrated.profile.onboarding ?? createOnboardingState('not_started')
       }
+    };
+  }
+
+  if (migrated.schemaVersion < 3) {
+    migrated = {
+      ...migrated,
+      schemaVersion: 3,
+      habits: (migrated.habits || []).map((habit) => ({
+        ...habit,
+        reminder: normalizeHabitReminder(habit.reminder)
+      }))
     };
   }
 
@@ -133,24 +171,97 @@ export function useVault() {
   // Password stays in memory only while vault is open
   const passwordRef = useRef<string | null>(null);
   const autoLockTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const queuedVaultRef = useRef<Vault | null>(null);
+  const queuedPasswordRef = useRef<string | null>(null);
+  const saveInFlightRef = useRef<Promise<void> | null>(null);
 
   // --- Lock function (defined first, used by auto-lock) ---
   const lockVault = () => {
     setVaultState(null);
     setIsLocked(true);
     passwordRef.current = null;
+    queuedVaultRef.current = null;
+    queuedPasswordRef.current = null;
     if (autoLockTimer.current) {
       clearTimeout(autoLockTimer.current);
       autoLockTimer.current = null;
     }
   };
 
+  const persistQueuedVault = useCallback(() => {
+    if (saveInFlightRef.current) {
+      return saveInFlightRef.current;
+    }
+
+    const nextVault = queuedVaultRef.current;
+    const nextPassword = queuedPasswordRef.current;
+    if (!nextVault || !nextPassword) {
+      return null;
+    }
+
+    queuedVaultRef.current = null;
+    queuedPasswordRef.current = null;
+    setIsSaving(true);
+    setLastSaveError(null);
+
+    const task = (async () => {
+      try {
+        const saved = await vaultRepository.save(nextVault, nextPassword);
+        if (!saved) {
+          throw new Error('Unable to write the encrypted vault to local storage.');
+        }
+      } catch (e) {
+        setLastSaveError(e instanceof Error ? e.message : String(e));
+      } finally {
+        saveInFlightRef.current = null;
+        if (queuedVaultRef.current && queuedPasswordRef.current) {
+          void persistQueuedVault();
+        } else {
+          setIsSaving(false);
+        }
+      }
+    })();
+
+    saveInFlightRef.current = task;
+    return task;
+  }, []);
+
+  const queueVaultPersistence = useCallback((nextVault: Vault) => {
+    if (!passwordRef.current) {
+      return;
+    }
+
+    queuedVaultRef.current = nextVault;
+    queuedPasswordRef.current = passwordRef.current;
+    void persistQueuedVault();
+  }, [persistQueuedVault]);
+
+  const flushVaultPersistence = useCallback(async () => {
+    while (saveInFlightRef.current || (queuedVaultRef.current && queuedPasswordRef.current)) {
+      if (saveInFlightRef.current) {
+        await saveInFlightRef.current;
+        continue;
+      }
+
+      const pendingTask = persistQueuedVault();
+      if (pendingTask) {
+        await pendingTask;
+      }
+    }
+  }, [persistQueuedVault]);
+
   // Check if a vault exists on mount
   useEffect(() => {
     const init = async () => {
-      const exists = await vaultRepository.exists();
-      setVaultExists(exists);
-      setIsReady(true);
+      try {
+        const exists = await vaultRepository.exists();
+        setVaultExists(exists);
+      } catch (error) {
+        console.error('Failed to initialize vault:', error);
+        setVaultExists(false);
+      } finally {
+        setIsReady(true);
+      }
     };
     init();
   }, []);
@@ -233,20 +344,20 @@ export function useVault() {
 
   const updateVault = async (newVault: Vault) => {
     setVaultState(newVault);
-    if (passwordRef.current) {
-      setIsSaving(true);
-      setLastSaveError(null);
-      try {
-        const saved = await vaultRepository.save(newVault, passwordRef.current);
-        if (!saved) {
-          throw new Error('Unable to write the encrypted vault to local storage.');
-        }
-      } catch (e) {
-        setLastSaveError(e instanceof Error ? e.message : String(e));
-      } finally {
-        setIsSaving(false);
-      }
+    queueVaultPersistence(newVault);
+  };
+
+  const enableBiometricUnlock = async (): Promise<{ ok: true } | { ok: false; error: string }> => {
+    if (!passwordRef.current) {
+      return { ok: false, error: 'VAULT_LOCKED' };
     }
+
+    const result = await enableBiometricUnlockWithPassphrase(passwordRef.current);
+    if ('error' in result) {
+      return { ok: false, error: result.error };
+    }
+
+    return { ok: true };
   };
 
   const changePassphrase = async (currentPassword: string, newPassword: string): Promise<boolean> => {
@@ -256,9 +367,11 @@ export function useVault() {
     setIsSaving(true);
     setLastSaveError(null);
     try {
+      await flushVaultPersistence();
       const saved = await vaultRepository.save(vault, newPassword);
       if (saved) {
         passwordRef.current = newPassword;
+        await clearBiometricUnlock();
         return true;
       }
       return false;
@@ -271,6 +384,8 @@ export function useVault() {
   };
 
   const wipeAllData = async () => {
+    await flushVaultPersistence();
+    await clearBiometricUnlock();
     const success = await vaultRepository.wipe();
     if (success) {
       backupMetadataService.clear();
@@ -280,12 +395,14 @@ export function useVault() {
     }
   };
 
-  const createBackupArtifact = async (): Promise<BackupArtifactResult> => {
+  const createBackupArtifact = async (backupPassword?: string): Promise<BackupArtifactResult> => {
     if (!vault || !passwordRef.current) {
       const error = 'Vault must be unlocked before exporting a backup.';
       setLastSaveError(error);
       return { ok: false, error };
     }
+
+    const exportPassword = backupPassword?.trim() || passwordRef.current;
 
     try {
       const crisisData = await localforage.getItem<CrisisBackupData>(CRISIS_KEY);
@@ -298,7 +415,7 @@ export function useVault() {
 
       const encryptedPayload = await cryptoService.encrypt(
         JSON.stringify(portablePayload),
-        passwordRef.current
+        exportPassword
       );
 
       const backupEnvelope: PortableBackupEnvelope = {
@@ -328,8 +445,8 @@ export function useVault() {
     }
   };
 
-  const exportBackup = async (): Promise<BackupExportResult> => {
-    const artifactResult = await createBackupArtifact();
+  const exportBackup = async (backupPassword?: string): Promise<BackupExportResult> => {
+    const artifactResult = await createBackupArtifact(backupPassword);
     if (artifactResult.ok === false) {
       return { ok: false, error: artifactResult.error };
     }
@@ -388,12 +505,15 @@ export function useVault() {
         await localforage.removeItem(CRISIS_KEY);
       }
 
+      await clearBiometricUnlock();
       passwordRef.current = password;
       setUnlockError(false);
       setLastSaveError(null);
       setVaultState(migratedVault);
       setVaultExists(true);
       setIsLocked(false);
+      queuedVaultRef.current = null;
+      queuedPasswordRef.current = null;
 
       return { ok: true };
     } catch (error) {
@@ -417,6 +537,7 @@ export function useVault() {
     lockVault,
     updateVault,
     changePassphrase,
+    enableBiometricUnlock,
     wipeAllData,
     createBackupArtifact,
     exportBackup,

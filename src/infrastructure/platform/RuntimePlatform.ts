@@ -7,6 +7,9 @@ import { Capacitor } from '@capacitor/core';
 import { Directory, Encoding, Filesystem } from '@capacitor/filesystem';
 import { Haptics, ImpactStyle, NotificationType } from '@capacitor/haptics';
 import { Share } from '@capacitor/share';
+import { FilePicker } from '@capawesome/capacitor-file-picker';
+import { BackupDocuments } from './BackupDocumentsPlugin';
+import { BiometricVault } from './BiometricVaultPlugin';
 import type { BackupArtifact } from '../../application/usecases/BackupArtifact';
 
 export type RuntimePlatform = 'web' | 'android' | 'ios';
@@ -27,6 +30,34 @@ export interface BackupExportResult {
   uri?: string;
   shared: boolean;
 }
+
+export interface BackupImportSource {
+  name: string;
+  content: string;
+}
+
+export interface BiometricUnlockState {
+  supported: boolean;
+  available: boolean;
+  enrolled: boolean;
+  enabled: boolean;
+}
+
+export type BiometricUnlockError =
+  | 'KEY_INVALIDATED'
+  | 'NOT_AVAILABLE'
+  | 'NOT_ENABLED'
+  | 'NOT_ENROLLED'
+  | 'USER_CANCELED'
+  | 'UNKNOWN';
+
+export type BiometricUnlockActionResult =
+  | { ok: true }
+  | { ok: false; error: BiometricUnlockError };
+
+export type BiometricUnlockPassphraseResult =
+  | { ok: true; passphrase: string }
+  | { ok: false; error: BiometricUnlockError };
 
 const WEB_HAPTIC_PATTERNS: Record<HapticStyle, number | number[]> = {
   light: [10],
@@ -67,6 +98,39 @@ function downloadArtifactInBrowser(artifact: BackupArtifact) {
   URL.revokeObjectURL(url);
 }
 
+function decodeBase64Utf8(value: string): string {
+  const payload = value.includes(',') ? value.split(',').pop() ?? '' : value;
+  const binary = atob(payload);
+  const bytes = Uint8Array.from(binary, char => char.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
+}
+
+function isUserCanceledError(error: unknown, canceledMessage: string) {
+  return error instanceof Error && error.message === canceledMessage;
+}
+
+function mapBiometricError(error: unknown): BiometricUnlockError {
+  if (!(error instanceof Error)) {
+    return 'UNKNOWN';
+  }
+
+  switch (error.message) {
+    case 'KEY_INVALIDATED':
+      return 'KEY_INVALIDATED';
+    case 'NOT_AVAILABLE':
+    case 'NOT_SUPPORTED':
+      return 'NOT_AVAILABLE';
+    case 'NOT_ENABLED':
+      return 'NOT_ENABLED';
+    case 'NOT_ENROLLED':
+      return 'NOT_ENROLLED';
+    case 'USER_CANCELED':
+      return 'USER_CANCELED';
+    default:
+      return 'UNKNOWN';
+  }
+}
+
 async function ensureAndroidPublicStoragePermission() {
   if (!isNativeApp() || getRuntimePlatform() !== 'android') {
     return;
@@ -83,19 +147,35 @@ async function ensureAndroidPublicStoragePermission() {
   }
 }
 
-async function writeNativeBackupArtifact(artifact: BackupArtifact) {
-  await ensureAndroidPublicStoragePermission();
+async function writeNativeBackupArtifact(
+  artifact: BackupArtifact,
+  directory: Directory = Directory.Documents
+) {
+  if (directory === Directory.Documents) {
+    await ensureAndroidPublicStoragePermission();
+  }
 
-  const path = `LUMINA/${artifact.filename}`;
+  const path = `LUMINA/backups/${artifact.filename}`;
   const { uri } = await Filesystem.writeFile({
     path,
     data: artifact.content,
-    directory: Directory.Documents,
+    directory,
     encoding: Encoding.UTF8,
     recursive: true
   });
 
   return { path, uri };
+}
+
+async function deleteNativeBackupArtifact(path: string, directory: Directory) {
+  try {
+    await Filesystem.deleteFile({
+      path,
+      directory
+    });
+  } catch {
+    // Cache cleanup is best effort.
+  }
 }
 
 export function getRuntimePlatform(): RuntimePlatform {
@@ -111,6 +191,68 @@ export function getBackupTransportLabel() {
   return isNativeApp() ? 'native' : 'download';
 }
 
+export async function getBiometricUnlockState(): Promise<BiometricUnlockState> {
+  if (!isNativeApp() || getRuntimePlatform() !== 'android') {
+    return {
+      supported: false,
+      available: false,
+      enrolled: false,
+      enabled: false
+    };
+  }
+
+  try {
+    return await BiometricVault.getStatus();
+  } catch {
+    return {
+      supported: false,
+      available: false,
+      enrolled: false,
+      enabled: false
+    };
+  }
+}
+
+export async function enableBiometricUnlockWithPassphrase(
+  passphrase: string
+): Promise<BiometricUnlockActionResult> {
+  if (!isNativeApp() || getRuntimePlatform() !== 'android') {
+    return { ok: false, error: 'NOT_AVAILABLE' };
+  }
+
+  try {
+    await BiometricVault.enableBiometricUnlock({ passphrase });
+    return { ok: true };
+  } catch (error) {
+    return { ok: false, error: mapBiometricError(error) };
+  }
+}
+
+export async function unlockVaultWithBiometrics(): Promise<BiometricUnlockPassphraseResult> {
+  if (!isNativeApp() || getRuntimePlatform() !== 'android') {
+    return { ok: false, error: 'NOT_AVAILABLE' };
+  }
+
+  try {
+    const result = await BiometricVault.unlockWithBiometrics();
+    return { ok: true, passphrase: result.passphrase };
+  } catch (error) {
+    return { ok: false, error: mapBiometricError(error) };
+  }
+}
+
+export async function clearBiometricUnlock() {
+  if (!isNativeApp() || getRuntimePlatform() !== 'android') {
+    return;
+  }
+
+  try {
+    await BiometricVault.disableBiometricUnlock();
+  } catch {
+    // Clearing secure state is best effort.
+  }
+}
+
 export async function exportBackupArtifact(artifact: BackupArtifact): Promise<BackupExportResult> {
   if (!isNativeApp()) {
     downloadArtifactInBrowser(artifact);
@@ -121,7 +263,33 @@ export async function exportBackupArtifact(artifact: BackupArtifact): Promise<Ba
     };
   }
 
-  const written = await writeNativeBackupArtifact(artifact);
+  if (getRuntimePlatform() === 'android') {
+    const written = await writeNativeBackupArtifact(artifact, Directory.Cache);
+
+    try {
+      const saved = await BackupDocuments.saveBackupDocument({
+        sourceUri: written.uri,
+        filename: artifact.filename,
+        mimeType: artifact.mimeType
+      });
+
+      return {
+        method: 'native-save',
+        filename: saved.filename,
+        uri: saved.uri,
+        shared: false
+      };
+    } catch (error) {
+      if (isUserCanceledError(error, 'saveBackupDocument canceled.')) {
+        throw new Error('USER_CANCELED');
+      }
+      throw error;
+    } finally {
+      await deleteNativeBackupArtifact(written.path, Directory.Cache);
+    }
+  }
+
+  const written = await writeNativeBackupArtifact(artifact, Directory.Documents);
   return {
     method: 'native-save',
     filename: artifact.filename,
@@ -135,7 +303,7 @@ export async function shareBackupArtifact(artifact: BackupArtifact): Promise<Bac
     return exportBackupArtifact(artifact);
   }
 
-  const written = await writeNativeBackupArtifact(artifact);
+  const written = await writeNativeBackupArtifact(artifact, Directory.Cache);
 
   try {
     const canShare = await Share.canShare();
@@ -155,14 +323,51 @@ export async function shareBackupArtifact(artifact: BackupArtifact): Promise<Bac
       };
     }
   } catch {
-    // Fall through to saved-file response.
+    // Fall through to Android's secure save dialog below.
+  } finally {
+    await deleteNativeBackupArtifact(written.path, Directory.Cache);
+  }
+
+  return exportBackupArtifact(artifact);
+}
+
+export async function pickNativeBackupImportSource(): Promise<BackupImportSource | null> {
+  if (getRuntimePlatform() === 'android') {
+    try {
+      const file = await BackupDocuments.openBackupDocument({
+        mimeTypes: ['application/json', 'application/octet-stream']
+      });
+
+      return {
+        name: file.name || 'lumina-backup.json',
+        content: file.content
+      };
+    } catch (error) {
+      if (isUserCanceledError(error, 'openBackupDocument canceled.')) {
+        return null;
+      }
+      throw error;
+    }
+  }
+
+  const result = await FilePicker.pickFiles({
+    types: ['application/json', 'application/octet-stream'],
+    limit: 1,
+    readData: true
+  });
+
+  const file = result.files?.[0];
+  if (!file) {
+    return null;
+  }
+
+  if (!file.data) {
+    throw new Error('Selected backup file could not be read.');
   }
 
   return {
-    method: 'native-save',
-    filename: artifact.filename,
-    uri: written.uri,
-    shared: false
+    name: file.name || 'lumina-backup.json',
+    content: decodeBase64Utf8(file.data)
   };
 }
 

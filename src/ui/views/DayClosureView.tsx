@@ -67,16 +67,25 @@ export default function DayClosureView({ vault, onClose, onSave }: DayClosureVie
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[100] bg-ink flex items-center justify-center p-6 md:p-12 text-paper overflow-y-auto"
+      className="editorial-ink-shell fixed inset-0 z-[100] flex items-end justify-center bg-ink/82 text-paper md:items-center"
+      onClick={onClose}
     >
-      <button 
-        onClick={onClose}
-        className="absolute top-10 right-10 text-paper/30 hover:text-paper transition-colors"
+      <motion.div
+        initial={{ opacity: 0, y: 44, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 28, scale: 0.985 }}
+        transition={{ duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
+        className="editorial-ink-surface relative flex w-full max-w-4xl flex-col overflow-hidden border border-paper/10 bg-ink shadow-2xl"
+        onClick={(event) => event.stopPropagation()}
       >
-        <X size={32} />
-      </button>
+        <button 
+          onClick={onClose}
+          className="absolute right-6 top-6 z-10 text-paper/30 transition-colors hover:text-paper md:right-8 md:top-8"
+        >
+          <X size={24} />
+        </button>
 
-      <div className="max-w-2xl w-full flex flex-col gap-12 py-20">
+      <div className="flex w-full max-w-2xl min-h-0 flex-col gap-12 self-center overflow-y-auto px-6 py-10 md:px-10 md:py-12">
         <AnimatePresence mode="wait">
           {step === 1 && (
             <motion.div 
@@ -283,6 +292,7 @@ export default function DayClosureView({ vault, onClose, onSave }: DayClosureVie
           )}
         </AnimatePresence>
       </div>
+      </motion.div>
     </motion.div>
   );
 }

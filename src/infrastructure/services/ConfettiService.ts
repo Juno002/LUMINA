@@ -19,6 +19,7 @@ class ConfettiService {
 
   trigger(options: ConfettiOptions = {}) {
     if (this.active) return;
+    if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
     this.active = true;
 
     const {
@@ -39,10 +40,20 @@ class ConfettiService {
     let width = (canvas.width = window.innerWidth);
     let height = (canvas.height = window.innerHeight);
 
-    window.addEventListener('resize', () => {
+    const handleResize = () => {
       width = canvas.width = window.innerWidth;
       height = canvas.height = window.innerHeight;
-    });
+    };
+
+    const cleanup = () => {
+      window.removeEventListener('resize', handleResize);
+      if (canvas.parentNode) {
+        canvas.parentNode.removeChild(canvas);
+      }
+      this.active = false;
+    };
+
+    window.addEventListener('resize', handleResize, { passive: true });
 
     const particles = Array.from({ length: particleCount }).map(() => ({
       x: width * origin.x,
@@ -83,8 +94,7 @@ class ConfettiService {
       if (stillActive) {
         requestAnimationFrame(render);
       } else {
-        document.body.removeChild(canvas);
-        this.active = false;
+        cleanup();
       }
     };
 

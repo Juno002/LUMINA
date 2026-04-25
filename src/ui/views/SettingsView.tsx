@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Check,
   Clock,
@@ -16,7 +16,6 @@ import {
   Share2,
   Shield,
   ShieldAlert,
-  Table,
   Trash2,
   Upload
 } from 'lucide-react';
@@ -29,9 +28,13 @@ import { todayISO } from '../../shared/utils/DateFormatter';
 import { cn } from '../../shared/utils/TailwindMerge';
 import { DataExportService } from '../../infrastructure/services/DataExportService';
 import {
+  clearBiometricUnlock,
+  type BiometricUnlockState,
   exportBackupArtifact,
+  getBiometricUnlockState,
   getBackupTransportLabel,
   isNativeApp,
+  pickNativeBackupImportSource,
   shareBackupArtifact
 } from '../../infrastructure/platform/RuntimePlatform';
 import {
@@ -47,7 +50,8 @@ interface SettingsViewProps {
   onWipe: () => void;
   onLock: () => void;
   onChangePassphrase: (currentPassword: string, nextPassword: string) => Promise<boolean>;
-  onCreateBackupArtifact: () => Promise<{
+  onEnableBiometricUnlock: () => Promise<{ ok: true } | { ok: false; error: string }>;
+  onCreateBackupArtifact: (password?: string) => Promise<{
     ok: true;
     artifact: BackupArtifact;
   } | { ok: false; error: string }>;
@@ -98,6 +102,7 @@ export default function SettingsView({
   onWipe,
   onLock,
   onChangePassphrase,
+  onEnableBiometricUnlock,
   onCreateBackupArtifact,
   onImportBackup,
   onOpenCrisis,
@@ -118,11 +123,16 @@ export default function SettingsView({
   const [isPassphraseModalOpen, setIsPassphraseModalOpen] = useState(false);
   const [isWipeConfirmOpen, setIsWipeConfirmOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isExportingBackup, setIsExportingBackup] = useState(false);
   const [isSharingBackup, setIsSharingBackup] = useState(false);
   const [passphraseForm, setPassphraseForm] = useState({
     currentPassword: '',
     newPassword: '',
+    confirmPassword: ''
+  });
+  const [backupExportForm, setBackupExportForm] = useState({
+    password: '',
     confirmPassword: ''
   });
   const [backupImportPassphrase, setBackupImportPassphrase] = useState('');
@@ -138,7 +148,14 @@ export default function SettingsView({
     tone: 'success' | 'error';
     message: string;
   } | null>(null);
+  const [biometricState, setBiometricState] = useState<BiometricUnlockState | null>(null);
+  const [biometricStatus, setBiometricStatus] = useState<{
+    tone: 'success' | 'error';
+    message: string;
+  } | null>(null);
+  const [backupExportError, setBackupExportError] = useState<string | null>(null);
   const [backupImportError, setBackupImportError] = useState<string | null>(null);
+  const [isBiometricBusy, setIsBiometricBusy] = useState(false);
   const backupInputRef = useRef<HTMLInputElement | null>(null);
 
   const hardwareId = useMemo(() => {
@@ -166,19 +183,145 @@ export default function SettingsView({
     return `${t('settings.wipe_vault_desc')} ${t('settings.wipe_vault_desc_with_backup')} ${formatBackupTimestamp(lastBackupAt, locale)}.`;
   }, [lastBackupAt, locale, t]);
 
+  const refreshBiometricState = async () => {
+    if (!nativeEnvironment) {
+      setBiometricState(null);
+      return;
+    }
+
+    const nextState = await getBiometricUnlockState();
+    setBiometricState(nextState);
+  };
+
+  useEffect(() => {
+    if (!nativeEnvironment) {
+      setBiometricState(null);
+      return;
+    }
+
+    let cancelled = false;
+
+    void (async () => {
+      const nextState = await getBiometricUnlockState();
+      if (!cancelled) {
+        setBiometricState(nextState);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [nativeEnvironment]);
+
+  const getBiometricErrorMessage = (error: string) => {
+    switch (error) {
+      case 'KEY_INVALIDATED':
+        return t('settings.biometric_unlock_reset');
+      case 'NOT_AVAILABLE':
+      case 'NOT_ENROLLED':
+        return t('settings.biometric_unlock_unavailable');
+      default:
+        return t('settings.biometric_unlock_error');
+    }
+  };
+
   const handleExportMD = () => {
     const report = DataExportService.exportMarkdownReport(vault);
     const date = todayISO();
     DataExportService.downloadFile(report, `lumina-report-${date}.md`, 'text/markdown');
   };
 
-  const handleExportCSV = () => {
-    const data = DataExportService.exportCSV(vault);
-    const date = todayISO();
-    DataExportService.downloadFile(data, `lumina-data-${date}.csv`, 'text/csv');
+  const handleEnableBiometricUnlock = async () => {
+    setBiometricStatus(null);
+    setIsBiometricBusy(true);
+
+    try {
+      const result = await onEnableBiometricUnlock();
+      if (result.ok === false) {
+        if (result.error === 'USER_CANCELED') {
+          return;
+        }
+
+        setBiometricStatus({
+          tone: 'error',
+          message: getBiometricErrorMessage(result.error)
+        });
+        return;
+      }
+
+      await refreshBiometricState();
+      setBiometricStatus({
+        tone: 'success',
+        message: t('settings.biometric_unlock_success')
+      });
+    } finally {
+      setIsBiometricBusy(false);
+    }
   };
 
-  const handleExportBackup = async () => {
+  const handleDisableBiometricUnlock = async () => {
+    setBiometricStatus(null);
+    setIsBiometricBusy(true);
+
+    try {
+      await clearBiometricUnlock();
+      await refreshBiometricState();
+      setBiometricStatus({
+        tone: 'success',
+        message: t('settings.biometric_unlock_disabled_success')
+      });
+    } finally {
+      setIsBiometricBusy(false);
+    }
+  };
+
+  const openExportModal = () => {
+    setBackupExportForm({ password: '', confirmPassword: '' });
+    setBackupExportError(null);
+    setIsExportModalOpen(true);
+  };
+
+  const handleNativeExportBackup = async () => {
+    if (!backupExportForm.password.trim()) {
+      setBackupExportError(t('settings.passphrase_empty'));
+      return;
+    }
+    if (backupExportForm.password !== backupExportForm.confirmPassword) {
+      setBackupExportError(t('settings.passphrase_mismatch'));
+      return;
+    }
+
+    setBackupStatus(null);
+    setIsExportingBackup(true);
+    setBackupExportError(null);
+
+    try {
+      const result = await onCreateBackupArtifact(backupExportForm.password.trim());
+
+      if ('error' in result) {
+        setBackupStatus({ tone: 'error', message: result.error });
+        return;
+      }
+
+      const exportResult = await exportBackupArtifact(result.artifact);
+      const successMessage = exportResult.method === 'native-save'
+        ? `${t('settings.backup_export_native_success')} ${exportResult.filename}`
+        : t('settings.backup_export_native_success');
+
+      setBackupStatus({ tone: 'success', message: successMessage });
+      setIsExportModalOpen(false);
+    } catch (error) {
+      if (error instanceof Error && error.message === 'USER_CANCELED') {
+        return;
+      }
+
+      setBackupStatus({ tone: 'error', message: t('settings.backup_export_error') });
+    } finally {
+      setIsExportingBackup(false);
+    }
+  };
+
+  const handleLegacyExportBackup = async () => {
     setBackupStatus(null);
     setIsExportingBackup(true);
 
@@ -221,9 +364,13 @@ export default function SettingsView({
         tone: 'success',
         message: shareResult.shared
           ? t('settings.backup_share_success')
-          : t('settings.backup_export_native_success')
+          : `${t('settings.backup_export_native_success')} ${shareResult.filename}`
       });
-    } catch {
+    } catch (error) {
+      if (error instanceof Error && error.message === 'USER_CANCELED') {
+        return;
+      }
+
       setBackupStatus({ tone: 'error', message: t('settings.backup_share_error') });
     } finally {
       setIsSharingBackup(false);
@@ -240,8 +387,23 @@ export default function SettingsView({
       return;
     }
 
+    // On native, we ignore the web-based file selection if it somehow triggers,
+    // but the input is hidden.
+    if (nativeEnvironment) {
+      handleNativeImportBackup();
+      return;
+    }
+
     const content = await file.text();
     setBackupImportSource({ name: file.name, content });
+    setBackupImportPassphrase('');
+    setBackupImportError(null);
+    setBackupStatus(null);
+    setIsImportModalOpen(true);
+  };
+
+  const handleNativeImportBackup = async () => {
+    resetImportState();
     setBackupImportPassphrase('');
     setBackupImportError(null);
     setBackupStatus(null);
@@ -254,21 +416,59 @@ export default function SettingsView({
     setBackupImportError(null);
   };
 
-  const handleImportBackup = async () => {
-    if (!backupImportSource || !backupImportPassphrase.trim()) {
+  const handleImportBackupAction = async () => {
+    if (!backupImportPassphrase.trim()) {
       setBackupImportError(t('settings.backup_import_empty'));
       return;
     }
 
+    if (nativeEnvironment) {
+      try {
+        const source = backupImportSource ?? await pickNativeBackupImportSource();
+        if (!source) {
+          return;
+        }
+
+        const result = await onImportBackup(source.content, backupImportPassphrase.trim());
+        if ('error' in result) {
+          const isPasswordError =
+            result.error === 'The provided passphrase could not unlock this backup.' ||
+            result.error === 'INVALID_PASSWORD';
+
+          setBackupImportError(
+            isPasswordError ? t('settings.backup_passphrase_incorrect') : result.error
+          );
+          return;
+        }
+
+        setBackupStatus({ tone: 'success', message: t('settings.backup_import_success') });
+        setIsImportModalOpen(false);
+        resetImportState();
+        await refreshBiometricState();
+      } catch {
+        setBackupImportError(t('settings.backup_import_error'));
+      }
+      return;
+    }
+
+    if (!backupImportSource) return;
+
     const result = await onImportBackup(backupImportSource.content, backupImportPassphrase.trim());
     if ('error' in result) {
-      setBackupImportError(result.error);
+      const isPasswordError =
+        result.error === 'The provided passphrase could not unlock this backup.' ||
+        result.error === 'INVALID_PASSWORD';
+
+      setBackupImportError(
+        isPasswordError ? t('settings.backup_passphrase_incorrect') : result.error
+      );
       return;
     }
 
     setBackupStatus({ tone: 'success', message: t('settings.backup_import_success') });
     setIsImportModalOpen(false);
     resetImportState();
+    await refreshBiometricState();
   };
 
   const resetPassphraseForm = () => {
@@ -312,6 +512,7 @@ export default function SettingsView({
     setPassphraseStatus({ tone: 'success', message: t('settings.passphrase_success') });
     resetPassphraseForm();
     setIsPassphraseModalOpen(false);
+    await refreshBiometricState();
   };
 
   const currentAutoLock = vault.profile.autoLockMinutes ?? 5;
@@ -447,6 +648,69 @@ export default function SettingsView({
                     ))}
                   </div>
                 </div>
+
+                {nativeEnvironment && biometricState && (
+                  <div className="flex flex-col gap-4 rounded-3xl border border-ink/5 bg-ink/[0.02] p-5">
+                    <div className="flex items-start gap-3">
+                      <Shield size={16} className="mt-0.5 text-accent" />
+                      <div className="flex flex-col gap-2">
+                        <span className="text-[10px] font-bold uppercase tracking-wider">
+                          {t('settings.biometric_unlock')}
+                        </span>
+                        <p className="text-xs italic leading-relaxed text-accent">
+                          {t('settings.biometric_unlock_desc')}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="rounded-2xl border border-ink/5 bg-paper px-4 py-3 text-sm italic text-ink/70">
+                      {biometricState.enabled
+                        ? t('settings.biometric_unlock_enabled')
+                        : biometricState.supported
+                          ? t('settings.biometric_unlock_disabled')
+                          : t('settings.biometric_unlock_unavailable')}
+                    </div>
+
+                    {biometricStatus && (
+                      <div
+                        className={cn(
+                          'rounded-2xl border px-4 py-3 text-sm italic',
+                          biometricStatus.tone === 'success'
+                            ? 'border-emerald-500/20 bg-emerald-500/[0.04] text-emerald-700'
+                            : 'border-red-500/20 bg-red-500/[0.03] text-red-600'
+                        )}
+                      >
+                        {biometricStatus.message}
+                      </div>
+                    )}
+
+                    <div className="flex flex-wrap gap-3">
+                      {biometricState.enabled ? (
+                        <EditorialButton
+                          type="button"
+                          variant="outline"
+                          onClick={handleDisableBiometricUnlock}
+                          disabled={isBiometricBusy}
+                        >
+                          {t('settings.biometric_unlock_disable')}
+                        </EditorialButton>
+                      ) : (
+                        <EditorialButton
+                          type="button"
+                          variant="outline"
+                          onClick={handleEnableBiometricUnlock}
+                          disabled={isBiometricBusy || !biometricState.available}
+                        >
+                          {t('settings.biometric_unlock_enable')}
+                        </EditorialButton>
+                      )}
+                    </div>
+
+                    <p className="text-[11px] italic leading-relaxed text-accent/80">
+                      {t('settings.biometric_unlock_note')}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </section>
@@ -478,17 +742,7 @@ export default function SettingsView({
                   </div>
                 </button>
                 <button
-                  onClick={handleExportCSV}
-                  className="group flex flex-col gap-3 rounded-3xl border border-ink/5 p-6 text-left transition-all hover:border-ink/20 hover:bg-ink/[0.01]"
-                >
-                  <Table size={20} className="opacity-40 transition-colors group-hover:text-ink" />
-                  <div className="flex flex-col">
-                    <span className="font-serif text-sm italic">{t('settings.raw_database')}</span>
-                    <span className="mt-1 text-[9px] uppercase tracking-widest opacity-40">{t('settings.export.spreadsheet')}</span>
-                  </div>
-                </button>
-                <button
-                  onClick={handleExportBackup}
+                  onClick={nativeEnvironment ? openExportModal : handleLegacyExportBackup}
                   disabled={isSaving || isExportingBackup}
                   className="group flex flex-col gap-3 rounded-3xl border border-ink/5 p-6 text-left transition-all hover:border-ink/20 hover:bg-ink/[0.01] disabled:opacity-40 disabled:hover:border-ink/5 disabled:hover:bg-transparent"
                 >
@@ -501,7 +755,7 @@ export default function SettingsView({
                   </div>
                 </button>
                 <button
-                  onClick={() => backupInputRef.current?.click()}
+                  onClick={nativeEnvironment ? handleNativeImportBackup : () => backupInputRef.current?.click()}
                   className="group flex flex-col gap-3 rounded-3xl border border-ink/5 p-6 text-left transition-all hover:border-ink/20 hover:bg-ink/[0.01]"
                 >
                   <Upload size={20} className="opacity-40 transition-colors group-hover:text-ink" />
@@ -524,6 +778,13 @@ export default function SettingsView({
                     </div>
                   </button>
                 )}
+              </div>
+
+              <div className="rounded-3xl border border-amber-500/20 bg-amber-500/[0.04] px-6 py-5">
+                <div className="editorial-meta text-amber-700">{t('settings.clinical_report_warning_title')}</div>
+                <p className="mt-2 text-sm italic leading-relaxed text-amber-900/80">
+                  {t('settings.clinical_report_warning_desc')}
+                </p>
               </div>
 
               <div className="rounded-3xl border border-ink/5 bg-ink/[0.02] px-6 py-5">
@@ -742,6 +1003,55 @@ export default function SettingsView({
       </EditorialModal>
 
       <EditorialModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        title={t('settings.encrypted_backup')}
+        subtitle={t('settings.passphrase_modal_subtitle')}
+        closeLabel={t('common.close')}
+      >
+        <div className="flex flex-col gap-8">
+          <div className="flex flex-col gap-3 rounded-3xl border border-red-500/20 bg-red-500/[0.03] px-6 py-5">
+            <div className="editorial-meta text-red-600">{t('settings.backup_import_warning')}</div>
+            <p className="text-xs italic leading-relaxed text-red-500/70">
+              {t('welcome.zero_knowledge_warning')}
+            </p>
+          </div>
+
+          <EditorialInput
+            autoFocus
+            type="password"
+            label={t('settings.backup_passphrase')}
+            value={backupExportForm.password}
+            onChange={(event) => setBackupExportForm(f => ({ ...f, password: event.target.value }))}
+          />
+          <EditorialInput
+            type="password"
+            label={t('settings.confirm_backup_passphrase')}
+            value={backupExportForm.confirmPassword}
+            onChange={(event) => setBackupExportForm(f => ({ ...f, confirmPassword: event.target.value }))}
+          />
+
+          {backupExportError && (
+            <div className="rounded-2xl border border-red-500/20 bg-red-500/[0.03] px-4 py-3 text-sm italic text-red-600">
+              {backupExportError}
+            </div>
+          )}
+
+          <div className="flex items-center justify-between border-t border-ink/5 pt-4">
+            <button
+              onClick={() => setIsExportModalOpen(false)}
+              className="editorial-meta text-accent transition-colors hover:text-ink"
+            >
+              {t('common.cancel')}
+            </button>
+            <EditorialButton onClick={handleNativeExportBackup} disabled={isExportingBackup}>
+              {t('settings.encrypted_backup')}
+            </EditorialButton>
+          </div>
+        </div>
+      </EditorialModal>
+
+      <EditorialModal
         isOpen={isImportModalOpen}
         onClose={() => {
           setIsImportModalOpen(false);
@@ -786,7 +1096,7 @@ export default function SettingsView({
             >
               {t('common.cancel')}
             </button>
-            <EditorialButton onClick={handleImportBackup} disabled={isSaving}>
+            <EditorialButton onClick={handleImportBackupAction} disabled={isSaving}>
               {t('settings.import_backup')}
             </EditorialButton>
           </div>

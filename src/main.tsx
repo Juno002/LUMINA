@@ -5,7 +5,9 @@ import './index.css';
 import { ErrorBoundary } from './shared/components/ErrorBoundary.tsx';
 import { initializeNativeAppShell } from './infrastructure/platform/NativeAppShell.ts';
 
-void initializeNativeAppShell();
+void initializeNativeAppShell().catch((error) => {
+  console.error('Native app shell initialization failed:', error);
+});
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

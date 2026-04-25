@@ -4,10 +4,11 @@
  */
 
 import React, { useState, useRef } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
 import { ReflejoState } from '../../../domain/services/ReflejoEngine';
 import { cn } from '../../../shared/utils/TailwindMerge';
 import { useTranslation } from '../../../application/contexts/LanguageContext';
+import { isNativeApp } from '../../../infrastructure/platform/RuntimePlatform';
 
 interface LambdaAvatarProps {
   state: ReflejoState;
@@ -21,10 +22,13 @@ interface LambdaAvatarProps {
  */
 const LambdaAvatar: React.FC<LambdaAvatarProps> = ({ state, onLongPress }) => {
   const { t } = useTranslation();
+  const prefersReducedMotion = useReducedMotion();
   const [isPressing, setIsPressing] = useState(false);
   const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const allowAmbientMotion = !prefersReducedMotion && !isNativeApp();
 
   const handleStart = () => {
+    if (pressTimer.current) clearTimeout(pressTimer.current);
     setIsPressing(true);
     pressTimer.current = setTimeout(() => {
       onLongPress();
@@ -34,26 +38,50 @@ const LambdaAvatar: React.FC<LambdaAvatarProps> = ({ state, onLongPress }) => {
 
   const handleEnd = () => {
     setIsPressing(false);
-    if (pressTimer.current) clearTimeout(pressTimer.current);
+    if (pressTimer.current) {
+      clearTimeout(pressTimer.current);
+      pressTimer.current = null;
+    }
   };
 
   const getAnimationProps = () => {
+    if (!allowAmbientMotion) {
+      switch (state.animation) {
+        case 'float':
+          return {
+            animate: { y: 0, opacity: 0.96 },
+            transition: { duration: 0.4, ease: 'easeOut' as const }
+          };
+        case 'pulse-slow':
+          return {
+            animate: { scale: 1.02, opacity: 0.94 },
+            transition: { duration: 0.4, ease: 'easeOut' as const }
+          };
+        case 'neutral':
+        default:
+          return {
+            animate: { opacity: 0.88 },
+            transition: { duration: 0.4, ease: 'easeOut' as const }
+          };
+      }
+    }
+
     switch (state.animation) {
       case 'float':
         return {
-          animate: { y: [0, -6, 0] },
-          transition: { repeat: Infinity, duration: 0.3, ease: "easeInOut" }
+          animate: { y: [0, -4, 0] },
+          transition: { repeat: Infinity, duration: 7, ease: 'easeInOut' as const }
         };
       case 'pulse-slow':
         return {
-          animate: { scale: [1, 1.05, 1], opacity: [0.8, 1, 0.8] },
-          transition: { repeat: Infinity, duration: 0.3, ease: "easeInOut" }
+          animate: { scale: [1, 1.03, 1], opacity: [0.82, 0.96, 0.82] },
+          transition: { repeat: Infinity, duration: 8, ease: 'easeInOut' as const }
         };
       case 'neutral':
       default:
         return {
-          animate: { opacity: [0.6, 1, 0.6] },
-          transition: { repeat: Infinity, duration: 0.3, ease: "easeInOut" }
+          animate: { opacity: [0.76, 0.9, 0.76] },
+          transition: { repeat: Infinity, duration: 9, ease: 'easeInOut' as const }
         };
     }
   };
@@ -70,11 +98,10 @@ const LambdaAvatar: React.FC<LambdaAvatarProps> = ({ state, onLongPress }) => {
     <div className="flex flex-col items-center gap-6 select-none">
       <div 
         className="relative cursor-pointer"
-        onMouseDown={handleStart}
-        onMouseUp={handleEnd}
-        onMouseLeave={handleEnd}
-        onTouchStart={handleStart}
-        onTouchEnd={handleEnd}
+        onPointerDown={handleStart}
+        onPointerUp={handleEnd}
+        onPointerCancel={handleEnd}
+        onPointerLeave={handleEnd}
       >
         {/* Animated Background Ring */}
         <motion.div 
@@ -106,7 +133,7 @@ const LambdaAvatar: React.FC<LambdaAvatarProps> = ({ state, onLongPress }) => {
                   className="text-ink/10"
                   initial={{ pathLength: 0 }}
                   animate={{ pathLength: 1 }}
-          transition={{ duration: 0.3, ease: "linear" }}
+                  transition={{ duration: 0.8, ease: 'linear' }}
                 />
               </motion.svg>
             )}

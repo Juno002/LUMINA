@@ -5,6 +5,7 @@
 
 import { AnimatePresence, motion } from 'motion/react';
 import {
+  Bell,
   Check,
   ChevronRight,
   Clock,
@@ -15,6 +16,7 @@ import {
 } from 'lucide-react';
 import { Habit } from '../../../../domain/entities';
 import { useTranslation } from '../../../../application/contexts/LanguageContext';
+import { getHabitReminderLabel, hasActiveHabitReminder } from '../../../../infrastructure/services/HabitReminderService';
 
 interface HabitCardProps {
   key?: string | number;
@@ -24,6 +26,7 @@ interface HabitCardProps {
   linkedGoalTitle?: string;
   onAdjustValue: () => void;
   onDelete: () => void;
+  onEdit: () => void;
   onToggle: () => void;
 }
 
@@ -34,11 +37,14 @@ export default function HabitCard({
   linkedGoalTitle,
   onAdjustValue,
   onDelete,
+  onEdit,
   onToggle
 }: HabitCardProps) {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const progress = habit.targetValue ? Math.min(100, (currentValue / habit.targetValue) * 100) : 0;
   const TypeIcon = habit.type === 'numeric' ? Hash : habit.type === 'timer' ? Clock : Check;
+  const reminderLabel = getHabitReminderLabel(habit, language);
+  const hasReminder = hasActiveHabitReminder(habit);
 
   return (
     <motion.div
@@ -98,13 +104,25 @@ export default function HabitCard({
                 {t('habits.linked_aim')}: {linkedGoalTitle || t('habits.goal_fallback')}
               </span>
             )}
+            {hasReminder && reminderLabel && (
+              <span className="mt-2 inline-flex w-fit items-center gap-2 rounded-full border border-ink/10 bg-paper px-3 py-1 font-mono text-[9px] uppercase tracking-widest text-ink/60">
+                <Bell size={10} />
+                {reminderLabel}
+              </span>
+            )}
           </div>
         </div>
 
         <div className="flex items-center gap-4">
           <button
+            onClick={onEdit}
+            className="font-mono text-[9px] uppercase tracking-widest text-accent opacity-70 transition-all hover:text-ink md:opacity-0 md:group-hover:opacity-100"
+          >
+            {t('common.edit')}
+          </button>
+          <button
             onClick={onDelete}
-            className="p-2 text-red-500/30 opacity-0 transition-all hover:text-red-500 group-hover:opacity-100"
+            className="p-2 text-red-500/40 opacity-80 transition-all hover:text-red-500 md:opacity-0 md:group-hover:opacity-100"
           >
             <Trash2 size={16} />
           </button>

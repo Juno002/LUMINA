@@ -17,6 +17,7 @@ import {
   EditorialButton 
 } from '../components/shared';
 import { useTranslation } from '../../application/contexts/LanguageContext';
+import { usePageVisibility } from '../../shared/hooks/usePageVisibility';
 
 const CRISIS_KEY = 'lumina_crisis_config';
 
@@ -46,6 +47,7 @@ const BREATH_PHASES: Array<{ phase: 'inhale' | 'hold' | 'exhale'; seconds: numbe
 
 export default function CrisisView({ onClose, isUnlocked, onNavigate }: CrisisViewProps) {
   const { language } = useTranslation();
+  const isPageVisible = usePageVisibility();
   const [data, setData] = useState<CrisisData>({ copingPhrase: '', contacts: [] });
   const [isEditing, setIsEditing] = useState(false);
   const [newName, setNewName] = useState('');
@@ -98,7 +100,7 @@ export default function CrisisView({ onClose, isUnlocked, onNavigate }: CrisisVi
   }, []);
 
   useEffect(() => {
-    if (!breathingActive) return;
+    if (!breathingActive || !isPageVisible) return;
 
     const interval = setInterval(() => {
       secondsRef.current--;
@@ -111,7 +113,7 @@ export default function CrisisView({ onClose, isUnlocked, onNavigate }: CrisisVi
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [breathingActive]);
+  }, [breathingActive, isPageVisible]);
 
   return (
     <motion.div
@@ -119,9 +121,16 @@ export default function CrisisView({ onClose, isUnlocked, onNavigate }: CrisisVi
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: AnimationSpeeds.fluid }}
-      className="fixed inset-0 bg-ink text-paper z-50 overflow-y-auto"
+      className="editorial-ink-shell fixed inset-0 z-[105] flex items-end justify-center bg-ink/86 text-paper md:items-center"
     >
-      <div className="max-w-lg mx-auto px-6 py-10 flex flex-col gap-10">
+      <motion.section
+        initial={{ opacity: 0, y: 44, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 28, scale: 0.985 }}
+        transition={{ duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
+        className="editorial-ink-surface flex w-full max-w-2xl flex-col overflow-hidden border border-paper/10 bg-ink shadow-2xl"
+      >
+      <div className="mx-auto flex max-w-lg min-h-0 flex-col gap-10 overflow-y-auto px-6 py-10 md:px-10 md:py-12">
         {/* Header */}
         <div className="flex justify-between items-start">
           <div>
@@ -291,6 +300,7 @@ export default function CrisisView({ onClose, isUnlocked, onNavigate }: CrisisVi
           )}
         </div>
       </div>
+      </motion.section>
     </motion.div>
   );
 }

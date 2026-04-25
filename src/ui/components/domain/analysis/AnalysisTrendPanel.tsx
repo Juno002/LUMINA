@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import { useMemo } from 'react';
 import { Activity } from 'lucide-react';
 import {
   Area,
@@ -16,6 +17,7 @@ import {
   YAxis
 } from 'recharts';
 import type { AnalysisMetric } from './AnalysisMetricTabs';
+import { useChartPerformance } from '../../../../shared/hooks/useChartPerformance';
 
 interface TrendPoint {
   activity: number;
@@ -39,6 +41,17 @@ export default function AnalysisTrendPanel({
   sectionLabel,
   trendData
 }: AnalysisTrendPanelProps) {
+  const { resizeDebounceMs, shouldAnimateCharts } = useChartPerformance();
+  const tooltipStyle = useMemo(
+    () => ({
+      borderRadius: '16px',
+      border: '1px solid #1a1a1a10',
+      boxShadow: '0 10px 30px rgba(0,0,0,0.05)',
+      fontFamily: 'serif'
+    }),
+    []
+  );
+
   return (
     <div className="relative overflow-hidden rounded-[2rem] border border-ink/10 bg-paper p-10">
       <div className="relative z-10 mb-10 flex items-start justify-between">
@@ -55,7 +68,7 @@ export default function AnalysisTrendPanel({
             {noDataLabel}
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="100%" height="100%" debounce={resizeDebounceMs}>
             {activeMetric === 'icc' ? (
               <AreaChart data={trendData}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#1a1a1a10" />
@@ -67,14 +80,18 @@ export default function AnalysisTrendPanel({
                 />
                 <YAxis hide domain={[0, 100]} />
                 <Tooltip
-                  contentStyle={{
-                    borderRadius: '16px',
-                    border: '1px solid #1a1a1a10',
-                    boxShadow: '0 10px 30px rgba(0,0,0,0.05)',
-                    fontFamily: 'serif'
-                  }}
+                  isAnimationActive={shouldAnimateCharts}
+                  contentStyle={tooltipStyle}
                 />
-                <Area type="monotone" dataKey="icc" stroke="#10b981" fill="#10b98120" strokeWidth={3} />
+                <Area
+                  type="monotone"
+                  dataKey="icc"
+                  stroke="#10b981"
+                  fill="#10b98120"
+                  strokeWidth={3}
+                  isAnimationActive={shouldAnimateCharts}
+                  animationDuration={shouldAnimateCharts ? 450 : 0}
+                />
               </AreaChart>
             ) : (
               <LineChart data={trendData}>
@@ -87,12 +104,8 @@ export default function AnalysisTrendPanel({
                 />
                 <YAxis hide domain={[0, 100]} />
                 <Tooltip
-                  contentStyle={{
-                    borderRadius: '16px',
-                    border: '1px solid #1a1a1a10',
-                    boxShadow: '0 10px 30px rgba(0,0,0,0.05)',
-                    fontFamily: 'serif'
-                  }}
+                  isAnimationActive={shouldAnimateCharts}
+                  contentStyle={tooltipStyle}
                 />
                 <Line
                   type="monotone"
@@ -101,6 +114,8 @@ export default function AnalysisTrendPanel({
                   strokeWidth={3}
                   dot={{ r: 4, fill: '#1a1a1a' }}
                   activeDot={{ r: 6, fill: '#1a1a1a' }}
+                  isAnimationActive={shouldAnimateCharts}
+                  animationDuration={shouldAnimateCharts ? 450 : 0}
                 />
               </LineChart>
             )}

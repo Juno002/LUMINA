@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useMemo } from 'react';
+import { startTransition } from 'react';
 import { Activity, Brain, TrendingUp } from 'lucide-react';
 import { COGNITIVE_DISTORTIONS } from '../../domain/constants/Distortions';
 import { calculateICC } from '../../domain/services/ICCCalculator';
@@ -21,6 +22,19 @@ export default function AnalysisView({ vault }: { vault: Vault }) {
 
   const journalEntries = useMemo(() => vault.journal || [], [vault.journal]);
   const activations = useMemo(() => vault.activations || [], [vault.activations]);
+  const completedActivationCountByDate = useMemo(() => {
+    const counts = new Map<string, number>();
+
+    activations.forEach((activity: ActivationActivity) => {
+      if (!activity.completed) {
+        return;
+      }
+
+      counts.set(activity.plannedDate, (counts.get(activity.plannedDate) || 0) + 1);
+    });
+
+    return counts;
+  }, [activations]);
   const distortionNameMap = useMemo(
     () => new Map(COGNITIVE_DISTORTIONS.map((distortion) => [distortion.id, distortion.name])),
     []
@@ -38,13 +52,11 @@ export default function AnalysisView({ vault }: { vault: Vault }) {
         return {
           name: entry.date.split('-').slice(1).join('/'),
           intensity: (entry.intensity || 0) * 10,
-          activity: activations.filter(
-            (activity: ActivationActivity) => activity.plannedDate === entry.date && activity.completed
-          ).length * 20,
+          activity: (completedActivationCountByDate.get(entry.date) || 0) * 20,
           icc: iccVal
         };
       }),
-    [journalEntries, activations]
+    [completedActivationCountByDate, journalEntries]
   );
 
   const distortionCounts = useMemo(() => {
@@ -134,13 +146,17 @@ export default function AnalysisView({ vault }: { vault: Vault }) {
   );
 
   const insightCopy = avgICC > 0.6 ? t('analysis.insight_high') : avgICC > 0.35 ? t('analysis.insight_mid') : t('analysis.insight_low');
+  const completedActivations = useMemo(
+    () => activations.filter((activity: ActivationActivity) => activity.completed).length,
+    [activations]
+  );
   const statCards = useMemo(
     () => [
       { label: t('analysis.stat_avg_change'), value: avgICC.toFixed(2), sub: t('analysis.stat_avg_sub'), icon: TrendingUp },
-      { label: t('analysis.stat_momentum'), value: activations.filter((activity: ActivationActivity) => activity.completed).length, sub: t('analysis.stat_momentum_sub'), icon: Activity },
+      { label: t('analysis.stat_momentum'), value: completedActivations, sub: t('analysis.stat_momentum_sub'), icon: Activity },
       { label: t('analysis.stat_continuity'), value: journalEntries.length, sub: t('analysis.stat_continuity_sub'), icon: Brain }
     ],
-    [activations, avgICC, journalEntries.length, t]
+    [avgICC, completedActivations, journalEntries.length, t]
   );
 
   return (
@@ -150,7 +166,13 @@ export default function AnalysisView({ vault }: { vault: Vault }) {
           <div className="editorial-meta">{t('analysis.subtitle')}</div>
           <h2 className="font-serif text-3xl md:text-4xl">{t('analysis.title')}.</h2>
         </div>
-        <AnalysisMetricTabs activeMetric={activeMetric} labels={metricLabels} onChange={setActiveMetric} />
+          <AnalysisMetricTabs
+            activeMetric={activeMetric}
+            labels={metricLabels}
+            onChange={(metric) => {
+              startTransition(() => setActiveMetric(metric));
+            }}
+          />
       </div>
 
       <div className="grid grid-cols-12 gap-10">

@@ -31,20 +31,21 @@ export default function LevelUpModal({ level, onClose }: LevelUpModalProps) {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: AnimationSpeeds.fluid }}
-      className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-ink/90 backdrop-blur-md cursor-pointer"
+      className="editorial-ink-shell fixed inset-0 z-[110] flex items-end justify-center bg-ink/82 px-4 md:items-center md:px-6"
       onClick={onClose}
     >
       <motion.div 
-        initial={{ scale: 0.8, opacity: 0, y: 40 }}
+        initial={{ scale: 0.94, opacity: 0, y: 48 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
-        exit={{ scale: 1.1, opacity: 0, y: -20 }}
+        exit={{ scale: 0.98, opacity: 0, y: 28 }}
         transition={{ 
           type: 'spring', 
           damping: 25, 
           stiffness: 200, 
           duration: AnimationSpeeds.fluid 
         }}
-        className="flex flex-col items-center gap-6 text-center"
+        onClick={(event) => event.stopPropagation()}
+        className="editorial-ink-surface flex w-full max-w-xl flex-col items-center gap-6 overflow-hidden border border-paper/10 bg-ink px-8 py-10 text-center text-paper shadow-2xl md:px-12 md:py-12"
       >
         <motion.div 
           initial={{ opacity: 0, letterSpacing: '0.1em' }}

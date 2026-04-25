@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { AnimationSpeeds, EasingCurves } from '../../domain/constants/Theme';
 import { Wind, Play, Square, Volume2, VolumeX } from 'lucide-react';
 import { cn } from '../../shared/utils/TailwindMerge';
+import { usePageVisibility } from '../../shared/hooks/usePageVisibility';
 import { 
   EditorialButton 
 } from '../components/shared';
@@ -117,11 +118,12 @@ export default function BreathingView() {
   const [phaseIndex, setPhaseIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState(activeExercise.phases[0].duration);
   const [isAudioEnabled, setIsAudioEnabled] = useState(false);
+  const isPageVisible = usePageVisibility();
   
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    if (isRunning) {
+    if (isRunning && isPageVisible) {
       timerRef.current = setInterval(() => {
         setTimeLeft((prev) => {
           if (prev <= 1) {
@@ -139,7 +141,7 @@ export default function BreathingView() {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [isRunning, phaseIndex, activeExercise]);
+  }, [activeExercise, isPageVisible, isRunning, phaseIndex]);
 
   const handleStart = () => {
     setIsRunning(true);

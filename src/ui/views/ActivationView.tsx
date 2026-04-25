@@ -13,6 +13,7 @@ import { sensoryFeedback } from '../../infrastructure/services/SensoryFeedbackSe
 import ActivityItem from '../components/domain/activation/ActivityItem';
 import { 
   ConfirmActionModal,
+  EditorialChoiceField,
   EditorialButton, 
   EditorialModal, 
   EditorialInput 
@@ -42,6 +43,14 @@ export default function ActivationView({ activities, habits = [], goals = [], on
   const completedToday = useMemo(() => 
     activities.filter(a => a.completed && a.completedDate === todayISO()),
     [activities]
+  );
+  const habitOptions = useMemo(
+    () => habits.map((habit) => ({ value: habit.id, label: habit.name })),
+    [habits]
+  );
+  const goalOptions = useMemo(
+    () => goals.map((goal) => ({ value: goal.id, label: goal.title })),
+    [goals]
   );
 
   const handleAdd = () => {
@@ -220,36 +229,26 @@ export default function ActivationView({ activities, habits = [], goals = [], on
               </div>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {habits && habits.length > 0 && (
-              <div className="flex flex-col gap-3">
-                <label className="editorial-meta">{language === 'es' ? 'Anclar a Hábito (Opcional)' : 'Anchor to Habit (Optional)'}</label>
-                <select 
-                  className="w-full bg-transparent border-b border-ink/20 focus:border-ink outline-none py-3 font-serif text-lg italic appearance-none cursor-pointer"
-                  value={newActivity.linkedHabitId}
-                  onChange={(e) => setNewActivity({...newActivity, linkedHabitId: e.target.value})}
-                >
-                  <option value="" className="font-sans not-italic text-sm">-- {language === 'es' ? 'Sin hábito' : 'No habit'} --</option>
-                  {habits.map(h => (
-                    <option key={h.id} value={h.id} className="font-sans not-italic text-sm">{h.name}</option>
-                  ))}
-                </select>
-              </div>
+              <EditorialChoiceField
+                label={language === 'es' ? 'Anclar a Hábito (Opcional)' : 'Anchor to Habit (Optional)'}
+                placeholder={language === 'es' ? 'Seleccionar hábito' : 'Select habit'}
+                emptyLabel={language === 'es' ? 'Sin hábito' : 'No habit'}
+                options={habitOptions}
+                value={newActivity.linkedHabitId}
+                onChange={(linkedHabitId) => setNewActivity({...newActivity, linkedHabitId})}
+              />
             )}
             {goals && goals.length > 0 && (
-              <div className="flex flex-col gap-3">
-                <label className="editorial-meta">{language === 'es' ? 'Anclar a Objetivo (Opcional)' : 'Anchor to Goal (Optional)'}</label>
-                <select 
-                  className="w-full bg-transparent border-b border-ink/20 focus:border-ink outline-none py-3 font-serif text-lg italic appearance-none cursor-pointer"
-                  value={newActivity.linkedGoalId}
-                  onChange={(e) => setNewActivity({...newActivity, linkedGoalId: e.target.value})}
-                >
-                  <option value="" className="font-sans not-italic text-sm">-- {language === 'es' ? 'Sin objetivo' : 'No goal'} --</option>
-                  {goals.map(g => (
-                    <option key={g.id} value={g.id} className="font-sans not-italic text-sm">{g.title}</option>
-                  ))}
-                </select>
-              </div>
+              <EditorialChoiceField
+                label={language === 'es' ? 'Anclar a Objetivo (Opcional)' : 'Anchor to Goal (Optional)'}
+                placeholder={language === 'es' ? 'Seleccionar objetivo' : 'Select goal'}
+                emptyLabel={language === 'es' ? 'Sin objetivo' : 'No goal'}
+                options={goalOptions}
+                value={newActivity.linkedGoalId}
+                onChange={(linkedGoalId) => setNewActivity({...newActivity, linkedGoalId})}
+              />
             )}
           </div>
           <div className="flex justify-between items-center pt-4">

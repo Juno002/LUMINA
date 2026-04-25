@@ -20,6 +20,7 @@ import {
 import { awardXP, checkStreakBonuses } from '../../application/usecases/GamificationEngine';
 import { getXPForNextLevel } from '../../domain/constants/Gamification';
 import { sensoryFeedback } from '../../infrastructure/services/SensoryFeedbackService';
+import { ensureHabitReminderPermission } from '../../infrastructure/services/HabitReminderService';
 import { 
   ConfirmActionModal,
   EditorialButton
@@ -41,6 +42,8 @@ export default function HabitsView({ vault, onUpdate, onLevelUp }: HabitsViewPro
   const { t } = useTranslation();
   const [isAdding, setIsAdding] = useState(false);
   const [addModalKey, setAddModalKey] = useState(0);
+  const [editingHabitId, setEditingHabitId] = useState<string | null>(null);
+  const [editModalKey, setEditModalKey] = useState(0);
   const [editingValueId, setEditingValueId] = useState<string | null>(null);
   const [valueModalKey, setValueModalKey] = useState(0);
   const [habitToDeleteId, setHabitToDeleteId] = useState<string | null>(null);
@@ -130,6 +133,14 @@ export default function HabitsView({ vault, onUpdate, onLevelUp }: HabitsViewPro
     setHabitToDeleteId(null);
   };
 
+  const selectedHabit = (vault.habits || []).find((habit) => habit.id === editingHabitId) || null;
+
+  const persistHabit = async (habit: Vault['habits'][number]) => {
+    if (habit.reminder?.enabled) {
+      await ensureHabitReminderPermission();
+    }
+  };
+
   return (
     <div className="flex flex-col gap-12">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
@@ -175,6 +186,10 @@ export default function HabitsView({ vault, onUpdate, onLevelUp }: HabitsViewPro
                   setValueModalKey((key) => key + 1);
                   setEditingValueId(habit.id);
                 }}
+                onEdit={() => {
+                  setEditModalKey((key) => key + 1);
+                  setEditingHabitId(habit.id);
+                }}
                 onDelete={() => setHabitToDeleteId(habit.id)}
                 onToggle={() => handleToggle(habit.id)}
               />
@@ -205,12 +220,34 @@ export default function HabitsView({ vault, onUpdate, onLevelUp }: HabitsViewPro
         isOpen={isAdding}
         goals={vault.goals || []}
         onCancel={() => setIsAdding(false)} 
-        onSave={(habit) => {
+        onSave={async (habit) => {
+          await persistHabit(habit);
+
           onUpdate({
             ...vault,
             habits: [...(vault.habits || []), habit]
           });
           setIsAdding(false);
+          triggerHaptic('success');
+        }}
+      />
+
+      <AddHabitModal
+        key={editModalKey}
+        initialHabit={selectedHabit}
+        isOpen={!!selectedHabit}
+        goals={vault.goals || []}
+        onCancel={() => setEditingHabitId(null)}
+        onSave={async (habit) => {
+          await persistHabit(habit);
+
+          onUpdate({
+            ...vault,
+            habits: (vault.habits || []).map((currentHabit) =>
+              currentHabit.id === habit.id ? habit : currentHabit
+            )
+          });
+          setEditingHabitId(null);
           triggerHaptic('success');
         }}
       />

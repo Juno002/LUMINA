@@ -3,11 +3,16 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { motion } from 'motion/react';
-import { ArrowRight, Eye, EyeOff, ShieldAlert } from 'lucide-react';
+import { ArrowRight, Eye, EyeOff, Fingerprint, ShieldAlert } from 'lucide-react';
 import { AnimationSpeeds, EasingCurves } from '../../domain/constants/Theme';
 import { useTranslation } from '../../application/contexts/LanguageContext';
+import {
+  clearBiometricUnlock,
+  getBiometricUnlockState,
+  unlockVaultWithBiometrics
+} from '../../infrastructure/platform/RuntimePlatform';
 
 interface LockScreenProps {
   onUnlock: (password: string) => Promise<boolean>;
@@ -20,6 +25,37 @@ export default function LockScreenView({ onUnlock, error, onOpenCrisis }: LockSc
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [biometricEnabled, setBiometricEnabled] = useState(false);
+  const [biometricAvailable, setBiometricAvailable] = useState(false);
+  const [isBiometricBusy, setIsBiometricBusy] = useState(false);
+  const [biometricError, setBiometricError] = useState<string | null>(null);
+  const autoBiometricAttemptedRef = useRef(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadBiometricState = async () => {
+      const state = await getBiometricUnlockState();
+      if (cancelled) {
+        return;
+      }
+
+      setBiometricEnabled(state.enabled);
+      setBiometricAvailable(state.available);
+      if (!state.enabled || state.available) {
+        setBiometricError(null);
+        return;
+      }
+
+      setBiometricError(t('welcome.biometric_unlock_error'));
+    };
+
+    void loadBiometricState();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [t]);
 
   const handleUnlock = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -32,6 +68,50 @@ export default function LockScreenView({ onUnlock, error, onOpenCrisis }: LockSc
     }
     setIsSubmitting(false);
   };
+
+  const handleBiometricUnlock = useEffectEvent(async () => {
+    setBiometricError(null);
+    setIsBiometricBusy(true);
+
+    try {
+      const result = await unlockVaultWithBiometrics();
+      if (result.ok === false) {
+        if (result.error === 'USER_CANCELED') {
+          return;
+        }
+
+        if (result.error === 'KEY_INVALIDATED' || result.error === 'NOT_ENABLED') {
+          await clearBiometricUnlock();
+          setBiometricEnabled(false);
+          setBiometricAvailable(false);
+          setBiometricError(t('welcome.biometric_unlock_invalidated'));
+          return;
+        }
+
+        setBiometricError(t('welcome.biometric_unlock_error'));
+        return;
+      }
+
+      const unlocked = await onUnlock(result.passphrase);
+      if (!unlocked) {
+        await clearBiometricUnlock();
+        setBiometricEnabled(false);
+        setBiometricAvailable(false);
+        setBiometricError(t('welcome.biometric_unlock_invalidated'));
+      }
+    } finally {
+      setIsBiometricBusy(false);
+    }
+  });
+
+  useEffect(() => {
+    if (!biometricEnabled || !biometricAvailable || autoBiometricAttemptedRef.current) {
+      return;
+    }
+
+    autoBiometricAttemptedRef.current = true;
+    void handleBiometricUnlock();
+  }, [biometricAvailable, biometricEnabled]);
 
   return (
     <div className="min-h-screen bg-paper flex flex-col items-center justify-center px-6 relative overflow-hidden">
@@ -88,21 +168,45 @@ export default function LockScreenView({ onUnlock, error, onOpenCrisis }: LockSc
 
           <button 
             type="submit"
-            disabled={!password || isSubmitting}
-            className="group relative flex items-center justify-center gap-3 bg-ink text-paper py-4 rounded-full font-mono text-[10px] uppercase tracking-[0.2em] transition-all hover:scale-[1.02] disabled:opacity-20 disabled:hover:scale-100 overflow-hidden"
+            disabled={!password || isSubmitting || isBiometricBusy}
+            className="group/button relative flex items-center justify-center gap-3 bg-ink text-paper py-4 rounded-full font-mono text-[10px] uppercase tracking-[0.2em] transition-all hover:scale-[1.02] disabled:opacity-20 disabled:hover:scale-100 overflow-hidden"
           >
             <span className="relative z-10">
               {isSubmitting ? t('welcome.calibrating') : t('welcome.begin')}
             </span>
             {!isSubmitting && <ArrowRight size={14} className="relative z-10 group-hover:translate-x-1 transition-transform" />}
             
-            {/* Subtle light sweep animation */}
-            <motion.div 
-              animate={{ x: ['-100%', '200%'] }}
-              transition={{ duration: 0.3, repeat: Infinity, ease: 'linear' }}
-              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-12"
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 -translate-x-[120%] bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 transition duration-700 ease-out group-hover/button:translate-x-[120%] group-hover/button:opacity-100"
             />
           </button>
+
+          {biometricEnabled && (
+            <button
+              type="button"
+              onClick={() => void handleBiometricUnlock()}
+              disabled={isSubmitting || isBiometricBusy || !biometricAvailable}
+              className="flex items-center justify-center gap-3 rounded-full border border-ink/10 py-4 font-mono text-[10px] uppercase tracking-[0.2em] text-accent transition-all hover:border-ink/20 hover:text-ink disabled:opacity-30"
+            >
+              <Fingerprint size={14} />
+              <span>
+                {isBiometricBusy
+                  ? t('welcome.biometric_unlock_pending')
+                  : t('welcome.biometric_unlock')}
+              </span>
+            </button>
+          )}
+
+          {biometricError && (
+            <motion.p
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-center text-[10px] font-mono uppercase tracking-widest text-red-400"
+            >
+              {biometricError}
+            </motion.p>
+          )}
         </form>
 
         <div className="editorial-rule"></div>

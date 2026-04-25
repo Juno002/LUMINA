@@ -145,7 +145,18 @@ export default function LuminaForge({ isOpen, onOpenChange, onSubmit }: LuminaFo
   }[parsed.type];
 
   return (
-    <div data-guide-target="forge" className="lumina-floating-mobile fixed right-6 z-[70] md:bottom-8 md:right-8">
+    <div
+      data-guide-target="forge"
+      className={cn(
+        'fixed z-[70]',
+        isOpen
+          ? cn(
+              'lumina-floating-stage flex justify-center md:justify-end',
+              'items-end'
+            )
+          : 'lumina-floating-action right-6'
+      )}
+    >
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -182,9 +193,14 @@ export default function LuminaForge({ isOpen, onOpenChange, onSubmit }: LuminaFo
             key="palette"
             layoutId="lumina-forge"
             className={cn(
-              'w-[calc(100vw-3rem)] max-w-xl overflow-hidden rounded-[2rem] border p-4 transition-colors md:w-[32rem]',
+              'flex w-full max-w-xl flex-col overflow-y-auto rounded-[2rem] border p-4 transition-colors md:w-[32rem]',
+              isExpanded && 'lumina-forge-sheet max-h-full md:min-h-0',
               styles.shell
             )}
+            style={{
+              height: isExpanded ? undefined : 'auto',
+              maxHeight: isExpanded ? undefined : 'calc(100% - 1.5rem)'
+            }}
             transition={{ duration: 0.3 }}
           >
             <AnimatePresence>
@@ -276,7 +292,7 @@ export default function LuminaForge({ isOpen, onOpenChange, onSubmit }: LuminaFo
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.3 }}
-                  className="mt-4 flex flex-col gap-4 overflow-hidden border-t border-current/10 pt-4"
+                  className="mt-4 flex flex-1 flex-col gap-4 overflow-hidden border-t border-current/10 pt-4"
                 >
                   <textarea
                     value={notes}
@@ -284,7 +300,7 @@ export default function LuminaForge({ isOpen, onOpenChange, onSubmit }: LuminaFo
                     onKeyDown={handleKeyDown}
                     placeholder={t('lumen.notes_placeholder')}
                     className={cn(
-                      'min-h-16 resize-none bg-transparent text-sm outline-none',
+                      'lumina-forge-notes flex-1 resize-none bg-transparent text-sm outline-none',
                       isJournalIntent ? 'text-paper placeholder:text-paper/60' : 'text-ink placeholder:text-ink/40'
                     )}
                   />

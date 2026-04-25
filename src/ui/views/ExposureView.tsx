@@ -20,6 +20,7 @@ import {
   EditorialTextArea 
 } from '../components/shared';
 import { useTranslation } from '../../application/contexts/LanguageContext';
+import { useChartPerformance } from '../../shared/hooks/useChartPerformance';
 import { 
   LineChart, 
   Line, 
@@ -50,6 +51,7 @@ export default function ExposureView({ data, onUpdate }: { data: ExposureData, o
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [expandedChartId, setExpandedChartId] = useState<string | null>(null);
   const [anchorToDeleteId, setAnchorToDeleteId] = useState<string | null>(null);
+  const { resizeDebounceMs, shouldAnimateCharts } = useChartPerformance();
 
   const handleAddAnchor = () => {
     if (!newAnchor.text) return;
@@ -121,6 +123,30 @@ export default function ExposureView({ data, onUpdate }: { data: ExposureData, o
     });
     return groups;
   }, [data.logs]);
+
+  const chartDataByItem = useMemo(() => {
+    const series: Record<string, Array<{ name: number; post: number; pre: number }>> = {};
+
+    (Object.entries(logsByItem) as Array<[string, ExposureLog[]]>).forEach(([itemId, logs]) => {
+      series[itemId] = logs.map((log, index) => ({
+        name: index + 1,
+        pre: log.preSud,
+        post: log.postSud
+      }));
+    });
+
+    return series;
+  }, [logsByItem]);
+
+  const chartTooltipStyle = useMemo(
+    () => ({
+      borderRadius: '12px',
+      border: 'none',
+      boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
+      fontFamily: 'serif'
+    }),
+    []
+  );
 
   return (
     <div className="flex flex-col gap-10 pb-20">
@@ -307,17 +333,35 @@ export default function ExposureView({ data, onUpdate }: { data: ExposureData, o
                           initial={{ height: 0 }} animate={{ height: 200 }} exit={{ height: 0 }}
                           className="px-4 pb-4"
                         >
-                           <ResponsiveContainer width="100%" height="100%">
-                              <LineChart data={logsByItem[item.id].map((l, i) => ({ name: i + 1, pre: l.preSud, post: l.postSud }))}>
+                           <ResponsiveContainer width="100%" height="100%" debounce={resizeDebounceMs}>
+                              <LineChart data={chartDataByItem[item.id]}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#1a1a1a10" />
                                 <XAxis dataKey="name" hide />
                                 <YAxis domain={[0, 100]} hide />
                                 <Tooltip 
-                                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', fontFamily: 'serif' }}
+                                  isAnimationActive={shouldAnimateCharts}
+                                  contentStyle={chartTooltipStyle}
                                   labelFormatter={(val) => `${t('common.cycle')} #${val}`}
                                 />
-                                <Line type="monotone" dataKey="pre" stroke="#1a1a1a" strokeDasharray="5 5" strokeWidth={1} dot={{ r: 3 }} />
-                                <Line type="monotone" dataKey="post" stroke="#1a1a1a" strokeWidth={2} dot={{ r: 4 }} />
+                                <Line
+                                  type="monotone"
+                                  dataKey="pre"
+                                  stroke="#1a1a1a"
+                                  strokeDasharray="5 5"
+                                  strokeWidth={1}
+                                  dot={{ r: 3 }}
+                                  isAnimationActive={shouldAnimateCharts}
+                                  animationDuration={shouldAnimateCharts ? 450 : 0}
+                                />
+                                <Line
+                                  type="monotone"
+                                  dataKey="post"
+                                  stroke="#1a1a1a"
+                                  strokeWidth={2}
+                                  dot={{ r: 4 }}
+                                  isAnimationActive={shouldAnimateCharts}
+                                  animationDuration={shouldAnimateCharts ? 450 : 0}
+                                />
                               </LineChart>
                            </ResponsiveContainer>
                         </motion.div>

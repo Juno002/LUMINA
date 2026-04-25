@@ -19,10 +19,14 @@ export const EditorialInput: React.FC<EditorialInputProps> = ({
   className,
   ...props 
 }) => {
+  const generatedId = React.useId();
+  const inputId = props.id ?? generatedId;
+
   return (
     <div className="flex flex-col gap-3 w-full">
-      {label && <label className="editorial-meta">{label}</label>}
+      {label && <label htmlFor={inputId} className="editorial-meta">{label}</label>}
       <input 
+        id={inputId}
         className={cn(
           "bg-transparent border-b outline-none py-2 transition-all",
           variant === 'serif' ? "font-serif italic text-xl" : "font-mono text-sm uppercase tracking-widest",

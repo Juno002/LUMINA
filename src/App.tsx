@@ -21,6 +21,11 @@ import { useVault } from "./application/hooks/useVault";
 import { ThoughtEntry, MoodEntry, ExposureData, ActivationActivity, Goal, SleepEntry, DayClosure, Habit, OnboardingState } from './domain/entities';
 import { awardXP } from './application/usecases/GamificationEngine';
 import { sensoryFeedback } from './infrastructure/services/SensoryFeedbackService';
+import {
+  clearHabitReminderSchedules,
+  registerHabitReminderOpenListener,
+  syncHabitReminderSchedules
+} from './infrastructure/services/HabitReminderService';
 import { LanguageProvider } from "./application/contexts/LanguageContext";
 import { Language, translations } from "./shared/i18n/translations";
 import { todayISO } from './shared/utils/DateFormatter';
@@ -42,6 +47,7 @@ import {
   mobilePrimaryNavItems,
   settingsNavItem
 } from './ui/navigation/menuItems';
+import { isNativeApp } from './infrastructure/platform/RuntimePlatform';
 
 const GUIDE_STEP_BY_TAB: Record<AppTab, LuminaGuideStepId> = {
   dashboard: 'sanctuary',
@@ -76,6 +82,7 @@ const DayClosureView = lazy(() => import('./ui/views/DayClosureView'));
 const LevelUpModal = lazy(() => import('./ui/components/shared/LevelUpModal'));
 
 export default function App() {
+  const reduceNativeEffects = isNativeApp();
   const [activeTab, setActiveTab] = useState<AppTab>('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [showCrisis, setShowCrisis] = useState(false);
@@ -94,6 +101,7 @@ export default function App() {
     lockVault,
     updateVault,
     changePassphrase,
+    enableBiometricUnlock,
     wipeAllData,
     createBackupArtifact,
     importBackup
@@ -172,6 +180,41 @@ export default function App() {
       profile: { ...vault.profile, onboarding }
     });
   }, [updateVault, vault]);
+
+  useEffect(() => {
+    if (!isReady || vaultExists) {
+      return;
+    }
+
+    void clearHabitReminderSchedules();
+  }, [isReady, vaultExists]);
+
+  useEffect(() => {
+    if (!vault || isLocked) {
+      return;
+    }
+
+    void syncHabitReminderSchedules(vault.habits || [], currentLanguage);
+  }, [currentLanguage, isLocked, vault?.habits]);
+
+  useEffect(() => {
+    let dispose: (() => Promise<void>) | null = null;
+
+    void registerHabitReminderOpenListener(() => {
+      setIsForgeOpen(false);
+      setIsNavHubOpen(false);
+      setShowCrisis(false);
+      setActiveTab('habits');
+    }).then((cleanup) => {
+      dispose = cleanup;
+    });
+
+    return () => {
+      if (dispose) {
+        void dispose();
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (!vault || isLocked) return;
@@ -279,7 +322,29 @@ export default function App() {
     </Suspense>
   ) : null;
 
-  if (!isReady) return null;
+  const hideMobileFloaters = isForgeOpen || isNavHubOpen || showCrisis;
+
+  if (!isReady) {
+    return (
+      <LanguageProvider language={currentLanguage} onLanguageChange={handleLanguageChange}>
+        <div className="flex h-screen items-center justify-center bg-paper px-6 text-ink">
+          <div className="flex max-w-sm flex-col items-center gap-4 text-center">
+            <img
+              src="/lumina-icon.svg"
+              alt="Lumina"
+              className="h-14 w-14 rounded-[1rem] shadow-sm"
+            />
+            <div className="editorial-meta opacity-50">
+              {translations[currentLanguage].common.loading}
+            </div>
+            <p className="font-serif text-xl italic">
+              {translations[currentLanguage].common.securing}
+            </p>
+          </div>
+        </div>
+      </LanguageProvider>
+    );
+  }
 
   return (
     <LanguageProvider language={currentLanguage} onLanguageChange={handleLanguageChange}>
@@ -375,13 +440,13 @@ export default function App() {
 
             {/* Main Content Area */}
             <main className="flex-grow relative overflow-y-auto px-6 md:px-16 py-10 md:py-16 scroll-smooth">
-              <div className="max-w-6xl mx-auto pb-32 md:pb-0">
+              <div className="max-w-6xl mx-auto pb-44 md:pb-0">
                 <AnimatePresence mode="wait">
                   <motion.section
                     key={activeTab}
-                    initial={{ opacity: 0, y: 10, filter: 'blur(10px)' }}
-                    animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                    exit={{ opacity: 0, y: -15, filter: 'blur(10px)' }}
+                    initial={{ opacity: 0, y: 10, filter: reduceNativeEffects ? 'none' : 'blur(10px)' }}
+                    animate={{ opacity: 1, y: 0, filter: 'none' }}
+                    exit={{ opacity: 0, y: -15, filter: reduceNativeEffects ? 'none' : 'blur(10px)' }}
                     transition={{ duration: AnimationSpeeds.fluid, ease: EasingCurves.editorial }}
                   >
                   <Suspense fallback={<div className="h-full w-full flex items-center justify-center text-accent font-mono text-[10px] uppercase tracking-widest">Loading...</div>}>
@@ -418,6 +483,7 @@ export default function App() {
                         onWipe={wipeAllData}
                         onLock={lockVault}
                         onChangePassphrase={changePassphrase}
+                        onEnableBiometricUnlock={enableBiometricUnlock}
                         onCreateBackupArtifact={createBackupArtifact}
                         onImportBackup={importBackup}
                         lastBackupAt={lastBackupAt}
@@ -498,11 +564,15 @@ export default function App() {
 
             <button
               onClick={() => setShowCrisis(true)}
-              className="lumina-floating-mobile fixed left-6 z-[60] flex h-12 w-12 items-center justify-center rounded-full border border-red-500/20 bg-red-500/10 text-red-500 transition-all hover:bg-red-500 hover:text-white md:hidden"
+              className={cn(
+                'lumina-floating-action fixed left-4 z-[60] flex h-12 items-center gap-2 rounded-full border border-red-500/20 bg-paper/92 px-3 text-red-500 shadow-xl shadow-red-500/10 backdrop-blur-sm transition-all md:hidden',
+                hideMobileFloaters && 'pointer-events-none translate-y-3 opacity-0'
+              )}
               aria-label={appCommon.emergency_protocol}
               title={appCommon.emergency_protocol}
             >
-              <ShieldAlert size={18} />
+              <ShieldAlert size={16} />
+              <span className="font-mono text-[9px] uppercase tracking-widest">SOS</span>
             </button>
 
             {/* SOS Global Trigger - Desktop Only */}

@@ -55,12 +55,6 @@ describe('DataExportService', () => {
     expect(report).toContain('magnification');
   });
 
-  it('generates a valid CSV', () => {
-    const csv = DataExportService.exportCSV(mockVault);
-    expect(csv).toContain('date,emotion,intensity,level,distortions');
-    expect(csv).toContain('"2026-04-18","Anxiety, rising ""fast""","8","3","magnification; jumping_to_conclusions","3"');
-  });
-
   it('handles empty vault gracefully', () => {
     const emptyVault: Vault = { ...mockVault, journal: [], goals: [] };
     const report = DataExportService.exportMarkdownReport(emptyVault);

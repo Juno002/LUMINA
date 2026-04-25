@@ -211,7 +211,7 @@ export default function DashboardView({ vault, onUpdate, onOpenCrisis, onOpenDay
           <div className="flex flex-col gap-2">
             <p className="editorial-meta text-[9px] opacity-40 italic uppercase tracking-widest">{context.suggestion}</p>
             <div className="flex items-center gap-3 py-4 border-y border-ink/5 mt-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></div>
+              <div className="w-1.5 h-1.5 rounded-full bg-accent/70"></div>
               <p className="text-xs font-serif italic text-accent opacity-80">
                 {t(`clinical_insights.${vault.profile?.clinicalProfile || 'general'}`)}
               </p>

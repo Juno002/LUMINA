@@ -22,7 +22,7 @@ export const EditorialButton: React.FC<EditorialButtonProps> = ({
   className,
   ...props 
 }) => {
-  const baseStyles = "relative flex items-center justify-center gap-2 rounded-full font-mono uppercase tracking-[0.2em] transition-all duration-300 overflow-hidden disabled:opacity-20";
+  const baseStyles = "group/button relative flex items-center justify-center gap-2 rounded-full font-mono uppercase tracking-[0.2em] transition-all duration-300 overflow-hidden disabled:opacity-20";
   
   const variants = {
     primary: "bg-ink text-paper hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-ink/5",
@@ -50,10 +50,9 @@ export const EditorialButton: React.FC<EditorialButtonProps> = ({
       <span className="relative z-10">{children}</span>
       
       {variant === 'primary' && !props.disabled && (
-        <motion.div 
-          animate={{ x: ['-100%', '200%'] }}
-          transition={{ duration: 0.3, repeat: Infinity, ease: 'linear' }}
-          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent skew-x-12"
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 -translate-x-[120%] bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 transition duration-700 ease-out group-hover/button:translate-x-[120%] group-hover/button:opacity-100"
         />
       )}
     </motion.button>

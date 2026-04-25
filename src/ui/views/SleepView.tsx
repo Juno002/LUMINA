@@ -16,6 +16,7 @@ import {
   EditorialInput 
 } from '../components/shared';
 import { useTranslation } from '../../application/contexts/LanguageContext';
+import { useChartPerformance } from '../../shared/hooks/useChartPerformance';
 import { 
   LineChart, 
   Line, 
@@ -28,6 +29,7 @@ import {
 
 export default function SleepView({ entries, onUpdate }: { entries: SleepEntry[], onUpdate: (e: SleepEntry[]) => void }) {
   const { t, language } = useTranslation();
+  const { resizeDebounceMs, shouldAnimateCharts } = useChartPerformance();
   const [isAdding, setIsAdding] = useState(false);
   const [newEntry, setNewEntry] = useState({
     date: todayISO(),
@@ -229,13 +231,21 @@ export default function SleepView({ entries, onUpdate }: { entries: SleepEntry[]
                <TrendingUp size={20} className="text-accent" />
                <div className="editorial-meta">{language === 'es' ? 'Tendencia de Eficiencia' : 'Efficiency Trend'}</div>
                <div className="h-32 w-full">
-                  <ResponsiveContainer width="100%" height="100%">
+                  <ResponsiveContainer width="100%" height="100%" debounce={resizeDebounceMs}>
                     <LineChart data={weeklyTrends}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#1a1a1a05" />
                       <XAxis dataKey="date" hide />
                       <YAxis domain={[0, 100]} hide />
                       <ReferenceLine y={85} stroke="#1a1a1a" strokeDasharray="3 3" opacity={0.2} />
-                      <Line type="monotone" dataKey="efficiency" stroke="#1a1a1a" strokeWidth={2} dot={{ r: 4, fill: '#1a1a1a' }} />
+                      <Line
+                        type="monotone"
+                        dataKey="efficiency"
+                        stroke="#1a1a1a"
+                        strokeWidth={2}
+                        dot={{ r: 4, fill: '#1a1a1a' }}
+                        isAnimationActive={shouldAnimateCharts}
+                        animationDuration={shouldAnimateCharts ? 450 : 0}
+                      />
                     </LineChart>
                   </ResponsiveContainer>
                </div>

@@ -15,12 +15,23 @@ const exportBackupArtifactMock = vi.hoisted(() => vi.fn());
 const shareBackupArtifactMock = vi.hoisted(() => vi.fn());
 const isNativeAppMock = vi.hoisted(() => vi.fn(() => false));
 const getBackupTransportLabelMock = vi.hoisted(() => vi.fn(() => 'download'));
+const pickNativeBackupImportSourceMock = vi.hoisted(() => vi.fn());
+const getBiometricUnlockStateMock = vi.hoisted(() => vi.fn(async () => ({
+  supported: false,
+  available: false,
+  enrolled: false,
+  enabled: false
+})));
+const clearBiometricUnlockMock = vi.hoisted(() => vi.fn(async () => undefined));
 
 vi.mock('../../infrastructure/platform/RuntimePlatform', () => ({
+  clearBiometricUnlock: clearBiometricUnlockMock,
   exportBackupArtifact: exportBackupArtifactMock,
+  getBiometricUnlockState: getBiometricUnlockStateMock,
   shareBackupArtifact: shareBackupArtifactMock,
   isNativeApp: isNativeAppMock,
-  getBackupTransportLabel: getBackupTransportLabelMock
+  getBackupTransportLabel: getBackupTransportLabelMock,
+  pickNativeBackupImportSource: pickNativeBackupImportSourceMock
 }));
 
 const baseVault: Vault = {
@@ -32,7 +43,7 @@ const baseVault: Vault = {
     onboarding: { status: 'completed', currentStep: 'vault', completedSteps: ['vault'] }
   },
   createdAt: '2026-04-23T00:00:00.000Z',
-  schemaVersion: 2,
+  schemaVersion: 3,
   journal: [],
   exposure: { hierarchy: [], logs: [] },
   activations: [],
@@ -68,6 +79,7 @@ function renderSettings(overrideProps: Partial<React.ComponentProps<typeof Setti
         onWipe={() => undefined}
         onLock={() => undefined}
         onChangePassphrase={async () => true}
+        onEnableBiometricUnlock={async () => ({ ok: true as const })}
         onCreateBackupArtifact={async () => ({
           ok: true as const,
           artifact
@@ -86,12 +98,29 @@ function renderSettings(overrideProps: Partial<React.ComponentProps<typeof Setti
   );
 }
 
+function getButtonByRole(label: RegExp, index = 0) {
+  const button = screen.getAllByRole('button', { name: label })[index];
+  if (!button) {
+    throw new Error(`No button found for label ${label}`);
+  }
+  return button;
+}
+
 describe('SettingsView', () => {
   beforeEach(() => {
     exportBackupArtifactMock.mockReset();
     shareBackupArtifactMock.mockReset();
     isNativeAppMock.mockReturnValue(false);
     getBackupTransportLabelMock.mockReturnValue('download');
+    pickNativeBackupImportSourceMock.mockReset();
+    getBiometricUnlockStateMock.mockReset();
+    getBiometricUnlockStateMock.mockResolvedValue({
+      supported: false,
+      available: false,
+      enrolled: false,
+      enabled: false
+    });
+    clearBiometricUnlockMock.mockClear();
   });
 
   it('shows the local encrypted backup flow in web mode and exports through the platform adapter', async () => {
@@ -114,6 +143,8 @@ describe('SettingsView', () => {
     expect(screen.getByText(/^Encrypted Backup$/i)).toBeInTheDocument();
     expect(screen.getByText(/LUMINA keeps backups local/i)).toBeInTheDocument();
     expect(screen.getByText(/^Browser download$/i)).toBeInTheDocument();
+    expect(screen.getByText(/Clinical reports are exported without encryption/i)).toBeInTheDocument();
+    expect(screen.queryByText(/^Raw Database$/i)).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Share Backup/i })).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /Encrypted Backup/i }));
@@ -126,6 +157,22 @@ describe('SettingsView', () => {
   it('shows native share controls and warns when wiping without a recorded backup', async () => {
     isNativeAppMock.mockReturnValue(true);
     getBackupTransportLabelMock.mockReturnValue('native');
+    getBiometricUnlockStateMock.mockResolvedValue({
+      supported: true,
+      available: true,
+      enrolled: true,
+      enabled: false
+    });
+    const createBackupArtifact = vi.fn(async () => ({
+      ok: true as const,
+      artifact
+    }));
+    exportBackupArtifactMock.mockResolvedValue({
+      method: 'native-save',
+      filename: artifact.filename,
+      uri: 'file://lumina-backup.json',
+      shared: false
+    });
     shareBackupArtifactMock.mockResolvedValue({
       method: 'native-share',
       filename: artifact.filename,
@@ -133,10 +180,21 @@ describe('SettingsView', () => {
       shared: true
     });
 
-    renderSettings();
+    renderSettings({ onCreateBackupArtifact: createBackupArtifact });
 
+    expect(await screen.findByRole('button', { name: /Enable Biometric Unlock/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Share Backup/i })).toBeInTheDocument();
     expect(screen.getAllByText(/No encrypted backup has been recorded on this device yet/i).length).toBeGreaterThan(0);
+
+    fireEvent.click(screen.getByRole('button', { name: /Encrypted Backup/i }));
+    expect(await screen.findByLabelText(/^Backup Passphrase$/i)).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText(/^Backup Passphrase$/i), { target: { value: 'secret-pass' } });
+    fireEvent.change(screen.getByLabelText(/Confirm Backup Passphrase/i), { target: { value: 'secret-pass' } });
+    fireEvent.click(getButtonByRole(/Encrypted Backup/i, 1));
+
+    await waitFor(() => expect(createBackupArtifact).toHaveBeenCalledWith('secret-pass'));
+    await waitFor(() => expect(exportBackupArtifactMock).toHaveBeenCalledTimes(1));
+    expect(await screen.findByText(new RegExp(artifact.filename.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /Share Backup/i }));
     await waitFor(() => expect(shareBackupArtifactMock).toHaveBeenCalledTimes(1));
@@ -144,5 +202,55 @@ describe('SettingsView', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /Execute Wipe Protocol/i }));
     expect(await screen.findAllByText(/No encrypted backup has been recorded on this device yet/i)).not.toHaveLength(0);
+  });
+
+  it('enables biometric unlock from settings when secure hardware is available', async () => {
+    isNativeAppMock.mockReturnValue(true);
+    getBackupTransportLabelMock.mockReturnValue('native');
+    getBiometricUnlockStateMock
+      .mockResolvedValueOnce({
+        supported: true,
+        available: true,
+        enrolled: true,
+        enabled: false
+      })
+      .mockResolvedValueOnce({
+        supported: true,
+        available: true,
+        enrolled: true,
+        enabled: true
+      });
+
+    const onEnableBiometricUnlock = vi.fn(async () => ({ ok: true as const }));
+
+    renderSettings({ onEnableBiometricUnlock });
+
+    fireEvent.click(await screen.findByRole('button', { name: /Enable Biometric Unlock/i }));
+
+    await waitFor(() => expect(onEnableBiometricUnlock).toHaveBeenCalledTimes(1));
+    expect(await screen.findByText(/enabled for this device/i)).toBeInTheDocument();
+  });
+
+  it('imports native backups through the same vault restore pipeline', async () => {
+    isNativeAppMock.mockReturnValue(true);
+    getBackupTransportLabelMock.mockReturnValue('native');
+    pickNativeBackupImportSourceMock.mockResolvedValue({
+      name: 'lumina-backup.json',
+      content: '{"format":"lumina.portable-backup","version":2}'
+    });
+    const onImportBackup = vi.fn(async () => ({ ok: true as const }));
+
+    renderSettings({ onImportBackup });
+
+    fireEvent.click(screen.getByRole('button', { name: /Restore Backup/i }));
+    fireEvent.change(screen.getByLabelText(/^Backup Passphrase$/i), { target: { value: 'secret-pass' } });
+    fireEvent.click(getButtonByRole(/Restore Backup/i, 1));
+
+    await waitFor(() => expect(pickNativeBackupImportSourceMock).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(onImportBackup).toHaveBeenCalledWith(
+      '{"format":"lumina.portable-backup","version":2}',
+      'secret-pass'
+    ));
+    expect(await screen.findByText(/restored successfully/i)).toBeInTheDocument();
   });
 });
