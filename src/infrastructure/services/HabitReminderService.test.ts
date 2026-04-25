@@ -10,6 +10,7 @@ const createChannelMock = vi.hoisted(() => vi.fn(async () => undefined));
 const getPendingMock = vi.hoisted(() => vi.fn(async () => ({ notifications: [] })));
 const cancelMock = vi.hoisted(() => vi.fn(async () => undefined));
 const scheduleMock = vi.hoisted(() => vi.fn(async () => ({ notifications: [] })));
+const areEnabledMock = vi.hoisted(() => vi.fn(async () => ({ value: true })));
 const checkPermissionsMock = vi.hoisted(() => vi.fn(async () => ({ display: 'granted' })));
 const requestPermissionsMock = vi.hoisted(() => vi.fn(async () => ({ display: 'granted' })));
 const getDeliveredNotificationsMock = vi.hoisted(() => vi.fn(async () => ({ notifications: [] })));
@@ -26,6 +27,7 @@ vi.mock('@capacitor/local-notifications', () => ({
     getPending: getPendingMock,
     cancel: cancelMock,
     schedule: scheduleMock,
+    areEnabled: areEnabledMock,
     checkPermissions: checkPermissionsMock,
     requestPermissions: requestPermissionsMock,
     getDeliveredNotifications: getDeliveredNotificationsMock,
@@ -93,6 +95,8 @@ describe('HabitReminderService', () => {
     getPendingMock.mockResolvedValue({ notifications: [] });
     cancelMock.mockClear();
     scheduleMock.mockClear();
+    areEnabledMock.mockReset();
+    areEnabledMock.mockResolvedValue({ value: true });
     checkPermissionsMock.mockReset();
     checkPermissionsMock.mockResolvedValue({ display: 'granted' });
     requestPermissionsMock.mockReset();
@@ -103,12 +107,13 @@ describe('HabitReminderService', () => {
     addListenerMock.mockClear();
   });
 
-  it('requests permission when notifications are not yet granted', async () => {
-    checkPermissionsMock.mockResolvedValueOnce({ display: 'prompt' });
+  it('requests permission on Android when notifications are disabled', async () => {
+    areEnabledMock.mockResolvedValueOnce({ value: false });
 
     const result = await ensureHabitReminderPermission();
 
     expect(requestPermissionsMock).toHaveBeenCalledTimes(1);
+    expect(checkPermissionsMock).not.toHaveBeenCalled();
     expect(result).toBe('granted');
   });
 
@@ -138,6 +143,7 @@ describe('HabitReminderService', () => {
         (notification) => notification.channelId === 'habit-reminders'
       )
     ).toBe(true);
+    expect(checkPermissionsMock).not.toHaveBeenCalled();
   });
 
   it('clears scheduled and delivered reminder notifications', async () => {
@@ -162,5 +168,6 @@ describe('HabitReminderService', () => {
     expect(removeDeliveredNotificationsMock).toHaveBeenCalledWith({
       notifications: [{ id: 21, title: 'A', body: 'A', group: 'habit-reminders' }]
     });
+    expect(checkPermissionsMock).not.toHaveBeenCalled();
   });
 });

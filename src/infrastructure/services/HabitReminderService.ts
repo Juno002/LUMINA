@@ -13,6 +13,9 @@ const REMINDER_GROUP = 'habit-reminders';
 const REMINDER_KIND = 'habit-reminder';
 
 type ReminderPermissionResult = 'granted' | 'denied' | 'unsupported';
+type LocalNotificationsWithAreEnabled = typeof LocalNotifications & {
+  areEnabled?: () => Promise<{ value: boolean }>;
+};
 
 function parseReminderTime(time: string) {
   const [rawHour, rawMinute] = time.split(':');
@@ -142,25 +145,63 @@ async function clearScheduledReminderNotifications() {
     return;
   }
 
-  const pending = await LocalNotifications.getPending();
-  const pendingReminders = pending.notifications
-    .filter((notification) => notification.extra?.kind === REMINDER_KIND)
-    .map((notification) => ({ id: notification.id }));
+  try {
+    const pending = await LocalNotifications.getPending();
+    const pendingReminders = pending.notifications
+      .filter((notification) => notification.extra?.kind === REMINDER_KIND)
+      .map((notification) => ({ id: notification.id }));
 
-  if (pendingReminders.length > 0) {
-    await LocalNotifications.cancel({ notifications: pendingReminders });
+    if (pendingReminders.length > 0) {
+      await LocalNotifications.cancel({ notifications: pendingReminders });
+    }
+
+    const delivered = await LocalNotifications.getDeliveredNotifications();
+    const deliveredReminders = delivered.notifications.filter((notification) => {
+      const extra = notification.extra ?? notification.data;
+      return notification.group === REMINDER_GROUP || extra?.kind === REMINDER_KIND;
+    });
+
+    if (deliveredReminders.length > 0) {
+      await LocalNotifications.removeDeliveredNotifications({
+        notifications: deliveredReminders
+      });
+    }
+  } catch (error) {
+    console.error('Failed to clear scheduled reminder notifications:', error);
+  }
+}
+
+async function areAndroidNotificationsEnabled() {
+  const notifications = LocalNotifications as LocalNotificationsWithAreEnabled;
+
+  if (typeof notifications.areEnabled !== 'function') {
+    return false;
   }
 
-  const delivered = await LocalNotifications.getDeliveredNotifications();
-  const deliveredReminders = delivered.notifications.filter((notification) => {
-    const extra = notification.extra ?? notification.data;
-    return notification.group === REMINDER_GROUP || extra?.kind === REMINDER_KIND;
-  });
+  try {
+    const { value } = await notifications.areEnabled();
+    return value;
+  } catch (error) {
+    console.warn('Failed to read Android notification enabled state:', error);
+    return false;
+  }
+}
 
-  if (deliveredReminders.length > 0) {
-    await LocalNotifications.removeDeliveredNotifications({
-      notifications: deliveredReminders
-    });
+async function hasGrantedHabitReminderPermission() {
+  if (!isNativeApp()) {
+    return false;
+  }
+
+  if (getRuntimePlatform() === 'android') {
+    return areAndroidNotificationsEnabled();
+  }
+
+  try {
+    const status = await LocalNotifications.checkPermissions();
+    return status.display === 'granted';
+  } catch (error) {
+    console.error('Failed to read notification permission state:', error);
+    return false;
   }
 }
 
@@ -169,13 +210,31 @@ export async function ensureHabitReminderPermission(): Promise<ReminderPermissio
     return 'unsupported';
   }
 
-  const status = await LocalNotifications.checkPermissions();
-  if (status.display === 'granted') {
-    return 'granted';
-  }
+  try {
+    if (getRuntimePlatform() === 'android') {
+      if (await areAndroidNotificationsEnabled()) {
+        return 'granted';
+      }
 
-  const requested = await LocalNotifications.requestPermissions();
-  return requested.display === 'granted' ? 'granted' : 'denied';
+      const requested = await LocalNotifications.requestPermissions();
+      if (requested.display === 'granted') {
+        return 'granted';
+      }
+
+      return (await areAndroidNotificationsEnabled()) ? 'granted' : 'denied';
+    }
+
+    const status = await LocalNotifications.checkPermissions();
+    if (status.display === 'granted') {
+      return 'granted';
+    }
+
+    const requested = await LocalNotifications.requestPermissions();
+    return requested.display === 'granted' ? 'granted' : 'denied';
+  } catch (error) {
+    console.error('Failed to check or request notification permissions:', error);
+    return (await hasGrantedHabitReminderPermission()) ? 'granted' : 'denied';
+  }
 }
 
 export async function syncHabitReminderSchedules(habits: Habit[], language: Language) {
@@ -183,40 +242,43 @@ export async function syncHabitReminderSchedules(habits: Habit[], language: Lang
     return;
   }
 
-  const status = await LocalNotifications.checkPermissions();
-  if (status.display !== 'granted') {
-    return;
+  try {
+    if (!(await hasGrantedHabitReminderPermission())) {
+      return;
+    }
+
+    await ensureReminderChannel();
+    await clearScheduledReminderNotifications();
+
+    const notifications = habits
+      .filter((habit) => habit.isActive)
+      .flatMap((habit) => {
+        const reminder = sanitizeReminder(habit.reminder);
+        if (!reminder) {
+          return [];
+        }
+
+        if (reminder.cadence === 'daily') {
+          return [buildReminderNotification(habit, language, reminder)];
+        }
+
+        const weekdays = reminder.weekdays?.length
+          ? reminder.weekdays
+          : [new Date().getDay()];
+
+        return weekdays.map((weekday) =>
+          buildReminderNotification(habit, language, reminder, weekday)
+        );
+      });
+
+    if (notifications.length === 0) {
+      return;
+    }
+
+    await LocalNotifications.schedule({ notifications });
+  } catch (error) {
+    console.error('Failed to sync habit reminder schedules:', error);
   }
-
-  await ensureReminderChannel();
-  await clearScheduledReminderNotifications();
-
-  const notifications = habits
-    .filter((habit) => habit.isActive)
-    .flatMap((habit) => {
-      const reminder = sanitizeReminder(habit.reminder);
-      if (!reminder) {
-        return [];
-      }
-
-      if (reminder.cadence === 'daily') {
-        return [buildReminderNotification(habit, language, reminder)];
-      }
-
-      const weekdays = reminder.weekdays?.length
-        ? reminder.weekdays
-        : [new Date().getDay()];
-
-      return weekdays.map((weekday) =>
-        buildReminderNotification(habit, language, reminder, weekday)
-      );
-    });
-
-  if (notifications.length === 0) {
-    return;
-  }
-
-  await LocalNotifications.schedule({ notifications });
 }
 
 export async function clearHabitReminderSchedules() {
@@ -224,12 +286,15 @@ export async function clearHabitReminderSchedules() {
     return;
   }
 
-  const permission = await LocalNotifications.checkPermissions();
-  if (permission.display !== 'granted') {
-    return;
-  }
+  try {
+    if (!(await hasGrantedHabitReminderPermission())) {
+      return;
+    }
 
-  await clearScheduledReminderNotifications();
+    await clearScheduledReminderNotifications();
+  } catch (error) {
+    console.error('Failed to clear habit reminder schedules:', error);
+  }
 }
 
 export async function registerHabitReminderOpenListener(onOpen: (habitId?: string) => void) {
